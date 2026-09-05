@@ -4,10 +4,8 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Entities\Movie;
-use App\Models\GenreModel;
 use App\Models\LinkModel;
 use App\Models\Translations\MovieTranslationsModel;
-use CodeIgniter\Model;
 
 
 class Movies extends BaseController
@@ -100,9 +98,6 @@ class Movies extends BaseController
             'admin/movies' => 'Back to videos'
         ]);
 
-        $genreModel = new GenreModel();
-        $genres = $genreModel->asArray()->findAll();
-
         $movie = new Movie();
         $movie->imdb_id = $this->request->getGet('imdb');
         $movie->tmdb_id = $this->request->getGet('tmdb');
@@ -115,7 +110,7 @@ class Movies extends BaseController
 
         }
 
-        $data = compact('title', 'movie', 'genres', 'translations', 'topBtnGroup');
+        $data = compact('title', 'movie', 'translations', 'topBtnGroup');
         return view('admin/movies/new', $data);
     }
 
@@ -131,13 +126,7 @@ class Movies extends BaseController
 
         $nextMovie = $this->model->getNextMovie( $id );
 
-
-        $genreModel = new GenreModel();
-        $genres = $genreModel->asArray()->findAll();
-
         $linkModel = new LinkModel();
-        $directDownloadLinks = $linkModel->findByMovieId( $id, 'direct_download');
-        $torrentDownloadLinks = $linkModel->findByMovieId( $id, 'torrent_download');
         $streamLinks = $linkModel->findByMovieId( $id, 'stream' );
 
        if( is_multi_languages_enabled() ){
@@ -153,8 +142,7 @@ class Movies extends BaseController
             'admin/movies' => 'Back to Videos'
         ]);
 
-        $data = compact('title', 'movie', 'nextMovie', 'genres', 'directDownloadLinks', 'torrentDownloadLinks',
-            'streamLinks', 'translations', 'topBtnGroup');
+        $data = compact('title', 'movie', 'nextMovie', 'streamLinks', 'translations', 'topBtnGroup');
 
         return view('admin/movies/edit', $data);
     }
@@ -175,12 +163,6 @@ class Movies extends BaseController
             //attempt to save data
             if($this->model->saveMovie( $movie )) {
                 $movie = $this->getMovie( $this->model->getInsertID() );
-
-                //add genres
-                $this->model->addGenres(
-                    $movie->id,
-                    $this->request->getPost( 'genres' )
-                );
 
                 //add translations
                 if( is_multi_languages_enabled() ){
@@ -229,14 +211,11 @@ class Movies extends BaseController
                 'series_id',
                 'season',
                 'imdb_rate',
-                'quality',
                 'episode',
                 'released_at',
                 'trailer',
                 'country',
                 'language',
-                'meta_keywords',
-                'meta_description',
                 'status'
             ]);
 
@@ -254,12 +233,6 @@ class Movies extends BaseController
                     ->with('errors', $this->model->errors())
                     ->withInput();
             }
-
-            //add or update genres
-            $this->model->addGenres(
-                $movie->id,
-                $this->request->getPost( 'genres' )
-            );
 
             // save translations
             if( is_multi_languages_enabled() ){

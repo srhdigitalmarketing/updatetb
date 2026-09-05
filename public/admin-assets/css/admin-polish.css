@@ -1274,3 +1274,99 @@ body,
   margin: 14px 6px 14px 0;
   padding: 7px 10px;
 }
+
+/* Direct links and embed code panel */
+.video-share-panel .x_content { padding-top: 16px; }
+
+.share-link-tabs {
+  background: #f2f4f7;
+  border-radius: 10px;
+  display: inline-flex;
+  gap: 3px;
+  margin-bottom: 18px;
+  padding: 4px;
+}
+
+.share-link-tab {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: #667085;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 11px;
+}
+
+.share-link-tab i { margin-right: 5px; }
+
+.share-link-tab.active {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, .12);
+  color: #3569ef;
+}
+
+.share-link-content { display: none; }
+.share-link-content.active { display: block; }
+
+.video-share-panel .share-link-content label {
+  color: #475467 !important;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.share-link-input .form-control,
+.share-embed-wrap .form-control {
+  background: #f8faff;
+  color: #344054;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+}
+
+.share-link-input .input-group-append .btn,
+.share-embed-wrap .share-copy-button {
+  background: #edf3ff;
+  border-color: #d7e4ff;
+  color: #3569ef;
+  min-width: 42px;
+}
+
+.share-link-input .input-group-append .btn:hover,
+.share-embed-wrap .share-copy-button:hover,
+.share-copy-button.copied {
+  background: #3569ef;
+  border-color: #3569ef;
+  color: #fff;
+}
+
+.share-embed-wrap { position: relative; }
+
+.share-embed-wrap textarea {
+  min-height: 118px;
+  padding: 12px 52px 12px 12px;
+  resize: vertical;
+}
+
+.share-embed-wrap .share-copy-button {
+  bottom: 10px;
+  position: absolute;
+  right: 10px;
+}
+
+.share-links-empty {
+  align-items: center;
+  background: #f8faff;
+  border: 1px dashed #cbd8f4;
+  border-radius: 9px;
+  color: #667085;
+  display: flex;
+  font-size: 13px;
+  gap: 10px;
+  line-height: 1.5;
+  padding: 14px;
+}
+
+.share-links-empty i {
+  color: #3569ef;
+  font-size: 16px;
+}
