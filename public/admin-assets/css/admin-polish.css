@@ -657,3 +657,183 @@ body,
   .dashboard-tables-grid { grid-template-columns: 1fr; }
   .admin-quick-link span { display: none; }
 }
+
+/* Video Command Center refinements */
+.dashboard-command-bar {
+  align-items: center;
+  background: linear-gradient(110deg, #172554 0%, #273e91 56%, #487fff 130%);
+  border-radius: 16px;
+  box-shadow: 0 14px 28px rgba(39, 62, 145, .16);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  margin: -4px 0 22px;
+  overflow: hidden;
+  padding: 27px 30px;
+  position: relative;
+}
+
+.dashboard-command-bar::after {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 50%;
+  content: "";
+  height: 250px;
+  position: absolute;
+  right: -85px;
+  top: -155px;
+  width: 250px;
+}
+
+.dashboard-command-copy,
+.dashboard-command-actions { position: relative; z-index: 1; }
+
+.dashboard-command-bar .dashboard-eyebrow {
+  color: #a9d5ff;
+}
+
+.dashboard-command-bar h2 {
+  color: #fff;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  margin: 5px 0;
+}
+
+.dashboard-command-bar p {
+  color: #d4e1ff;
+  font-size: 13px;
+  margin: 0;
+  max-width: 590px;
+}
+
+.dashboard-command-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.dashboard-primary-action,
+.dashboard-secondary-action {
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 11px 15px;
+  text-decoration: none !important;
+  transition: transform .18s ease, background-color .18s ease;
+  white-space: nowrap;
+}
+
+.dashboard-primary-action {
+  background: #fff;
+  color: #2956d9 !important;
+}
+
+.dashboard-secondary-action {
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .22);
+  color: #fff !important;
+}
+
+.dashboard-primary-action:hover,
+.dashboard-secondary-action:hover {
+  transform: translateY(-1px);
+}
+
+.dashboard-metrics-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.metric-card {
+  background: #fff !important;
+  border: 1px solid #eef0f5;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, .035);
+  min-height: 138px;
+  padding: 21px;
+  transition: box-shadow .18s ease, transform .18s ease;
+}
+
+.metric-card:hover {
+  box-shadow: 0 12px 24px rgba(16, 24, 40, .08);
+  transform: translateY(-2px);
+}
+
+.metric-card .icon {
+  box-shadow: none;
+}
+
+.metric-video .metric-card .icon { background: #eaf2ff; color: #3569ef; }
+.metric-coverage .metric-card .icon { background: #e8faf0; color: #12a150; }
+.metric-views .metric-card .icon { background: #fff5e7; color: #ec8b16; }
+.metric-links .metric-card .icon { background: #eafaff; color: #0d94c7; }
+.metric-requests .metric-card .icon { background: #f2edff; color: #805ad5; }
+.metric-reported .metric-card .icon { background: #ffeded; color: #e23a3a; }
+
+.metric-card h3 {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 9px;
+}
+
+.metric-card .count {
+  color: #182230;
+  font-size: 29px;
+  font-weight: 700;
+}
+
+.dashboard-health-panel .x_title,
+.dashboard-library-panel .x_title { padding: 19px 22px; }
+
+.dashboard-health-content {
+  align-items: center;
+  display: grid;
+  gap: 30px;
+  grid-template-columns: minmax(280px, 1fr) minmax(240px, .8fr);
+  padding: 20px 28px 24px;
+}
+
+.dashboard-health-chart { min-width: 0; }
+
+.dashboard-health-summary {
+  background: #f8faff;
+  border: 1px solid #edf1f8;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.dashboard-health-caption {
+  color: #667085;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.dashboard-health-summary .list-group-item {
+  align-items: center;
+  background: transparent;
+  border-color: #e9edf5;
+  display: flex;
+  font-size: 13px;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.health-dot { font-size: 8px; margin-right: 7px; vertical-align: 1px; }
+.health-dot--blue { color: #487fff; }
+.health-dot--purple { color: #805ad5; }
+
+.dashboard-library-panel .x_content { padding: 0 20px 14px; }
+.dashboard-library-panel .table { margin-bottom: 0; }
+
+@media (max-width: 991px) {
+  .dashboard-command-bar { align-items: flex-start; flex-direction: column; gap: 18px; }
+  .dashboard-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .dashboard-command-bar { padding: 23px 20px; }
+  .dashboard-command-actions { flex-wrap: wrap; }
+  .dashboard-health-content { grid-template-columns: 1fr; padding: 16px; }
+}

@@ -17,96 +17,38 @@
     </div>
 </div>
 <div class="dashboard-metric metric-views">
-    <div class="tile-stats metric-card metric-card--details">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-eye"></i></div>
         <div class="count">
             <?= number_format( $anytc->movies->views ) ?>
         </div>
         <h3>Views</h3>
-        <ul class="list-group list-group-flush mt-2">
-            <li class="list-group-item">Videos :
-                <span class="float-right px-1">
-                            <?= number_format( $anytc->movies->views ) ?>
-                        </span>
-            </li>
-        </ul>
     </div>
 </div>
 <div class="dashboard-metric metric-links">
-    <div class="tile-stats metric-card metric-card--details">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-link"></i></div>
         <div class="count">
             <?= number_format( $anytc->links->total ) ?>
         </div>
         <h3>Links</h3>
-        <ul class="list-group list-group-flush mt-2">
-            <li class="list-group-item">Streaming  :
-                <span class="float-right px-1">
-                            <?= number_format( $anytc->links->stream ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Direct Download :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->links->direct_dl ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Torrent Download :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->links->torrent_dl ) ?>
-                        </span>
-            </li>
-        </ul>
     </div>
 </div>
 <div class="dashboard-metric metric-requests">
-    <div class="tile-stats metric-card metric-card--details">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-exchange"></i></div>
         <div class="count">
             <?= number_format( $anytc->links_requests->total ) ?>
         </div>
         <h3>Requests <small>to links</small> </h3>
-        <ul class="list-group list-group-flush mt-2">
-            <li class="list-group-item">Streaming  :
-                <span class="float-right px-1">
-                            <?= number_format( $anytc->links_requests->stream ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Direct Download :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->links_requests->direct_dl ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Torrent Download :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->links_requests->torrent_dl ) ?>
-                        </span>
-            </li>
-        </ul>
     </div>
 </div>
 <div class="dashboard-metric metric-reported">
-    <div class="tile-stats metric-card metric-card--details">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-unlink"></i></div>
         <div class="count red">
             <?= number_format( $anytc->reported_links->total ) ?>
         </div>
         <h3>Reported <small>links</small></h3>
-        <ul class="list-group list-group-flush mt-2">
-            <li class="list-group-item">Streaming  :
-                <span class="float-right px-1">
-                            <?= number_format( $anytc->reported_links->stream ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Direct Download :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->reported_links->direct_dl ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Torrent Download :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->reported_links->torrent_dl ) ?>
-                        </span>
-            </li>
-        </ul>
     </div>
 </div>

@@ -5,12 +5,20 @@
 
 
 <div class="dashboard-page">
-    <div class="dashboard-intro">
-        <div>
+    <div class="dashboard-command-bar">
+        <div class="dashboard-command-copy">
             <span class="dashboard-eyebrow">VIDEO OPERATIONS</span>
-            <p>Monitor your content library, link coverage, and audience activity in one place.</p>
+            <h2>Video Command Center</h2>
+            <p>Manage your library, monitor link quality, and act on the metrics that need attention.</p>
         </div>
-        <span class="dashboard-live-indicator"><i class="fa fa-circle"></i> Live overview</span>
+        <div class="dashboard-command-actions">
+            <a class="dashboard-primary-action" href="<?= admin_url('/movies/new') ?>">
+                <i class="fa fa-plus"></i> Add Video
+            </a>
+            <a class="dashboard-secondary-action" href="<?= admin_url('/movies') ?>">
+                View Library <i class="fa fa-arrow-right"></i>
+            </a>
+        </div>
     </div>
 
     <div class="dashboard-metrics-grid">
