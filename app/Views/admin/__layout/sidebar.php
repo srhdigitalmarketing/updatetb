@@ -1,8 +1,9 @@
 <div class="col-md-3 left_col">
     <div class="left_col scroll-view">
         <div class="navbar nav_title" style=" background: #172d44;">
-            <a href="<?= site_url('/admin') ?>" class="site_title logoadmin"> <span>
-             <b>StreamAPI</b><small>CONTROL PANEL</small></span>
+            <a href="<?= site_url('/admin') ?>" class="site_title logoadmin">
+                <span class="brand-mark"><i class="fa fa-play"></i></span>
+                <span class="brand-copy"><b>StreamAPI</b><small>VIDEO CONTROL CENTER</small></span>
             </a>
         </div>
 
@@ -11,6 +12,7 @@
         <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
             <div class="menu_section">
                 <ul class="nav side-menu">
+                    <li class="sidebar-menu-label"><span>Workspace</span></li>
                     <li><a href="<?= admin_url('/dashboard') ?>"><i class="fa fa-dashboard"></i> Dashboard </a></li>
 
                     <li><a><i class="fa fa-play-circle"></i> Video <span class="fa fa-chevron-down"></span></a>
@@ -51,6 +53,7 @@
                         </ul>
                     </li>
 
+                    <li class="sidebar-menu-label sidebar-menu-label--system"><span>System</span></li>
                     <li><a><i class="fa fa-gear"></i> Settings <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/settings/site') ?>">Site</a></li>
