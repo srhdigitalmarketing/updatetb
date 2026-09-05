@@ -24,10 +24,6 @@
 
                     <li><a><i class="fa fa-dollar"></i> Advertisement <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="<?= admin_url('/ads/home_page') ?>">Home page</a></li>
-                            <li><a href="<?= admin_url('/ads/view_page') ?>">View page</a></li>
-                            <li><a href="<?= admin_url('/ads/download_page') ?>">Download page</a></li>
-                            <li><a href="<?= admin_url('/ads/link_page') ?>">Link page</a></li>
                             <li><a href="<?= admin_url('/ads/embed_page') ?>">Embed page</a></li>
                         </ul>
                     </li>
