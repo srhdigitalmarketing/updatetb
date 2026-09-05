@@ -3,27 +3,20 @@
 
 <?php $this->section('content') ?>
 
-<div class="x_content">
-    <div>
-        <div class="group-selection  d-none ve-results--filter" >
-            <label class="control-label" for="first-name">Filter:
-            </label>
-            <?= form_dropdown([
-                    'class' => 'form-control',
-                    'onchange' => 'filter_movie_results(this.value)',
-                    'options' => [
-                            'all' => 'All',
-                            'with_st_links' => 'Have Stream Links',
-                            'without_st_links' => 'Haven\'t Stream Links',
-                            'with_dl_links' => 'Have Download Links',
-                            'without_dl_links' => 'Haven\'t Download Links'
-                    ],
-                    'selected' => $filter ?? ''
-            ]) ?>
-        </div>
-
-    </div>
-
+<div class="group-selection d-none ve-results--filter">
+    <label class="control-label" for="first-name">Filter:</label>
+    <?= form_dropdown([
+            'class' => 'form-control',
+            'onchange' => 'filter_movie_results(this.value)',
+            'options' => [
+                    'all' => 'All',
+                    'with_st_links' => 'Have Stream Links',
+                    'without_st_links' => 'Haven\'t Stream Links',
+                    'with_dl_links' => 'Have Download Links',
+                    'without_dl_links' => 'Haven\'t Download Links'
+            ],
+            'selected' => $filter ?? ''
+    ]) ?>
 </div>
 
 <div class="x_panel">
@@ -35,11 +28,9 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>Video ID</th>
-                <th>Year</th>
-                <th>Imdb Rate</th>
+                <th>Added on</th>
+                <th>Last updated</th>
                 <th>Views</th>
-                <th>Created At</th>
-                <th>Updated At</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -52,11 +43,9 @@
                     <td> <?= $movie->id ?> </td>
                     <td class="text-left video-title"> <?= esc( $movie->title ) ?> </td>
                     <td> <?= esc( $movie->imdb_id ) ?> </td>
-                    <td> <?= $movie->year ?> </td>
-                    <td> <?= $movie->imdb_rate ?> </td>
-                    <td> <?= number_format( $movie->views ) ?> </td>
                     <td> <?= format_date_time( $movie->created_at ) ?> </td>
                     <td> <?= format_date_time( $movie->updated_at ) ?> </td>
+                    <td> <?= number_format( $movie->views ) ?> </td>
                     <td>
                         <div class="table-actions">
                             <a href="<?= admin_url("/movies/edit/{$movie->id}") ?>" class="btn btn-sm btn-primary">

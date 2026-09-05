@@ -1021,7 +1021,7 @@
         });
 
         $('#movies-list-datatable').DataTable( {
-            dom: '<"datatable-top-btn-list"B><"float-left"l><"float-right"f>rtip',
+            dom: '<"video-table-toolbar"<"video-table-toolbar__actions"B><"video-table-toolbar__filter">><"video-table-controls"<"video-table-controls__length"l><"video-table-controls__search"f>>rt<"video-table-footer"<"video-table-footer__info"i><"video-table-footer__pagination"p>>',
             buttons: [
                 'colvis',
                 {
@@ -1060,12 +1060,9 @@
                 },
             ],
             responsive: true,
-            stateSave: true,
+            stateSave: false,
             order: [],
-            columnDefs: [ {
-                targets: [6,7],
-                visible: false
-            } ]
+            pageLength: 25
         } );
 
         $('#links-list-datatable').DataTable( {
@@ -1163,7 +1160,11 @@
         let filter = $(".ve-results--filter").clone();
         filter.removeClass('d-none');
 
-        $(".datatable-top-btn-list").append( filter );
+        if ($(".video-table-toolbar__filter").length) {
+            $(".video-table-toolbar__filter").append(filter);
+        } else {
+            $(".datatable-top-btn-list").append(filter);
+        }
 
     }
 
