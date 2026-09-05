@@ -34,8 +34,7 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>IMDB Id</th>
-                <th>TMDB Id</th>
+                <th>Video ID</th>
                 <th>Year</th>
                 <th>Imdb Rate</th>
                 <th>Views</th>
@@ -52,12 +51,7 @@
                 <tr>
                     <td> <?= $movie->id ?> </td>
                     <td class="text-left video-title"> <?= esc( $movie->title ) ?> </td>
-                    <td>
-                        <a href="https://www.imdb.com/title/<?=$movie->imdb_id?>" target="_blank">
-                            <?= esc( $movie->imdb_id ) ?>
-                        </a>
-                    </td>
-                    <td> <a href="javascript:void(0)"> <?= esc( $movie->tmdb_id ) ?> </a> </td>
+                    <td> <?= esc( $movie->imdb_id ) ?> </td>
                     <td> <?= $movie->year ?> </td>
                     <td> <?= $movie->imdb_rate ?> </td>
                     <td> <?= number_format( $movie->views ) ?> </td>

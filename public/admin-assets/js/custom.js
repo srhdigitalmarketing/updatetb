@@ -1063,7 +1063,7 @@
             stateSave: true,
             order: [],
             columnDefs: [ {
-                targets: [3,7,8],
+                targets: [6,7],
                 visible: false
             } ]
         } );

@@ -100,7 +100,6 @@ class Movies extends BaseController
 
         $movie = new Movie();
         $movie->imdb_id = $this->request->getGet('imdb');
-        $movie->tmdb_id = $this->request->getGet('tmdb');
         $movie->type = 'movie';
 
         if( is_multi_languages_enabled() ){
@@ -206,7 +205,6 @@ class Movies extends BaseController
                 'title',
                 'description',
                 'imdb_id',
-                'tmdb_id',
                 'duration',
                 'series_id',
                 'season',

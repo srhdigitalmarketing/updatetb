@@ -22,23 +22,14 @@
 
         <div  id="suggest-results"></div>
 
-        <div class="form-group row">
-            <div class="col">
-                <?= form_label('IMDB Id *:') ?>
-                <?=  form_input( [
-                    'name' => 'imdb_id',
-                    'value' => old('imdb_id', $movie->imdb_id),
-                    'class' => 'form-control'
-                ] ) ?>
-            </div>
-            <div class="col">
-                <?= form_label('TMDB Id :') ?>
-                <?= form_input( [
-                    'name' => 'tmdb_id',
-                    'value' => old('tmdb_id', $movie->tmdb_id),
-                    'class' => 'form-control'
-                ] ) ?>
-            </div>
+        <div class="form-group">
+            <?= form_label('Video ID *:') ?>
+            <?=  form_input( [
+                'name' => 'imdb_id',
+                'value' => old('imdb_id', $movie->imdb_id),
+                'class' => 'form-control',
+                'placeholder' => 'Enter video ID'
+            ] ) ?>
         </div>
 
         <div class="form-group">
