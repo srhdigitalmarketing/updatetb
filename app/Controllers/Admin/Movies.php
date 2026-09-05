@@ -207,7 +207,7 @@ class Movies extends BaseController
 
                 return redirect()->to('/admin/movies/edit/' . $movie->id)
                                  ->with('warning', $warningAlerts)
-                                 ->with('success', 'video saved successfully');
+                                 ->with('success', 'movie saved successfully');
 
             }else{
                 return redirect()->back()
@@ -287,7 +287,7 @@ class Movies extends BaseController
 
             return redirect()->back()
                              ->with('warning', $warningAlerts)
-                             ->with('success', 'Video updated successfully.');
+                             ->with('success', 'Movie updated successfully.');
         }
     }
 
@@ -300,10 +300,10 @@ class Movies extends BaseController
             $redirect = $movie->isEpisode() ? '/episodes' : '/movies';
 
             return redirect()->to("/admin/{$redirect}")
-                             ->with('success', "{$movie->title} video deleted successfully" );
+                             ->with('success', "{$movie->title} movie deleted successfully" );
         }else{
             return redirect()->back()
-                ->with('errors', "{$movie->title} video unable to deleted" );
+                ->with('errors', "{$movie->title} movie unable to deleted" );
         }
 
     }

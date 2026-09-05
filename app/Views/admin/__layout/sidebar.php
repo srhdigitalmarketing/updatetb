@@ -2,7 +2,7 @@
     <div class="left_col scroll-view">
         <div class="navbar nav_title" style=" background: #172d44;">
             <a href="<?= site_url('/admin') ?>" class="site_title logoadmin"> <span>
-             <b>VideoHub</span>
+             <b>StreamAPI</b><small>CONTROL PANEL</small></span>
             </a>
         </div>
 
@@ -13,10 +13,10 @@
                 <ul class="nav side-menu">
                     <li><a href="<?= admin_url('/dashboard') ?>"><i class="fa fa-dashboard"></i> Dashboard </a></li>
 
-                    <li><a><i class="fa fa-play-circle"></i> Videos <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-play-circle"></i> Video <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/movies/new') ?>">Add Video</a></li>
-                            <li><a href="<?= admin_url('/movies') ?>">View All</a></li>
+                            <li><a href="<?= admin_url('/movies') ?>">All Videos</a></li>
                         </ul>
                     </li>
 
@@ -30,8 +30,6 @@
                         </ul>
                     </li>
 
-
-
                     <li><a><i class="fa fa-unlink"></i> Links <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/links') ?>">View All</a></li>
@@ -39,6 +37,12 @@
                         </ul>
                     </li>
 
+                    <li><a><i class="fa fa-files-o"></i> Pages <span class="fa fa-chevron-down"></span></a>
+                        <ul class="nav child_menu">
+                            <li><a href="<?= admin_url('/pages') ?>">View All</a></li>
+                            <li><a href="<?= admin_url('/pages/new') ?>">New Page</a></li>
+                        </ul>
+                    </li>
 
                     <li><a><i class="fa fa-magic"></i> Third Party APIs <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">

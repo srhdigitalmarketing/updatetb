@@ -4,7 +4,7 @@
         <div class="count">
             <?= number_format( $anytc->movies->total ) ?>
         </div>
-        <h3>Movies</h3>
+        <h3>Videos</h3>
     </div>
 </div>
 <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
@@ -42,7 +42,7 @@
         </div>
         <h3>Views</h3>
         <ul class="list-group list-group-flush mt-2">
-            <li class="list-group-item">Movies :
+            <li class="list-group-item">Videos :
                 <span class="float-right px-1">
                             <?= number_format( $anytc->movies->views ) ?>
                         </span>
