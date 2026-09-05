@@ -3,6 +3,10 @@
         <div class="nav toggle">
             <a id="menu_toggle"><i class="fa fa-bars"></i></a>
         </div>
+        <div class="admin-top-search" role="search">
+            <i class="fa fa-search" aria-hidden="true"></i>
+            <input type="search" placeholder="Search" aria-label="Search" readonly tabindex="-1">
+        </div>
         <nav class="nav navbar-nav">
             <ul class=" navbar-right">
                 <li class="nav-item dropdown open" style="padding-left: 15px;">
@@ -16,8 +20,8 @@
                     </div>
                 </li>
                 <li class="nav-item mt-1">
-                    <a href="<?= site_url('/home') ?>" target="_blank" >
-                        <i class="fa fa-globe"></i> view site
+                    <a class="admin-quick-link" href="<?= site_url('/home') ?>" target="_blank" >
+                        <i class="fa fa-globe"></i><span>View site</span>
                     </a>
                 </li>
 

@@ -1,14 +1,14 @@
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
-        <div class="icon"><i class="fa fa-film "></i></div>
+<div class="dashboard-metric metric-video">
+    <div class="tile-stats metric-card">
+        <div class="icon"><i class="fa fa-film"></i></div>
         <div class="count">
             <?= number_format( $anytc->movies->total ) ?>
         </div>
         <h3>Videos</h3>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-shows">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-desktop"></i></div>
         <div class="count">
             <?= number_format( $anytc->series->total ) ?>
@@ -16,8 +16,8 @@
         <h3>TV Shows</h3>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-episodes">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-video-camera"></i></div>
         <div class="count">
             <?= number_format( $anytc->episodes->completed ) ?>
@@ -25,8 +25,8 @@
         <h3>Episodes</h3>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-coverage">
+    <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-trophy"></i></div>
         <div class="count"><span class="<?= $anytc->coverage->color_class ?>">
                         <?= number_format( $anytc->coverage->value ) ?>
@@ -34,8 +34,8 @@
         <h3>Coverage</h3>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-views">
+    <div class="tile-stats metric-card metric-card--details">
         <div class="icon"><i class="fa fa-eye"></i></div>
         <div class="count">
             <?= number_format( $anytc->movies->views + $anytc->episodes->views ) ?>
@@ -55,8 +55,8 @@
         </ul>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-links">
+    <div class="tile-stats metric-card metric-card--details">
         <div class="icon"><i class="fa fa-link"></i></div>
         <div class="count">
             <?= number_format( $anytc->links->total ) ?>
@@ -81,8 +81,8 @@
         </ul>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-requests">
+    <div class="tile-stats metric-card metric-card--details">
         <div class="icon"><i class="fa fa-exchange"></i></div>
         <div class="count">
             <?= number_format( $anytc->links_requests->total ) ?>
@@ -107,8 +107,8 @@
         </ul>
     </div>
 </div>
-<div class="animated flipInY col-lg-3 col-md-3 col-sm-6 ">
-    <div class="tile-stats">
+<div class="dashboard-metric metric-reported">
+    <div class="tile-stats metric-card metric-card--details">
         <div class="icon"><i class="fa fa-unlink"></i></div>
         <div class="count red">
             <?= number_format( $anytc->reported_links->total ) ?>

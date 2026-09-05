@@ -4,30 +4,38 @@
 <?php $this->section('content') ?>
 
 
-<div class="row" style="display: inline-block;width: 100%;">
-    <div class="top_tiles">
+<div class="dashboard-page">
+    <div class="dashboard-intro">
+        <div>
+            <span class="dashboard-eyebrow">VIDEO OPERATIONS</span>
+            <p>Monitor your content library, link coverage, and audience activity in one place.</p>
+        </div>
+        <span class="dashboard-live-indicator"><i class="fa fa-circle"></i> Live overview</span>
+    </div>
+
+    <div class="dashboard-metrics-grid">
         <?= $this->include('admin/dashboard/x_panel/top_tiles') ?>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-lg-4 col-md-6">
+    <div class="dashboard-charts-grid">
+    <div class="dashboard-chart-cell">
         <?= $this->include('admin/dashboard/x_panel/charts/series_completion') ?>
     </div>
-    <div class="col-lg-4 col-md-6">
+    <div class="dashboard-chart-cell">
         <?= $this->include('admin/dashboard/x_panel/charts/episodes_completion') ?>
     </div>
-    <div class="col-lg-4 col-md-6">
+    <div class="dashboard-chart-cell">
         <?= $this->include('admin/dashboard/x_panel/charts/links_completion') ?>
     </div>
-</div>
+    </div>
 
-<div class="row">
-    <div class="col-lg-6">
+    <div class="dashboard-tables-grid">
+    <div class="dashboard-table-cell">
         <?= $this->include('admin/dashboard/x_panel/most_viewed_movies') ?>
     </div>
-    <div class="col-lg-6">
+    <div class="dashboard-table-cell">
         <?= $this->include('admin/dashboard/x_panel/most_viewed_episodes') ?>
+    </div>
     </div>
 </div>
 
