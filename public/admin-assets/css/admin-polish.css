@@ -1014,3 +1014,106 @@ body,
 .nav-sm .site_title { height: 72px; justify-content: center; padding: 0; }
 .nav-sm .brand-copy { display: none; }
 .nav-sm .brand-mark { flex-basis: 34px; }
+
+/* Clear, compact nested navigation and readable administration forms */
+.nav-md ul.nav.child_menu > li::before,
+.nav-md ul.nav.child_menu > li::after {
+  content: none !important;
+  display: none !important;
+}
+
+.nav.child_menu > li {
+  padding-left: 0 !important;
+}
+
+.nav.child_menu > li > a {
+  align-items: center;
+  border: 0 !important;
+  color: #475467 !important;
+  display: flex;
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 36px;
+  padding: 8px 12px 8px 16px !important;
+}
+
+.nav.child_menu > li > a:hover,
+.nav.child_menu > li.active > a {
+  background: #f2f6ff !important;
+  color: #3569ef !important;
+  font-weight: 700;
+}
+
+.nav.side-menu > li.current-page,
+.nav.side-menu > li.active {
+  border-right: 0 !important;
+}
+
+.right_col {
+  color: #344054;
+}
+
+.right_col .page-title h3,
+.right_col .x_title h2,
+.right_col .x_title h3,
+.right_col .x_title h4 {
+  color: #182230;
+  font-weight: 700;
+}
+
+.right_col label,
+.right_col .control-label,
+.right_col .form-group > label {
+  color: #344054 !important;
+  font-weight: 600;
+}
+
+.right_col .form-control,
+.right_col select.form-control,
+.right_col textarea.form-control {
+  border-color: #d0d5dd;
+  box-shadow: none;
+  color: #344054;
+}
+
+.right_col .form-control:focus {
+  border-color: #7aa2ff;
+  box-shadow: 0 0 0 3px rgba(53, 105, 239, .12);
+}
+
+.right_col .form-control::placeholder {
+  color: #98a2b3;
+  opacity: 1;
+}
+
+.right_col .help-block,
+.right_col .form-text,
+.right_col small,
+.right_col .text-muted {
+  color: #667085 !important;
+}
+
+.right_col .x_panel {
+  border: 1px solid #e7ebf2;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, .04);
+  margin-bottom: 20px;
+}
+
+.right_col .x_panel .x_title {
+  border-bottom-color: #e7ebf2;
+  padding: 15px 18px 12px;
+}
+
+.right_col .x_panel .x_content {
+  padding: 18px;
+}
+
+.right_col .table {
+  color: #344054;
+}
+
+.right_col .table > thead > tr > th {
+  color: #475467;
+  font-weight: 700;
+}
