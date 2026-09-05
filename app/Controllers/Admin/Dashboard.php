@@ -24,14 +24,7 @@ class Dashboard extends BaseController
                                 ->orderBy('views', 'DESC')
                                 ->findAll(10);
 
-        $topEpisodes = $movieModel->episodes()
-                                  ->where('movies.views > ', 0)
-                                  ->orderBy('movies.views', 'DESC')
-                                  ->findAll(10);
-
-
-
-        $data = compact('title', 'anytc', 'topMovies', 'topEpisodes');
+        $data = compact('title', 'anytc', 'topMovies');
 
         return view('admin/dashboard/index', $data);
     }

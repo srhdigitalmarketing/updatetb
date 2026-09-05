@@ -18,13 +18,7 @@
     </div>
 
     <div class="dashboard-charts-grid">
-    <div class="dashboard-chart-cell">
-        <?= $this->include('admin/dashboard/x_panel/charts/series_completion') ?>
-    </div>
-    <div class="dashboard-chart-cell">
-        <?= $this->include('admin/dashboard/x_panel/charts/episodes_completion') ?>
-    </div>
-    <div class="dashboard-chart-cell">
+    <div class="dashboard-chart-cell dashboard-chart-cell--wide">
         <?= $this->include('admin/dashboard/x_panel/charts/links_completion') ?>
     </div>
     </div>
@@ -32,9 +26,6 @@
     <div class="dashboard-tables-grid">
     <div class="dashboard-table-cell">
         <?= $this->include('admin/dashboard/x_panel/most_viewed_movies') ?>
-    </div>
-    <div class="dashboard-table-cell">
-        <?= $this->include('admin/dashboard/x_panel/most_viewed_episodes') ?>
     </div>
     </div>
 </div>

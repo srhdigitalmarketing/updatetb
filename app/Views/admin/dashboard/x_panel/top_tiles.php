@@ -7,24 +7,6 @@
         <h3>Videos</h3>
     </div>
 </div>
-<div class="dashboard-metric metric-shows">
-    <div class="tile-stats metric-card">
-        <div class="icon"><i class="fa fa-desktop"></i></div>
-        <div class="count">
-            <?= number_format( $anytc->series->total ) ?>
-        </div>
-        <h3>TV Shows</h3>
-    </div>
-</div>
-<div class="dashboard-metric metric-episodes">
-    <div class="tile-stats metric-card">
-        <div class="icon"><i class="fa fa-video-camera"></i></div>
-        <div class="count">
-            <?= number_format( $anytc->episodes->completed ) ?>
-        </div>
-        <h3>Episodes</h3>
-    </div>
-</div>
 <div class="dashboard-metric metric-coverage">
     <div class="tile-stats metric-card">
         <div class="icon"><i class="fa fa-trophy"></i></div>
@@ -38,18 +20,13 @@
     <div class="tile-stats metric-card metric-card--details">
         <div class="icon"><i class="fa fa-eye"></i></div>
         <div class="count">
-            <?= number_format( $anytc->movies->views + $anytc->episodes->views ) ?>
+            <?= number_format( $anytc->movies->views ) ?>
         </div>
         <h3>Views</h3>
         <ul class="list-group list-group-flush mt-2">
             <li class="list-group-item">Videos :
                 <span class="float-right px-1">
                             <?= number_format( $anytc->movies->views ) ?>
-                        </span>
-            </li>
-            <li class="list-group-item">Episodes :
-                <span class="float-right  px-1">
-                            <?= number_format( $anytc->episodes->views ) ?>
                         </span>
             </li>
         </ul>
