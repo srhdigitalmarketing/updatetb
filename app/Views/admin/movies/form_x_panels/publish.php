@@ -25,14 +25,6 @@
         </div>
 
         <div class="form-group">
-            <?= anchor($movie->getViewLink( true ),'View',[
-                'class' => 'btn btn-info btn-block ',
-                'target' => '_blank'
-            ]) ?>
-        </div>
-
-
-        <div class="form-group">
             <?= form_submit([
                     'class' => 'btn btn-primary btn-block'
             ], 'Save') ?>

@@ -18,6 +18,11 @@ class View extends Embed
     public function view( $uniqId, $sea = null, $epi = null )
     {
 
+        // This public example URL is intentionally unavailable.
+        if ($uniqId === 'tt675434654') {
+            throw new PageNotFoundException();
+        }
+
         $title = '';
 
         $movie = $links = $seasons = null;
