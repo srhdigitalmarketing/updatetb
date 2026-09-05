@@ -14,9 +14,14 @@ $providerOptions = [
 
 <?php if ($popupAdUnitsUnavailable): ?>
     <div class="alert alert-warning">
-        Run <code>php spark migrate</code> first to create the Popup Ads database table.
+        The Popup Ads table is not visible in this site's active database. Verify <code>php spark migrate</code> was run in the same site directory and with the same database configuration.
     </div>
 <?php else: ?>
+    <?php if ($popupAdUnitsLoadError): ?>
+        <div class="alert alert-warning">
+            The Popup Ads table exists, but its saved units could not be loaded. The detailed database error is recorded in <code>writable/logs</code>; you can still add a new unit below.
+        </div>
+    <?php endif; ?>
     <?= form_open('/admin/ads/popup-units/save', ['method' => 'post', 'id' => 'popup-ad-units-form']) ?>
 
     <div class="popup-ads-intro">

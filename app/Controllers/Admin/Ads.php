@@ -51,17 +51,24 @@ class Ads extends BaseController
         $popAds = $ads['embed.popad'] ?? '';
 
         $popupAdUnits = [];
-        $popupAdUnitsUnavailable = false;
-        try {
-            $popupAdUnits = $this->popupAdModel
-                ->where('page', 'embed')
-                ->orderBy('id', 'ASC')
-                ->findAll();
-        } catch (\Throwable $exception) {
-            $popupAdUnitsUnavailable = true;
+        $popupAdUnitsLoadError = false;
+        $popupAdUnitsUnavailable = ! db_connect()->tableExists('popup_ad_units');
+
+        if (! $popupAdUnitsUnavailable) {
+            try {
+                $popupAdUnits = $this->popupAdModel
+                    ->where('page', 'embed')
+                    ->orderBy('id', 'ASC')
+                    ->findAll();
+            } catch (\Throwable $exception) {
+                log_message('error', 'Unable to load managed popup ads: {message}', [
+                    'message' => $exception->getMessage(),
+                ]);
+                $popupAdUnitsLoadError = true;
+            }
         }
 
-        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable');
+        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable', 'popupAdUnitsLoadError');
 
         return view('admin/ads/embed', $data);
     }
@@ -163,6 +170,12 @@ class Ads extends BaseController
         if (! is_array($units) || count($units) > 20) {
             return redirect()->back()
                 ->with('errors', ['You can save a maximum of 20 popup ad units at once.'])
+                ->withInput();
+        }
+
+        if (! db_connect()->tableExists('popup_ad_units')) {
+            return redirect()->back()
+                ->with('errors', ['Popup Ads table was not found in the active database. Verify the migration ran against this site database.'])
                 ->withInput();
         }
 
