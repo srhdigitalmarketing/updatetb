@@ -287,22 +287,63 @@ if(! function_exists('display_banner_ad'))
     }
 }
 
+if(! function_exists('display_managed_popup_ads'))
+{
+    function display_managed_popup_ads(array $units): string
+    {
+        $config = [];
+        foreach ($units as $unit) {
+            $code = trim((string) ($unit['ad_code'] ?? ''));
+            if ($code === '') {
+                continue;
+            }
+
+            $config[] = [
+                'id' => (int) ($unit['id'] ?? 0),
+                'weight' => max(1, min(100, (int) ($unit['weight'] ?? 1))),
+                'code' => $code,
+            ];
+        }
+
+        if (empty($config)) {
+            return '';
+        }
+
+        $encodedConfig = base64_encode(json_encode($config));
+
+        return '<script>(function(){'
+            . 'var encoded="' . $encodedConfig . '";var units=[];'
+            . 'try{units=JSON.parse(atob(encoded));}catch(e){return;}'
+            . 'if(!units.length){return;}'
+            . 'var today=(new Date()).toISOString().slice(0,10),key="streamapi:embed-popup:"+today;'
+            . 'try{if(localStorage.getItem(key)){return;}}catch(e){}'
+            . 'var total=units.reduce(function(sum,unit){return sum+Math.max(1,parseInt(unit.weight,10)||1);},0),pick=Math.random()*total,selected=units[0];'
+            . 'for(var i=0;i<units.length;i++){pick-=Math.max(1,parseInt(units[i].weight,10)||1);if(pick<0){selected=units[i];break;}}'
+            . 'try{localStorage.setItem(key,String(selected.id||"selected"));}catch(e){}'
+            . 'var holder=document.createElement("div");holder.style.display="none";holder.innerHTML=selected.code;'
+            . 'var scripts=holder.querySelectorAll("script");Array.prototype.forEach.call(scripts,function(source){var script=document.createElement("script");'
+            . 'Array.prototype.forEach.call(source.attributes,function(attribute){script.setAttribute(attribute.name,attribute.value);});'
+            . 'if(source.src){script.src=source.src;}else{script.text=source.text||source.textContent||"";}source.parentNode.removeChild(source);document.head.appendChild(script);});'
+            . 'while(holder.firstChild){document.body.appendChild(holder.firstChild);}'
+            . '})();</script>';
+    }
+}
+
 if(! function_exists('display_pop_ad'))
 {
-    function display_pop_ad(array $ads)
+    function display_pop_ad(array $ads, array $managedUnits = []): string
     {
-        $popAdCode = '';
+        if (! empty($managedUnits)) {
+            return display_managed_popup_ads($managedUnits);
+        }
+
         foreach ($ads as $ad) {
-            if($ad->type == 'popad'){
-                if(! empty($ad->ad_code)){
-                    $popAdCode = base64_decode( $ad->ad_code );
-                }
-                break;
+            if($ad->type == 'popad' && ! empty($ad->ad_code)){
+                return base64_decode($ad->ad_code);
             }
         }
 
-        return $popAdCode;
-
+        return '';
     }
 }
 

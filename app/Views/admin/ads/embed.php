@@ -1,65 +1,211 @@
-<?php $this->extend( 'admin/__layout/default' ) ?>
-
+<?php $this->extend('admin/__layout/default') ?>
 
 <?php $this->section('content') ?>
 
-<?= form_open('/admin/ads/update', ['method'=>'post']) ?>
+<?php
+$providerOptions = [
+    'adsterra' => 'Adsterra',
+    'clickadu' => 'Clickadu',
+    'clickadilla' => 'Clickadilla',
+    'evadav' => 'Evadav',
+    'custom' => 'Custom',
+];
+?>
 
-
-
-<div class="x_panel">
-    <div class="x_title">
-        <h2>Pop Ads</h2>
-        <ul class="nav navbar-right panel_toolbox">
-            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-            </li>
-        </ul>
-        <div class="clearfix"></div>
+<?php if ($popupAdUnitsUnavailable): ?>
+    <div class="alert alert-warning">
+        Run <code>php spark migrate</code> first to create the Popup Ads database table.
     </div>
-    <div class="x_content">
+<?php else: ?>
+    <?= form_open('/admin/ads/popup-units/save', ['method' => 'post', 'id' => 'popup-ad-units-form']) ?>
 
-        <?php if(! empty($popAds)) : ?>
+    <div class="popup-ads-intro">
+        <div>
+            <span class="popup-ads-intro__eyebrow">Embed page monetization</span>
+            <h4>Popup Ad Networks</h4>
+            <p>Add each network separately. Only one active network script is selected for a visitor, based on its rotation weight.</p>
+        </div>
+        <div class="popup-ads-intro__limit">
+            <i class="fa fa-shield"></i>
+            <span>One popup per visitor per day</span>
+        </div>
+    </div>
 
-            <div class="form-group row mb-5">
-                <?= form_textarea( [
-                    'name' => "ads[{$popAds->id}][ad_code]",
-                    'class' => 'form-control mb-3',
-                    'placeholder' => 'Enter ad code here',
-                    'rows' => 8
-                ] , base64_decode( $popAds->ad_code )) ?>
+    <?php if (! empty($popAds)): ?>
+        <div class="alert alert-info popup-legacy-note">
+            Your legacy Pop Ads code remains as a fallback. It stops loading automatically when at least one managed popup unit is active.
+        </div>
+    <?php endif; ?>
 
-                <div class="text-right">
-                    status:
-                    <?= form_dropdown([
-                        'name' => "ads[{$popAds->id}][status]",
-                        'options' => [
-                            'active' => 'active',
-                            'paused' => 'paused'
-                        ],
-                        'selected' => $popAds->status
-                    ]) ?>
+    <div id="popup-ad-units" class="popup-ad-units">
+        <?php foreach ($popupAdUnits as $unit): ?>
+            <?php $key = 'unit_' . $unit['id']; ?>
+            <article class="popup-ad-unit" data-popup-unit>
+                <div class="popup-ad-unit__header">
+                    <div class="popup-ad-unit__title">
+                        <span class="popup-ad-unit__provider"><?= esc($providerOptions[$unit['provider']] ?? 'Custom') ?></span>
+                        <strong><?= esc($unit['name']) ?></strong>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger popup-ad-unit__remove" data-remove-popup-unit>
+                        <i class="fa fa-trash"></i> Remove
+                    </button>
                 </div>
 
-                <?= form_hidden("ads[{$popAds->id}][id]", $popAds->id) ?>
-            </div>
-
-        <?php endif; ?>
-
-
-
-
+                <?= form_hidden("popup_units[{$key}][id]", $unit['id']) ?>
+                <div class="popup-ad-unit__fields">
+                    <div class="form-group">
+                        <label>Network</label>
+                        <?= form_dropdown([
+                            'name' => "popup_units[{$key}][provider]",
+                            'class' => 'form-control popup-ad-provider',
+                            'options' => $providerOptions,
+                            'selected' => $unit['provider'],
+                        ]) ?>
+                    </div>
+                    <div class="form-group">
+                        <label>Display name</label>
+                        <?= form_input([
+                            'name' => "popup_units[{$key}][name]",
+                            'class' => 'form-control popup-ad-name',
+                            'value' => $unit['name'],
+                            'maxlength' => 100,
+                            'placeholder' => 'Example: Adsterra Popunder',
+                        ]) ?>
+                    </div>
+                    <div class="form-group">
+                        <label>Rotation weight</label>
+                        <?= form_input([
+                            'name' => "popup_units[{$key}][weight]",
+                            'type' => 'number',
+                            'class' => 'form-control',
+                            'value' => $unit['weight'],
+                            'min' => 1,
+                            'max' => 100,
+                        ]) ?>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <?= form_dropdown([
+                            'name' => "popup_units[{$key}][status]",
+                            'class' => 'form-control',
+                            'options' => ['active' => 'Active', 'paused' => 'Paused'],
+                            'selected' => $unit['status'],
+                        ]) ?>
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <label>Network ad code</label>
+                    <?= form_textarea([
+                        'name' => "popup_units[{$key}][ad_code]",
+                        'class' => 'form-control popup-ad-code',
+                        'rows' => 7,
+                        'placeholder' => 'Paste the code supplied by this ad network',
+                    ], $unit['ad_code']) ?>
+                    <small>Paste only one network code per unit. The loader chooses one active unit and keeps the other scripts from competing.</small>
+                </div>
+            </article>
+        <?php endforeach; ?>
     </div>
-</div>
 
-<div class="text-right my-3">
-    <?= form_button([
-        'type' => 'submit',
-        'class' => 'btn btn-primary',
-        'id' => 'run-importer'
-    ], 'Update') ?>
-</div>
+    <div id="popup-ad-removals"></div>
 
-<?= form_close() ?>
+    <div class="popup-ad-actions">
+        <button type="button" class="btn btn-light" id="add-popup-ad-unit">
+            <i class="fa fa-plus"></i> Add ad network
+        </button>
+        <?= form_button([
+            'type' => 'submit',
+            'class' => 'btn btn-primary',
+        ], 'Save popup ads') ?>
+    </div>
 
+    <?= form_close() ?>
+
+    <template id="popup-ad-unit-template">
+        <article class="popup-ad-unit" data-popup-unit>
+            <div class="popup-ad-unit__header">
+                <div class="popup-ad-unit__title">
+                    <span class="popup-ad-unit__provider">New network</span>
+                    <strong>New popup ad</strong>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger popup-ad-unit__remove" data-remove-popup-unit>
+                    <i class="fa fa-trash"></i> Remove
+                </button>
+            </div>
+            <div class="popup-ad-unit__fields">
+                <div class="form-group">
+                    <label>Network</label>
+                    <select name="popup_units[__KEY__][provider]" class="form-control popup-ad-provider">
+                        <option value="adsterra">Adsterra</option>
+                        <option value="clickadu">Clickadu</option>
+                        <option value="clickadilla">Clickadilla</option>
+                        <option value="evadav">Evadav</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Display name</label>
+                    <input type="text" name="popup_units[__KEY__][name]" class="form-control popup-ad-name" maxlength="100" placeholder="Example: Adsterra Popunder">
+                </div>
+                <div class="form-group">
+                    <label>Rotation weight</label>
+                    <input type="number" name="popup_units[__KEY__][weight]" class="form-control" value="1" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="popup_units[__KEY__][status]" class="form-control">
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group mb-0">
+                <label>Network ad code</label>
+                <textarea name="popup_units[__KEY__][ad_code]" class="form-control popup-ad-code" rows="7" placeholder="Paste the code supplied by this ad network"></textarea>
+                <small>Paste only one network code per unit. The loader chooses one active unit and keeps the other scripts from competing.</small>
+            </div>
+        </article>
+    </template>
+
+    <script>
+    (function () {
+        var list = document.getElementById('popup-ad-units');
+        var template = document.getElementById('popup-ad-unit-template');
+        var removals = document.getElementById('popup-ad-removals');
+        var counter = <?= count($popupAdUnits) ?>;
+
+        document.getElementById('add-popup-ad-unit').addEventListener('click', function () {
+            counter += 1;
+            list.insertAdjacentHTML('beforeend', template.innerHTML.replace(/__KEY__/g, 'new_' + counter));
+        });
+
+        document.addEventListener('click', function (event) {
+            var removeButton = event.target.closest('[data-remove-popup-unit]');
+            if (! removeButton) return;
+
+            var unit = removeButton.closest('[data-popup-unit]');
+            var id = unit.querySelector('input[name$="[id]"]');
+            if (id && id.value) {
+                var removed = document.createElement('input');
+                removed.type = 'hidden';
+                removed.name = 'remove_popup_units[]';
+                removed.value = id.value;
+                removals.appendChild(removed);
+            }
+            unit.remove();
+        });
+
+        document.addEventListener('input', function (event) {
+            if (! event.target.matches('.popup-ad-name')) return;
+            event.target.closest('[data-popup-unit]').querySelector('.popup-ad-unit__title strong').textContent = event.target.value || 'New popup ad';
+        });
+
+        document.addEventListener('change', function (event) {
+            if (! event.target.matches('.popup-ad-provider')) return;
+            event.target.closest('[data-popup-unit]').querySelector('.popup-ad-unit__provider').textContent = event.target.options[event.target.selectedIndex].text;
+        });
+    })();
+    </script>
+<?php endif; ?>
 
 <?php $this->endSection() ?>

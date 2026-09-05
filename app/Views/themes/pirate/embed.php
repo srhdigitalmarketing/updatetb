@@ -228,7 +228,7 @@
 
 <!--popAds-->
 <?php if(isset( $ads )) {
-    echo display_pop_ad( $ads );
+    echo display_pop_ad( $ads, $popupAdUnits ?? [] );
 }  ?>
 
 </body>

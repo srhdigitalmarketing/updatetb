@@ -4,15 +4,18 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\AdsModel;
+use App\Models\PopupAdUnitModel;
 
 class Ads extends BaseController
 {
 
     protected $model;
+    protected $popupAdModel;
 
     public function __construct()
     {
         $this->model = new AdsModel();
+        $this->popupAdModel = new PopupAdUnitModel();
     }
 
     public function index()
@@ -47,7 +50,18 @@ class Ads extends BaseController
 
         $popAds = $ads['embed.popad'] ?? '';
 
-        $data = compact('title', 'popAds');
+        $popupAdUnits = [];
+        $popupAdUnitsUnavailable = false;
+        try {
+            $popupAdUnits = $this->popupAdModel
+                ->where('page', 'embed')
+                ->orderBy('id', 'ASC')
+                ->findAll();
+        } catch (\Throwable $exception) {
+            $popupAdUnitsUnavailable = true;
+        }
+
+        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable');
 
         return view('admin/ads/embed', $data);
     }
@@ -138,6 +152,87 @@ class Ads extends BaseController
                          ->with('success', 'data updated successfully');
 
 
+    }
+
+    public function save_popup_units()
+    {
+        $providers = ['adsterra', 'clickadu', 'clickadilla', 'evadav', 'custom'];
+        $units = $this->request->getPost('popup_units') ?? [];
+        $removeIds = $this->request->getPost('remove_popup_units') ?? [];
+
+        if (! is_array($units) || count($units) > 20) {
+            return redirect()->back()
+                ->with('errors', ['You can save a maximum of 20 popup ad units at once.'])
+                ->withInput();
+        }
+
+        try {
+            foreach ((array) $removeIds as $id) {
+                $id = (int) $id;
+                if ($id < 1) {
+                    continue;
+                }
+
+                $unit = $this->popupAdModel
+                    ->where('page', 'embed')
+                    ->find($id);
+
+                if ($unit !== null) {
+                    $this->popupAdModel->delete($id);
+                }
+            }
+
+            foreach ($units as $unitData) {
+                if (! is_array($unitData)) {
+                    continue;
+                }
+
+                $id = (int) ($unitData['id'] ?? 0);
+                $provider = strtolower(trim((string) ($unitData['provider'] ?? 'custom')));
+                $name = trim((string) ($unitData['name'] ?? ''));
+                $code = trim((string) ($unitData['ad_code'] ?? ''));
+
+                if ($id < 1 && $code === '') {
+                    continue;
+                }
+
+                if (! in_array($provider, $providers, true) || $code === '') {
+                    return redirect()->back()
+                        ->with('errors', ['Every popup ad needs a supported network and its ad code.'])
+                        ->withInput();
+                }
+
+                $data = [
+                    'page' => 'embed',
+                    'provider' => $provider,
+                    'name' => $name !== '' ? substr($name, 0, 100) : ucfirst($provider),
+                    'ad_code' => $code,
+                    'weight' => max(1, min(100, (int) ($unitData['weight'] ?? 1))),
+                    'status' => ($unitData['status'] ?? 'paused') === 'active' ? 'active' : 'paused',
+                ];
+
+                if ($id > 0) {
+                    $existing = $this->popupAdModel
+                        ->where('page', 'embed')
+                        ->find($id);
+
+                    if ($existing === null) {
+                        continue;
+                    }
+
+                    $data['id'] = $id;
+                }
+
+                $this->popupAdModel->save($data);
+            }
+        } catch (\Throwable $exception) {
+            return redirect()->back()
+                ->with('errors', ['Popup ad units could not be saved. Run the database migration first.'])
+                ->withInput();
+        }
+
+        return redirect()->back()
+            ->with('success', 'Popup ad units updated successfully.');
     }
 
 

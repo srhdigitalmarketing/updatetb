@@ -57,6 +57,8 @@ $routes->get('/admin/third-party-apis/delete', 'Admin/ThirdPartyApis::delete');
 $routes->post('/admin/third-party-apis/create', 'Admin/ThirdPartyApis::create');
 $routes->post('/admin/third-party-apis/update', 'Admin/ThirdPartyApis::update');
 
+$routes->post('/admin/ads/popup-units/save', 'Admin/Ads::save_popup_units');
+
 
 $routes->match(['get','post'], '/admin_login', 'Admin/Login::index');
 $routes->addRedirect('/admin', '/admin/dashboard');

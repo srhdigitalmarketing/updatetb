@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AdsModel;
+use App\Models\PopupAdUnitModel;
 use App\Models\FailedMovies;
 use App\Models\LinkModel;
 use App\Models\MovieGenreModel;
@@ -96,11 +97,18 @@ class Embed extends BaseController
         $ads = $adsModel->forView()
                         ->getAds('embed');
 
+        $popupAdUnits = [];
+        try {
+            $popupAdUnits = (new PopupAdUnitModel())->activeForEmbed();
+        } catch (\Throwable $exception) {
+            // The legacy single-code ad remains available until the migration is run.
+        }
+
         if(is_web_page_cache_enabled()){
             $this->cachePage( web_page_cache_time() );
         }
 
-        $data = compact('movie', 'links', 'serverNotFound', 'ads');
+        $data = compact('movie', 'links', 'serverNotFound', 'ads', 'popupAdUnits');
         return view(theme_path( 'embed' ), $data);
     }
 
