@@ -19,7 +19,6 @@
             <?= $this->include('admin/movies/form_x_panels/quality.php') ?>
             <?= $this->include('admin/movies/form_x_panels/categories.php') ?>
             <?= $this->include('admin/movies/form_x_panels/seo.php') ?>
-            <?= $this->include('admin/movies/form_x_panels/poster_image.php') ?>
             <?= $this->include('admin/movies/form_x_panels/banner_image.php') ?>
         </div>
     </div>

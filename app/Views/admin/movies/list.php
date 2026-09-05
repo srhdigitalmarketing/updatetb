@@ -29,11 +29,10 @@
 <div class="x_panel">
     <div class="card-box table-responsive">
 
-        <table id="movies-list-datatable" class="table text-center table-striped table-bordered data-list-table " style="width:100%">
+        <table id="movies-list-datatable" class="table table-hover data-list-table" style="width:100%">
             <thead>
             <tr>
                 <th>ID</th>
-                <th>Poster</th>
                 <th>Name</th>
                 <th>IMDB Id</th>
                 <th>TMDB Id</th>
@@ -52,12 +51,7 @@
             <?php foreach ($movies as $movie) : ?>
                 <tr>
                     <td> <?= $movie->id ?> </td>
-                    <td style="width: 75px">
-                        <a href="<?= $movie->getViewLink(true) ?>" target="_blank">
-                            <img src=" <?= poster_uri( $movie->poster ) ?> " height="75" alt="poster">
-                        </a>
-                    </td>
-                    <td class="text-left"> <b> <?= esc( $movie->title ) ?> </b> </td>
+                    <td class="text-left video-title"> <?= esc( $movie->title ) ?> </td>
                     <td>
                         <a href="https://www.imdb.com/title/<?=$movie->imdb_id?>" target="_blank">
                             <?= esc( $movie->imdb_id ) ?>
@@ -70,8 +64,14 @@
                     <td> <?= format_date_time( $movie->created_at ) ?> </td>
                     <td> <?= format_date_time( $movie->updated_at ) ?> </td>
                     <td>
-                        <a href="<?= admin_url("/movies/edit/{$movie->id}") ?>" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="javascript:void(0)" data-url="<?= admin_url("/movies/delete/{$movie->id}") ?>" class="btn btn-sm btn-danger del-item">Del</a>
+                        <div class="table-actions">
+                            <a href="<?= admin_url("/movies/edit/{$movie->id}") ?>" class="btn btn-sm btn-primary">
+                                <i class="fa fa-pencil"></i> Edit
+                            </a>
+                            <a href="javascript:void(0)" data-url="<?= admin_url("/movies/delete/{$movie->id}") ?>" class="btn btn-sm btn-danger del-item">
+                                <i class="fa fa-trash"></i> Delete
+                            </a>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>

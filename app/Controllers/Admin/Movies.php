@@ -168,7 +168,6 @@ class Movies extends BaseController
             $movie = new Movie( $this->request->getPost() );
 
             if(! is_media_download_to_server()){
-                $movie->poster = $movie->poster_url;
                 $movie->banner = $movie->banner_url;
             }
 
@@ -242,9 +241,6 @@ class Movies extends BaseController
             ]);
 
             if(! is_media_download_to_server()){
-                if(! empty( $this->request->getPost('poster_url') )){
-                    $movie->poster = $this->request->getPost('poster_url');
-                }
                 if(! empty( $this->request->getPost('banner_url') )){
                     $movie->banner = $this->request->getPost('banner_url');
                 }
@@ -313,24 +309,11 @@ class Movies extends BaseController
     {
         $imageValidationRules = [];
 
-        $posterFile = $this->request->getFile('poster_file');
         $bannerFile = $this->request->getFile('banner_file');
 
-        $posterUrl = $this->request->getPost('poster_url');
         $bannerUrl = $this->request->getPost('banner_url');
 
-        if(! $posterFile->isValid()) $posterFile = null;
         if(! $bannerFile->isValid()) $bannerFile = null;
-
-        if($posterFile !== null) {
-            $imageValidationRules['poster_file'] = [
-                'label' => 'poster image',
-                'rules' => 'uploaded[poster_file]'
-                    . '|is_image[poster_file]'
-                    . '|mime_in[poster_file,image/jpg,image/jpeg,image/png]'
-                    . '|max_size[poster_file,2048]'
-            ];
-        }
 
         if($bannerFile !== null) {
             $imageValidationRules['banner_file'] =[
@@ -346,22 +329,12 @@ class Movies extends BaseController
 
             $this->validate( $imageValidationRules );
 
-            if($this->validator->hasError('poster_file'))
-                $posterFile = null;
-
             if($this->validator->hasError('banner_file'))
                 $bannerFile = null;
 
         }
 
 
-
-        if(! empty($posterUrl)){
-            helper('remote_download');
-            if($filepath =  download_image( $posterUrl)){
-                $posterFile = new \CodeIgniter\Files\File( $filepath );
-            }
-        }
 
         if(! empty($bannerUrl)){
             helper('remote_download');
@@ -370,11 +343,6 @@ class Movies extends BaseController
             }
         }
 
-
-        if($posterFile !== null){
-            //remote old poster file if exist
-            $movie->addPoster( $posterFile );
-        }
 
         if($bannerFile !== null){
             //remote old banner file if exist

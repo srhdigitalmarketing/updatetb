@@ -1,6 +1,6 @@
 <div class="x_panel">
     <div class="x_title">
-        <h2>Media Files <small>( Posters & Banners )</small> </h2>
+        <h2>Media Files <small>( Banners )</small> </h2>
         <ul class="nav navbar-right panel_toolbox">
             <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
             </li>
@@ -24,18 +24,6 @@
                         Use Remote File
                     </label>
                 </div>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <label class="control-label col-md-3">Default Poster</label>
-            <div class="col-md-9">
-                <?= form_input([
-                    'type' => 'file',
-                    'name' => 'default_poster_file',
-                    'class' => 'mb-3',
-                ]) ?>
-                <img src="<?= default_poster_uri() ?>" height="100" alt="default poster">
             </div>
         </div>
 

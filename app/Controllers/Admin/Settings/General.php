@@ -63,31 +63,7 @@ class General extends BaseSettings
     protected function saveDefaultMediaFiles()
     {
 
-        $posterImg = $this->request->getFile('default_poster_file');
         $bannerImg = $this->request->getFile('default_banner_file');
-
-        //save poster image
-        if($posterImg->isValid()){
-            $validationRule = [
-                'default_poster_file' => [
-                    'label' => 'Default poster image',
-                    'rules' => 'uploaded[default_poster_file]'
-                        . '|is_image[default_poster_file]'
-                        . '|mime_in[default_poster_file,image/jpg,image/jpeg,image/png,image/webp]'
-                        . '|max_size[default_poster_file,2048]',
-                ]
-            ];
-
-            if($this->validate( $validationRule )){
-
-
-                $posterName = 'default-poster.' . $posterImg->getExtension();
-                $dir = FCPATH . 'uploads/';
-                $posterImg->move( $dir, $posterName, true);
-
-                $this->save( [ 'default_poster' => $posterName ] );
-            }
-        }
 
         //save banner image
         if($bannerImg->isValid()){

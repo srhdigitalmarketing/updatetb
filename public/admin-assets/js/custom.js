@@ -572,7 +572,7 @@
                             data = data.data;
                             let allowedInputFields= [
                                 'title', 'imdb_id', 'tmdb_id', 'imdb_rate', 'duration', 'language',
-                                'released_at', 'trailer', 'poster_url', 'banner_url', 'country'
+                                'released_at', 'trailer', 'banner_url', 'country'
                             ];
 
                             for (let index = 0; index < allowedInputFields.length; ++index) {
@@ -583,7 +583,6 @@
 
                             $('textarea[name="description"]').text( data.description );
 
-                            $('.poster-wrap').html( '<img src="' + data.poster_url + '" class="w-100 mb-2" alt="poster-image">' );
                             $('.banner-wrap').html( '<img src="' +  data.banner_url + '" class="w-100 mb-2" alt="banner-image">' );
 
                             update_genres(data.genres);
@@ -1064,7 +1063,7 @@
             stateSave: true,
             order: [],
             columnDefs: [ {
-                targets: [5,6,9],
+                targets: [3,7,8],
                 visible: false
             } ]
         } );
