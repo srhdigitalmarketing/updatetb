@@ -1,0 +1,10 @@
+/vendor/
+/writable/cache/
+/writable/logs/
+/writable/session/
+/writable/uploads/
+/public/uploads/
+/env
+/ttobrutdb.sql
+/uploads.zip
+/Thumbs.db
