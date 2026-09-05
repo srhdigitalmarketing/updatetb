@@ -32,6 +32,18 @@ class StreamResolver
         $excludedIds = array_values(array_filter(array_map('intval', $excludedIds)));
         $candidates = $this->links->findByMovieId($movieId, 'stream', false);
 
+        // The original database does not contain the stream-health columns.
+        // Fall back to its normal link ordering instead of making playback fail.
+        if (! $this->links->supportsStreamHealthFields()) {
+            foreach ($candidates as $link) {
+                if (! in_array((int) $link->id, $excludedIds, true)) {
+                    return $link;
+                }
+            }
+
+            return null;
+        }
+
         if (! empty($preferredId) && ! in_array($preferredId, $excludedIds, true)) {
             usort($candidates, function (Link $left, Link $right) use ($preferredId) {
                 return ($left->id === $preferredId ? 0 : 1) <=> ($right->id === $preferredId ? 0 : 1);
@@ -56,6 +68,10 @@ class StreamResolver
 
     public function recordPlayerFailure(int $linkId, string $reason = 'Player did not load'): void
     {
+        if (! $this->links->supportsStreamHealthFields()) {
+            return;
+        }
+
         $link = $this->links->getLink($linkId);
         if ($link === null || $link->type !== 'stream') {
             return;
@@ -97,6 +113,10 @@ class StreamResolver
 
     private function recordSuccess(Link $link): void
     {
+        if (! $this->links->supportsStreamHealthFields()) {
+            return;
+        }
+
         $now = date('Y-m-d H:i:s');
         $this->links->protect(false)->update($link->id, [
             'failure_count' => 0,

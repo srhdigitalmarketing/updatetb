@@ -9,16 +9,11 @@
         <div class="col-lg-8">
             <?= $this->include('admin/movies/form_x_panels/general.php') ?>
             <?= $this->include('admin/movies/form_x_panels/stream_links.php') ?>
-            <?= $this->include('admin/movies/form_x_panels/direct_download_links.php') ?>
-            <?= $this->include('admin/movies/form_x_panels/torrent_download_links.php') ?>
             <?= $this->include('admin/movies/form_x_panels/translations.php') ?>
         </div>
         <div class="col-lg-4">
             <?= $this->include('admin/movies/form_x_panels/publish.php') ?>
-            <?= $this->include('admin/movies/form_x_panels/autoload.php') ?>
             <?= $this->include('admin/movies/form_x_panels/quality.php') ?>
-            <?= $this->include('admin/movies/form_x_panels/meta-info.php') ?>
-            <?= $this->include('admin/movies/form_x_panels/trailer.php') ?>
             <?= $this->include('admin/movies/form_x_panels/categories.php') ?>
             <?= $this->include('admin/movies/form_x_panels/seo.php') ?>
             <?= $this->include('admin/movies/form_x_panels/poster_image.php') ?>

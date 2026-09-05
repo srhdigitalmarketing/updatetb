@@ -333,8 +333,6 @@ class MovieModel extends Model
             $id = $link['id'] ?? '';
             $sizeVal = $link['size_val'] ?? '0';
             $sizeLbl = $link['size_lbl'] ?? 'MB';
-            $hostPriority = $link['host_priority'] ?? 100;
-            $upnShareVideoId = $link['upnshare_video_id'] ?? null;
             $dlLink = null;
 
             if(! empty($id)) {
@@ -375,9 +373,12 @@ class MovieModel extends Model
                 'quality' => $quality,
                 'size_val' => $sizeVal,
                 'size_lbl' => $sizeLbl,
-                'host_priority' => $hostPriority,
-                'upnshare_video_id' => $upnShareVideoId,
             ];
+
+            if ($linkModel->supportsStreamHealthFields()) {
+                $data['host_priority'] = $link['host_priority'] ?? 100;
+                $data['upnshare_video_id'] = $link['upnshare_video_id'] ?? null;
+            }
 
             $dlLink->fill( $data );
 

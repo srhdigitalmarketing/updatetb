@@ -84,7 +84,11 @@ class Links extends BaseController
     {
         $link = $this->getLink( $id );
 
-        $link->fill( $this->request->getPost() );
+        $data = $this->request->getPost();
+        if (! $this->model->supportsStreamHealthFields()) {
+            unset($data['host_priority'], $data['upnshare_video_id']);
+        }
+        $link->fill($data);
 
         if($link->hasChanged()){
 

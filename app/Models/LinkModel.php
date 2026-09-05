@@ -12,6 +12,8 @@ use CodeIgniter\Model;
 class LinkModel extends Model
 {
     protected $table = 'links';
+    /** @var bool|null Cached database capability check for pre-migration installs. */
+    private $streamHealthFieldsAvailable = null;
     protected $allowedFields = [
         'movie_id', 'api_id', 'link', 'resolution', 'quality', 'size_val', 'size_lbl', 'type',
         'host_priority', 'failure_count', 'last_checked_at', 'last_success_at', 'last_failure_at',
@@ -50,14 +52,44 @@ class LinkModel extends Model
             $this->where('is_broken', 0);
         }
 
-        // A link that has not been served recently gets the next turn. This keeps
-        // traffic distributed across healthy streaming hosts instead of always
-        // favouring the most recently-added link.
-        $this->orderBy('host_priority', 'desc')
-             ->orderBy('last_served_at', 'asc')
-             ->orderBy('id', 'asc');
+        if ($this->supportsStreamHealthFields()) {
+            // A link that has not been served recently gets the next turn. This keeps
+            // traffic distributed across healthy streaming hosts instead of always
+            // favouring the most recently-added link.
+            $this->orderBy('host_priority', 'desc')
+                 ->orderBy('last_served_at', 'asc')
+                 ->orderBy('id', 'asc');
+        } else {
+            // Keep edit and playback available for databases awaiting migration.
+            $this->orderBy('api_id', 'desc')
+                 ->orderBy('id', 'asc');
+        }
         return $this->where('movie_id', $movieId)
                     ->find();
+    }
+
+    /**
+     * Stream-health fields were introduced after the original schema. Older
+     * installations must remain usable until their database migration runs.
+     */
+    public function supportsStreamHealthFields(): bool
+    {
+        if ($this->streamHealthFieldsAvailable !== null) {
+            return $this->streamHealthFieldsAvailable;
+        }
+
+        try {
+            $fields = (array) $this->db->getFieldNames($this->table);
+            $this->streamHealthFieldsAvailable = in_array('host_priority', $fields, true)
+                && in_array('last_served_at', $fields, true);
+        } catch (\Throwable $exception) {
+            log_message('warning', 'Unable to inspect links table schema: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+            $this->streamHealthFieldsAvailable = false;
+        }
+
+        return $this->streamHealthFieldsAvailable;
     }
 
     /**

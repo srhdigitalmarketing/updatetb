@@ -392,15 +392,18 @@ class Movies extends BaseController
 
     protected function saveLinks(\App\Entities\Movie $movie)
     {
+        $linkGroups = [
+            'st_links' => 'stream',
+            'direct_dl_links' => 'direct_download',
+            'torrent_dl_links' => 'torrent_download',
+        ];
 
-        $streamLinks = $this->request->getPost('st_links');
-        $this->model->addLinks($movie->id, $streamLinks, 'stream');
-
-        $directDlLinks = $this->request->getPost('direct_dl_links');
-        $this->model->addLinks($movie->id, $directDlLinks, 'direct_download');
-
-        $torrentDlLinks = $this->request->getPost('torrent_dl_links');
-        $this->model->addLinks($movie->id, $torrentDlLinks, 'torrent_download');
+        foreach ($linkGroups as $inputName => $type) {
+            $links = $this->request->getPost($inputName);
+            if (is_array($links)) {
+                $this->model->addLinks($movie->id, $links, $type);
+            }
+        }
 
     }
 
