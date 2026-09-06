@@ -38,7 +38,9 @@ class HostApiConnectionTest extends BaseAjax
         }
 
         if (mb_strlen($baseUrl) > 255 || $this->getSafeHostConfig($baseUrl) === null) {
-            $this->addError('Enter a public HTTP(S) API base URL before testing the connection.');
+            $this->addError($provider === 'earnvids'
+                ? 'The official EarnVids API endpoint is unavailable from this server.'
+                : 'Enter a public HTTP(S) API base URL before testing the connection.');
 
             return $this->jsonResponse();
         }
@@ -154,12 +156,16 @@ class HostApiConnectionTest extends BaseAjax
             }
 
             if ($list['status'] < 200 || $list['status'] >= 300) {
-                $this->lastFailure = 'The video host returned HTTP ' . $list['status'] . '. Verify the API token and base URL.';
+                $this->lastFailure = $provider === 'earnvids'
+                    ? 'EarnVids returned HTTP ' . $list['status'] . '. Verify the API key.'
+                    : 'The video host returned HTTP ' . $list['status'] . '. Verify the API token and base URL.';
                 continue;
             }
 
             if (! is_array($list['payload'])) {
-                $this->lastFailure = 'The video host returned a non-JSON response. Verify the API base URL.';
+                $this->lastFailure = $provider === 'earnvids'
+                    ? 'EarnVids returned a non-JSON response. Try the API key again.'
+                    : 'The video host returned a non-JSON response. Verify the API base URL.';
                 continue;
             }
 
@@ -257,7 +263,10 @@ class HostApiConnectionTest extends BaseAjax
             $headers['X-Api-Key'] = $token;
         }
 
-        $response = $this->httpClient($host)->get($url, [
+        // EarnVids is a fixed, trusted host. Let cURL resolve its CDN/TLS
+        // route normally: forcing a single DNS address can fail when its edge
+        // network rotates addresses between validation and the HTTPS request.
+        $response = $this->httpClient($host, $host['host'] !== 'earnvidsapi.com')->get($url, [
             'query' => $query,
             'headers' => $headers,
         ]);
@@ -359,13 +368,18 @@ class HostApiConnectionTest extends BaseAjax
         ];
     }
 
-    private function httpClient(array $host): CURLRequest
+    private function httpClient(array $host, bool $pinDns = true): CURLRequest
     {
-        return service('curlrequest', [
+        $options = [
             'timeout' => 10,
             'http_errors' => false,
             'allow_redirects' => false,
-            'curl' => [CURLOPT_RESOLVE => ["{$host['host']}:{$host['port']}:{$host['ip']}"]],
-        ], false);
+        ];
+
+        if ($pinDns) {
+            $options['curl'] = [CURLOPT_RESOLVE => ["{$host['host']}:{$host['port']}:{$host['ip']}"]];
+        }
+
+        return service('curlrequest', $options, false);
     }
 }

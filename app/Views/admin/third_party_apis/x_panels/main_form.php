@@ -72,7 +72,7 @@ if (! $isExisting) {
         <div class="host-api-test" data-api-id="<?= $isExisting ? (int) $tpAPI->id : 0 ?>">
             <div>
                 <strong><i class="fa fa-plug"></i> Connection check</strong>
-                <small>Tests the current URL and token without saving. A returned sample shows the exact title, file name, player link, and poster supplied by the host.</small>
+                <small>Tests the saved API key without saving. File List and File Info results are shown when EarnVids responds.</small>
             </div>
             <button type="button" class="btn btn-outline-primary" id="host-api-test"><i class="fa fa-refresh"></i> Test connection</button>
         </div>
