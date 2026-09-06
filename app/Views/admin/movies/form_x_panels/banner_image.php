@@ -19,12 +19,17 @@
 
         <div class="form-group">
             <?= form_label('Select from remote URL:') ?>
-            <?= form_input([
-                'type' => 'url',
-                'name' => 'banner_url',
-                'class' => 'form-control',
-                'value' => old('banner_url')
-            ]) ?>
+            <div class="input-group banner-remote-url-group">
+                <?= form_input([
+                    'type' => 'url',
+                    'name' => 'banner_url',
+                    'class' => 'form-control',
+                    'value' => old('banner_url')
+                ]) ?>
+                <span class="input-group-btn banner-remote-url-delete" hidden>
+                    <button type="button" class="btn btn-danger" data-clear-banner-url><i class="fa fa-trash"></i> Delete</button>
+                </span>
+            </div>
         </div>
         <?php if (! empty($movie->id)): ?>
             <div class="form-group banner-host-poster">
