@@ -26,10 +26,10 @@ class Dashboard extends BaseController
                                 ->findAll(10);
 
         $liveTraffic = $this->liveTrafficSummary();
-        $visitorStats = $this->visitorStatistics();
+        $cloudflareAnalyticsConfigured = trim((string) get_config('cloudflare_web_analytics_token')) !== '';
         $revenueSummary = (new AdRevenueToday())->cachedSummary();
 
-        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'revenueSummary');
+        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'cloudflareAnalyticsConfigured', 'revenueSummary');
 
         return view('admin/dashboard/index', $data);
     }
@@ -64,83 +64,4 @@ class Dashboard extends BaseController
         }
     }
 
-    /**
-     * Build a compact, 30-day view of anonymous embed-player visitors.
-     * Each visitor is counted once per day, which makes the chart useful
-     * without storing personal details or creating one row per heartbeat.
-     */
-    private function visitorStatistics(): array
-    {
-        $start = new \DateTimeImmutable('-29 days');
-        $labels = [];
-        $daily = [];
-        $byDate = [];
-
-        for ($day = 0; $day < 30; $day++) {
-            $date = $start->modify("+{$day} days");
-            $key = $date->format('Y-m-d');
-            $labels[] = $date->format('d M');
-            $daily[] = 0;
-            $byDate[$key] = $day;
-        }
-
-        $result = [
-            'labels' => $labels,
-            'daily' => $daily,
-            'total' => 0,
-            'platforms' => ['desktop' => 0, 'mobile' => 0],
-            'tracking_ready' => false,
-        ];
-
-        try {
-            $db = db_connect();
-            if (! $db->tableExists('traffic_daily_visitors')) {
-                return $result;
-            }
-
-            $from = $start->format('Y-m-d');
-            $dailyRows = $db->table('traffic_daily_visitors')
-                ->select('visit_date, COUNT(*) AS visitors')
-                ->where('visit_date >=', $from)
-                ->groupBy('visit_date')
-                ->get()
-                ->getResultArray();
-
-            foreach ($dailyRows as $row) {
-                $date = (string) $row['visit_date'];
-                if (isset($byDate[$date])) {
-                    $result['daily'][$byDate[$date]] = (int) $row['visitors'];
-                }
-            }
-
-            $platformRows = $db->table('traffic_daily_visitors')
-                ->select('platform, COUNT(*) AS visitors')
-                ->where('visit_date >=', $from)
-                ->groupBy('platform')
-                ->get()
-                ->getResultArray();
-
-            foreach ($platformRows as $row) {
-                $platform = (string) $row['platform'];
-                if (array_key_exists($platform, $result['platforms'])) {
-                    $result['platforms'][$platform] = (int) $row['visitors'];
-                }
-            }
-
-            $totalRow = $db->table('traffic_daily_visitors')
-                ->select('COUNT(DISTINCT visitor_key) AS visitors', false)
-                ->where('visit_date >=', $from)
-                ->get()
-                ->getFirstRow();
-
-            $result['total'] = $totalRow ? (int) $totalRow->visitors : 0;
-            $result['tracking_ready'] = true;
-        } catch (\Throwable $exception) {
-            log_message('error', 'Visitor statistics could not be loaded: {message}', [
-                'message' => $exception->getMessage(),
-            ]);
-        }
-
-        return $result;
-    }
 }

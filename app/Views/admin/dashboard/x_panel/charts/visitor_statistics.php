@@ -1,34 +1,40 @@
-<section class="dashboard-visitor-panel dashboard-visitor-panel--latest" aria-labelledby="latest-statistics-title">
+<section class="dashboard-visitor-panel dashboard-cloudflare-panel" aria-labelledby="latest-statistics-title">
     <header class="dashboard-visitor-panel__header">
         <div>
             <span class="dashboard-eyebrow">AUDIENCE</span>
-            <h2 id="latest-statistics-title">Latest statistics</h2>
-            <p>Pengunjung unik dari embed player dalam 30 hari terakhir.</p>
+            <h2 id="latest-statistics-title">Web Analytics</h2>
+            <p>Audience dikelola langsung oleh Cloudflare, tanpa disimpan di database aplikasi.</p>
         </div>
-        <span class="dashboard-period-chip"><i class="fa fa-calendar"></i> 30 hari</span>
+        <span class="dashboard-period-chip <?= $cloudflareAnalyticsConfigured ? 'is-connected' : '' ?>"><i class="fa fa-<?= $cloudflareAnalyticsConfigured ? 'check-circle' : 'plug' ?>"></i> <?= $cloudflareAnalyticsConfigured ? 'Terhubung' : 'Perlu diatur' ?></span>
     </header>
-    <div class="dashboard-visitor-total">
-        <strong><?= number_format($visitorStats['total']) ?></strong>
-        <span>total pengunjung</span>
+    <div class="dashboard-cloudflare-panel__body">
+        <span class="dashboard-cloudflare-panel__icon"><i class="fa fa-cloud"></i></span>
+        <div>
+            <strong>Traffic, page views, dan audience</strong>
+            <p>Gunakan dashboard Cloudflare untuk metrik aktual, filter periode, dan ringkasan pengunjung.</p>
+        </div>
     </div>
-    <div id="visitor_statistics_chart" class="dashboard-visitor-chart" aria-label="Grafik pengunjung 30 hari terakhir"></div>
-    <?php if (! $visitorStats['tracking_ready']): ?>
-        <p class="dashboard-chart-notice"><i class="fa fa-info-circle"></i> Jalankan migration untuk mulai mencatat statistik pengunjung.</p>
-    <?php endif; ?>
+    <div class="dashboard-cloudflare-panel__actions">
+        <a class="btn btn-primary btn-sm" href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link"></i> Buka Cloudflare Analytics</a>
+        <a class="btn btn-default btn-sm" href="<?= admin_url('/settings/analytics') ?>"><i class="fa fa-gear"></i> <?= $cloudflareAnalyticsConfigured ? 'Atur token' : 'Hubungkan' ?></a>
+    </div>
 </section>
 
-<section class="dashboard-visitor-panel dashboard-visitor-panel--platform" aria-labelledby="platform-title">
+<section class="dashboard-visitor-panel dashboard-cloudflare-panel" aria-labelledby="platform-title">
     <header class="dashboard-visitor-panel__header">
         <div>
             <span class="dashboard-eyebrow">DEVICES</span>
-            <h2 id="platform-title">By platform</h2>
-            <p>Distribusi pengunjung selama 30 hari terakhir.</p>
+            <h2 id="platform-title">Device breakdown</h2>
+            <p>Desktop, mobile, dan device browser tersedia pada dimensi Cloudflare.</p>
         </div>
-        <span class="dashboard-period-chip"><i class="fa fa-mobile"></i> Platform</span>
+        <span class="dashboard-period-chip"><i class="fa fa-mobile"></i> Cloudflare</span>
     </header>
-    <div id="visitor_platform_chart" class="dashboard-platform-chart" aria-label="Grafik platform desktop dan mobile"></div>
-    <div class="dashboard-platform-legend">
-        <span><i class="fa fa-desktop"></i> Desktop <b><?= number_format($visitorStats['platforms']['desktop']) ?></b></span>
-        <span><i class="fa fa-mobile"></i> Mobile <b><?= number_format($visitorStats['platforms']['mobile']) ?></b></span>
+    <div class="dashboard-cloudflare-panel__body">
+        <span class="dashboard-cloudflare-panel__icon dashboard-cloudflare-panel__icon--purple"><i class="fa fa-mobile"></i></span>
+        <div>
+            <strong>Tidak ada profil perangkat lokal</strong>
+            <p>Aplikasi tidak lagi menyimpan platform atau identitas pengunjung. Semua agregasi perangkat berada di Cloudflare.</p>
+        </div>
     </div>
+    <div class="dashboard-cloudflare-panel__note"><i class="fa fa-shield"></i> Tidak ada tabel audience baru yang ditulis oleh embed player.</div>
 </section>

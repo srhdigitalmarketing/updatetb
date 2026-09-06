@@ -57,6 +57,8 @@ $routes->get('/admin/third-party-apis/delete', 'Admin/ThirdPartyApis::delete');
 $routes->post('/admin/third-party-apis/create', 'Admin/ThirdPartyApis::create');
 $routes->post('/admin/third-party-apis/update', 'Admin/ThirdPartyApis::update');
 $routes->post('/admin/settings/servers/delete', 'Admin/Settings/Servers::delete');
+$routes->get('/admin/settings/analytics', 'Admin/Settings/Analytics::index');
+$routes->post('/admin/settings/analytics/update', 'Admin/Settings/Analytics::update');
 $routes->get('/admin/ajax/host-video-search', 'Admin/Ajax/HostVideoSearch::index');
 $routes->post('/admin/ajax/host-api-test', 'Admin/Ajax/HostApiConnectionTest::index');
 $routes->get('/admin/ajax/tables/videos', 'Admin/Ajax/TableData::videos');

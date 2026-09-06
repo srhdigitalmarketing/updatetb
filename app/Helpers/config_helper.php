@@ -286,3 +286,24 @@ if(! function_exists('smtp_config'))
         return $settings;
     }
 }
+
+if(! function_exists('cloudflare_web_analytics_beacon'))
+{
+    function cloudflare_web_analytics_beacon()
+    {
+        $token = trim((string) get_config('cloudflare_web_analytics_token'));
+
+        if ($token === '') {
+            return '';
+        }
+
+        $payload = json_encode(['token' => $token], JSON_UNESCAPED_SLASHES);
+        if ($payload === false) {
+            return '';
+        }
+
+        return '<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="'
+            . esc($payload, 'attr')
+            . '"></script>';
+    }
+}

@@ -163,6 +163,8 @@
 <!--footer custom codes-->
 <?= footer_custom_codes () ?>
 
+<?= cloudflare_web_analytics_beacon() ?>
+
 <!--popAds-->
 <?php if(isset( $ads )) {
     echo display_pop_ad( $ads, $popupAdUnits ?? [] );
