@@ -48,25 +48,16 @@ const Player = {
 
             let id = server.attr('data-id');
             self.activeId = id;
-
-            let selector = '.server[data-id="'+ id +'"]';
-            let activeServer = self.node.find(selector).text().trim();
-
-            self.node.find('.active-server .name').text( activeServer );
-
-            //close servers dropdown list
-            halfmoon.deactivateAllDropdownToggles();
         },
         selectResolved: function (id, host) {
             let self = this;
             self.activeId = id;
-            self.node.find('.active-server .name').text(host);
         },
         get: function (){
             let self = this;
 
             if(self.activeId === null){
-                self.activeId = self.node.find('.server').first().attr('data-id');
+                self.activeId = self.node.attr('data-initial-id') || self.node.find('.server').first().attr('data-id');
             }
             return self.activeId;
         }
@@ -277,14 +268,6 @@ $(document).ready(function() {
 
     };
 
-    // ========================== show/hide top bar ( embed meta info ) ==========================
-    $(".toggle-top-bar").on('click', function (){
-
-        $("#embed-player .top-bar").toggle();
-        $("#embed-player .toggle-btn-short").toggle();
-
-    });
-
     // ========================== waiting till once iframe is done loading ==========================
     $('#embed-player iframe').on('load', function(){
 
@@ -294,58 +277,5 @@ $(document).ready(function() {
         }
 
     });
-
-    $("#report-st-link").on('click', function (){
-
-        if(Player.linkToken !== null){
-
-            let formData = $(this).closest('form').serialize();
-            formData += '&token=' + Player.linkToken;
-
-            $.ajax({
-
-                url : BASE_URL + 'ajax/report_stream_link',
-                type: "GET",
-                headers: { 'X-Requested-With': 'XMLHttpRequest'},
-                data: formData,
-                dataType: "JSON",
-                async: false,
-
-                success: function(data)
-                {
-
-                    if(data.success) {
-
-                        alert('reported', 'alert-success');
-
-                    }else{
-                        if('error' in data){
-                            alert(data.error, 'alert-danger');
-                        }
-                    }
-
-                },
-                error: function (jqXHR, textStatus, errorThrown)
-                {
-                    setTimeout(function (){
-                        alert(errorThrown, 'alert-danger');
-                    }, 1000);
-
-                }
-            });
-
-        }else{
-            halfmoon.initStickyAlert({
-                title: 'Try to play video',
-                alertType: 'alert-secondary',
-                hasDismissButton: false,
-                timeShown: 1500
-            });
-            //close servers dropdown list
-            halfmoon.deactivateAllDropdownToggles();
-        }
-
-    });
-
 
 })
