@@ -2805,9 +2805,21 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
   white-space: nowrap;
 }
 .video-server-label .fa { font-size: .625rem; }
-.video-server-label.is-healthy { background: #ecfdf3; border-color: #abefc6; color: #027a48; }
-.video-server-label.is-broken { background: #fff1f3; border-color: #fecdd6; color: #c01048; }
-.video-server-label.is-unchecked { background: #f8fafc; border-color: #e2e8f0; color: #64748b; }
+.video-server-label.is-healthy {
+  background-color: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #fff !important;
+}
+.video-server-label.is-broken {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: #fff !important;
+}
+.video-server-label.is-unchecked {
+  background-color: #64748b !important;
+  border-color: #64748b !important;
+  color: #fff !important;
+}
 
 /* Modern, compact DataTables pagination for every administration table. */
 .right_col .dataTables_wrapper .dataTables_paginate {
