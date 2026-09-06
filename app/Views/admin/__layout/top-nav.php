@@ -7,10 +7,6 @@
         <div class="admin-topbar__greeting">
             <strong>Good <?= date('H') < 12 ? 'morning' : (date('H') < 18 ? 'afternoon' : 'evening') ?>, <?= esc($adminUser->display_name ?? 'Admin') ?>!</strong>
         </div>
-        <div class="admin-top-search" role="search">
-            <i class="fa fa-search" aria-hidden="true"></i>
-            <input type="search" placeholder="Search here..." aria-label="Search" readonly tabindex="-1">
-        </div>
         <nav class="admin-topbar__actions" aria-label="Quick actions">
             <a class="admin-topbar__action" href="<?= site_url('/home') ?>" target="_blank" title="View site" aria-label="View site">
                 <i class="fa fa-globe" aria-hidden="true"></i>
