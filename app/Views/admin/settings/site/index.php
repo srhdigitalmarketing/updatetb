@@ -11,7 +11,6 @@
 
         <?= $this->include('admin/settings/site/form_x_panels/general.php') ?>
         <?= $this->include('admin/settings/site/form_x_panels/page_url.php') ?>
-        <?= $this->include('admin/settings/site/form_x_panels/custom_codes.php') ?>
 
         <div class="text-right mb-3">
             <?= form_button([
