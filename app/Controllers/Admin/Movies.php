@@ -296,8 +296,6 @@ class Movies extends BaseController
 
         $bannerFile = $this->request->getFile('banner_file');
 
-        $bannerUrl = $this->request->getPost('banner_url');
-
         if(! $bannerFile->isValid()) $bannerFile = null;
 
         if($bannerFile !== null) {
@@ -319,16 +317,6 @@ class Movies extends BaseController
 
         }
 
-
-
-        if(! empty($bannerUrl)){
-            helper('remote_download');
-            if($filepath =  download_image( $bannerUrl )){
-                $bannerFile = new \CodeIgniter\Files\File( $filepath );
-            }
-        }
-
-
         if($bannerFile !== null){
             $previousBanner = $movie->banner;
             $r2 = \App\Libraries\CloudflareR2Storage::active();
@@ -348,7 +336,7 @@ class Movies extends BaseController
             }
 
             if($movie->hasChanged()) {
-                if (! $this->model->save($movie)) {
+                if (! $this->model->skipValidation(true)->save($movie)) {
                     $this->mediaWarnings[] = 'Banner could not be saved after upload. Please try again.';
                     return;
                 }

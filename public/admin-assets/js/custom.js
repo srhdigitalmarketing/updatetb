@@ -948,14 +948,14 @@
 
     function init_banner_image_controls()
     {
-        let bannerInputs = $('input[name="banner_url"], input[name="banner_file"]');
+        let bannerInputs = $('input[name="banner_file"]');
         if(bannerInputs.length === 0){
             return;
         }
 
         function updateBannerActions(scope)
         {
-            let hasInput = $.trim(scope.find('input[name="banner_url"]').val() || '') !== '' || $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
+            let hasInput = $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
             let hasCurrentBanner = scope.find('.banner-wrap img').length > 0;
             scope.find('[data-upload-banner-to-r2]').prop('disabled', ! hasInput);
             scope.find('[data-clear-banner-image]').prop('disabled', ! hasInput && ! hasCurrentBanner);
@@ -966,7 +966,8 @@
 
         $(document).on('click', '[data-clear-banner-image]', function(){
             let scope = $(this).closest('.x_content');
-            scope.find('input[name="banner_url"], input[name="banner_file"]').val('').trigger('input').trigger('change');
+            scope.find('input[name="banner_file"]').val('').trigger('input').trigger('change');
+            scope.find('[data-r2-banner-link]').val('');
             scope.find('input[name="remove_banner"]').val('1');
             scope.find('.banner-wrap').empty();
             updateBannerActions(scope);
@@ -974,7 +975,7 @@
 
         $(document).on('click', '[data-upload-banner-to-r2]', function(event){
             let scope = $(this).closest('.x_content');
-            let hasInput = $.trim(scope.find('input[name="banner_url"]').val() || '') !== '' || $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
+            let hasInput = $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
             if (! hasInput) {
                 event.preventDefault();
             }

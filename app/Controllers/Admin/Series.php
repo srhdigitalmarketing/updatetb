@@ -300,7 +300,6 @@ class Series extends BaseController
         $bannerFile = $this->request->getFile('banner_file');
 
         $posterUrl = $this->request->getPost('poster_url');
-        $bannerUrl = $this->request->getPost('banner_url');
 
         // R2 is configured only for banners. Preserve the global media
         // setting for posters instead of unexpectedly storing them locally.
@@ -352,15 +351,6 @@ class Series extends BaseController
                 $posterFile = new \CodeIgniter\Files\File( $filepath );
             }
         }
-
-        if(! empty($bannerUrl)){
-            helper('remote_download');
-            if($filepath =  download_image( $bannerUrl )){
-                $bannerFile = new \CodeIgniter\Files\File( $filepath );
-            }
-        }
-
-
         if($posterFile !== null){
             //remote old poster file if exist
             $series->addPoster( $posterFile );
@@ -390,7 +380,7 @@ class Series extends BaseController
 
 
         if($series->hasChanged()) {
-            if ($this->model->protect(false)->save($series)) {
+            if ($this->model->protect(false)->skipValidation(true)->save($series)) {
                 foreach ($this->r2BannersToDelete as $bannerUrl) {
                     delete_banner($bannerUrl);
                 }
