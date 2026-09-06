@@ -6,6 +6,7 @@ namespace App\Config;
 use CodeIgniter\Config\BaseConfig;
 use Config\Database;
 
+#[\AllowDynamicProperties]
 class Settings extends BaseConfig
 {
 

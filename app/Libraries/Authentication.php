@@ -38,18 +38,12 @@ class Authentication
 
     public function getAdminUser()
     {
-        if($this::$admin === null){
-
+        if (self::$admin === null) {
             $adminModel = new AdminModel();
-            $admin = $adminModel->getAdmin();
-
-            if($admin !== null){
-                $this::$admin = $admin;
-            }
-
+            self::$admin = $adminModel->getAdmin();
         }
 
-        return $admin;
+        return self::$admin;
 
     }
 
