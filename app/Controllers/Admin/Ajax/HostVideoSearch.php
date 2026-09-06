@@ -27,10 +27,12 @@ class HostVideoSearch extends BaseAjax
             return $this->jsonResponse();
         }
 
-        $apis = array_values(array_filter(
-            (new ThirdPartyApi())->where('status', 'active')->findAll(),
-            static fn ($api): bool => trim((string) $api->api_token) !== ''
-        ));
+        $apis = [];
+        foreach ((new ThirdPartyApi())->where('status', 'active')->findAll() as $api) {
+            if (trim((string) $api->api_token) !== '') {
+                $apis[] = $api;
+            }
+        }
 
         $items = [];
 
@@ -40,37 +42,12 @@ class HostVideoSearch extends BaseAjax
             }
 
             try {
-                $host = $this->getSafeHostConfig((string) $api->api_base_url);
-                if ($host === null) {
+                $search = $this->searchHostFiles($api, $title);
+                if ($search === null) {
                     continue;
                 }
 
-                $response = $this->httpClient($host)->get(
-                    rtrim((string) $api->api_base_url, '/') . '/file/list',
-                    [
-                        'query' => [
-                            'key' => (string) $api->api_token,
-                            'title' => $title,
-                            'per_page' => self::RESULTS_PER_HOST,
-                        ],
-                        'headers' => [
-                            'Accept' => 'application/json',
-                            // Some compatible hosts use this header instead of key.
-                            'api-token' => (string) $api->api_token,
-                        ],
-                    ]
-                );
-
-                if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
-                    continue;
-                }
-
-                $payload = json_decode($response->getBody(), true);
-                if (! is_array($payload)) {
-                    continue;
-                }
-
-                foreach ($this->filesFromPayload($payload) as $file) {
+                foreach ($search['files'] as $file) {
                     if (count($items) >= self::MAX_RESULTS) {
                         break 2;
                     }
@@ -79,27 +56,29 @@ class HostVideoSearch extends BaseAjax
                         continue;
                     }
 
-                    $playerUrl = $this->safeExternalUrl($file['link'] ?? '');
+                    $playerUrl = $this->safeExternalUrl(
+                        $file['link'] ?? $file['player_url'] ?? $file['video_url'] ?? $file['embed_url'] ?? $file['url'] ?? ''
+                    );
                     if ($playerUrl === null) {
                         continue;
                     }
 
                     $posterUrl = $this->safeExternalUrl(
-                        $file['thumbnail'] ?? $file['player_img'] ?? $file['thumb'] ?? ''
+                        $file['thumbnail'] ?? $file['player_img'] ?? $file['thumb'] ?? $file['poster'] ?? $file['poster_url'] ?? ''
                     );
-                    $fileCode = trim((string) ($file['file_code'] ?? ''));
+                    $fileCode = trim((string) ($file['file_code'] ?? $file['filecode'] ?? $file['id'] ?? ''));
 
                     // File List normally includes thumbnail. File Info is used
                     // only as a small fallback for hosts that expose player_img
                     // separately (such as some XVideoSharing installations).
                     if ($posterUrl === null && $fileCode !== '') {
-                        $posterUrl = $this->posterFromFileInfo($api, $host, $fileCode);
+                        $posterUrl = $this->posterFromFileInfo($api, $search['api_root'], $fileCode);
                     }
 
                     $items[] = [
                         'source' => (string) $api->name,
                         'provider' => (string) $api->provider,
-                        'title' => trim((string) ($file['title'] ?? $title)),
+                        'title' => trim((string) ($file['title'] ?? $file['file_title'] ?? $file['name'] ?? $title)),
                         'player_url' => $playerUrl,
                         'poster_url' => $posterUrl,
                         'file_code' => $fileCode,
@@ -122,10 +101,87 @@ class HostVideoSearch extends BaseAjax
         return $this->jsonResponse();
     }
 
+    /** @return array{files: array<int, array<string, mixed>>, api_root: string}|null */
+    private function searchHostFiles(object $api, string $title): ?array
+    {
+        foreach ($this->apiRoots($api) as $apiRoot) {
+            $host = $this->getSafeHostConfig($apiRoot);
+            if ($host === null) {
+                continue;
+            }
+
+            $response = $this->httpClient($host)->get($apiRoot . '/file/list', [
+                'query' => [
+                    'key' => (string) $api->api_token,
+                    'title' => $title,
+                    'per_page' => self::RESULTS_PER_HOST,
+                ],
+                'headers' => [
+                    'Accept' => 'application/json',
+                    // UPNShare-compatible servers may use the token header.
+                    'api-token' => (string) $api->api_token,
+                ],
+            ]);
+
+            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+                continue;
+            }
+
+            $payload = json_decode($response->getBody(), true);
+            if (! is_array($payload) || ! $this->isFileListPayload($payload)) {
+                continue;
+            }
+
+            return [
+                'files' => $this->filesFromPayload($payload),
+                'api_root' => $apiRoot,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Admins commonly enter either a host origin or its /api root. Try both
+     * forms safely so an otherwise valid API Access does not silently miss
+     * XVideoSharing's standard endpoint.
+     *
+     * @return array<int, string>
+     */
+    private function apiRoots(object $api): array
+    {
+        $base = rtrim((string) $api->api_base_url, '/');
+        $roots = [$base];
+
+        if (! preg_match('#/api(?:/v1)?$#i', $base)) {
+            array_unshift($roots, $base . '/api');
+
+            if ((string) $api->provider === 'upnshare') {
+                $roots[] = $base . '/api/v1';
+            }
+        } elseif (preg_match('#/api/v1$#i', $base)) {
+            $roots[] = substr($base, 0, -3);
+        }
+
+        return array_values(array_unique($roots));
+    }
+
+    private function isFileListPayload(array $payload): bool
+    {
+        return isset($payload['result']['files'])
+            || isset($payload['files'])
+            || isset($payload['data']['files'])
+            || isset($payload['data']['items']);
+    }
+
     /** @return array<int, array<string, mixed>> */
     private function filesFromPayload(array $payload): array
     {
-        $files = $payload['result']['files'] ?? $payload['files'] ?? [];
+        $files = $payload['result']['files']
+            ?? $payload['files']
+            ?? $payload['data']['files']
+            ?? $payload['data']['items']
+            ?? [];
 
         return is_array($files) ? $files : [];
     }
@@ -137,7 +193,7 @@ class HostVideoSearch extends BaseAjax
         $scheme = strtolower((string) ($parts['scheme'] ?? ''));
         $host = strtolower((string) ($parts['host'] ?? ''));
 
-        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || $host === 'localhost' || str_ends_with($host, '.localhost')) {
+        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || $host === 'localhost' || substr($host, -10) === '.localhost') {
             return null;
         }
 
@@ -165,10 +221,15 @@ class HostVideoSearch extends BaseAjax
         ], false);
     }
 
-    private function posterFromFileInfo(object $api, array $host, string $fileCode): ?string
+    private function posterFromFileInfo(object $api, string $apiRoot, string $fileCode): ?string
     {
+        $host = $this->getSafeHostConfig($apiRoot);
+        if ($host === null) {
+            return null;
+        }
+
         $response = $this->httpClient($host)->get(
-            rtrim((string) $api->api_base_url, '/') . '/file/info',
+            $apiRoot . '/file/info',
             [
                 'query' => [
                     'key' => (string) $api->api_token,
@@ -190,14 +251,22 @@ class HostVideoSearch extends BaseAjax
             return null;
         }
 
-        $info = $payload['result'] ?? $payload;
+        $info = $payload['result'] ?? $payload['data'] ?? $payload;
+        if (is_array($info) && $this->isListArray($info)) {
+            $info = $info[0] ?? [];
+        }
 
         return is_array($info)
-            ? $this->safeExternalUrl($info['player_img'] ?? $info['thumbnail'] ?? '')
+            ? $this->safeExternalUrl($info['player_img'] ?? $info['thumbnail'] ?? $info['poster'] ?? '')
             : null;
     }
 
-    private function safeExternalUrl(mixed $url): ?string
+    private function isListArray(array $value): bool
+    {
+        return $value === [] || array_keys($value) === range(0, count($value) - 1);
+    }
+
+    private function safeExternalUrl($url): ?string
     {
         if (! is_string($url) || filter_var($url, FILTER_VALIDATE_URL) === false) {
             return null;

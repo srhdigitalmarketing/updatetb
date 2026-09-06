@@ -1020,6 +1020,12 @@
                 dataType: 'JSON',
                 success: function(data)
                 {
+                    // Ignore a slow response for an earlier title after the
+                    // administrator has continued typing.
+                    if($.trim($('.title-suggest').val()) !== hostTerm){
+                        return;
+                    }
+
                     if(data.success && data.data){
                         addHostResults(data.data.items || [], data.data.configured_hosts || 0);
                     }
