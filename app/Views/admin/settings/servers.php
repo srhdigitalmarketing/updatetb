@@ -72,7 +72,10 @@
                                 ]) ?>
                             </td>
                             <td class="server-priority-cell">
-                                <?= form_input([
+                                <?php
+                                // Do not pass disabled=false to form_input(): HTML treats the
+                                // mere presence of a disabled attribute as disabled.
+                                $priorityAttributes = [
                                     'name' => "host_priorities[$key]",
                                     'type' => 'number',
                                     'min' => '0',
@@ -80,8 +83,12 @@
                                     'step' => '1',
                                     'class' => 'form-control server-priority-input',
                                     'value' => $serverPriorities[$key] ?? 100,
-                                    'disabled' => ! $streamHealthAvailable || empty($serverStreamLinkCounts[$key])
-                                ]) ?>
+                                ];
+                                if (! $streamHealthAvailable || empty($serverStreamLinkCounts[$key])) {
+                                    $priorityAttributes['disabled'] = 'disabled';
+                                }
+                                ?>
+                                <?= form_input($priorityAttributes) ?>
                                 <span class="server-priority-help">
                                     <?php if (! $streamHealthAvailable): ?>
                                         Run migration to enable
