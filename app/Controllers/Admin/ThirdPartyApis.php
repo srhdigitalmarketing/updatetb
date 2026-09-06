@@ -3,8 +3,6 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\LinkModel;
-use App\Models\MovieModel;
 use App\Models\ThirdPartyApi;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\Model;
@@ -22,12 +20,12 @@ class ThirdPartyApis extends BaseController
 
     public function index()
     {
-        $title = 'Third Party APIs <small>( For Streaming )</small>';
+        $title = 'API Access';
 
         $apis = $this->model->findAll();
 
         $topBtnGroup = create_top_btn_group([
-            'admin/third-party-apis/new' => 'New API'
+            'admin/third-party-apis/new' => 'Add API Access'
         ]);
 
         return view('admin/third_party_apis/list', compact('title', 'apis', 'topBtnGroup'));
@@ -38,11 +36,11 @@ class ThirdPartyApis extends BaseController
     public function new()
     {
 
-        $title = 'New Third Party API';
+        $title = 'Add API Access';
         $tpAPI = new \App\Entities\ThirdPartyApi();
 
         $topBtnGroup = create_top_btn_group([
-            'admin/third-party-apis' => 'Back to APIs'
+            'admin/third-party-apis' => 'Back to API Access'
         ]);
 
         return view('admin/third_party_apis/new', compact('title', 'tpAPI', 'topBtnGroup'));
@@ -51,10 +49,10 @@ class ThirdPartyApis extends BaseController
 
     public function edit()
     {
-        $title = 'Edit Third Party API';
+        $title = 'Edit API Access';
         $tpAPI = $this->getApi( $this->request->getGet('id') );
         $topBtnGroup = create_top_btn_group([
-            'admin/third-party-apis' => 'Back to APIs'
+            'admin/third-party-apis' => 'Back to API Access'
         ]);
         return view('admin/third_party_apis/edit', compact('title', 'tpAPI', 'topBtnGroup'));
 
@@ -62,12 +60,20 @@ class ThirdPartyApis extends BaseController
 
     public function create(): \CodeIgniter\HTTP\RedirectResponse
     {
-        $tpAPI = new \App\Entities\ThirdPartyApi( $this->request->getPost() );
+        $data = $this->request->getPost();
+
+        if (empty($data['api_token'])) {
+            return redirect()->back()
+                ->with('errors', ['An API token is required to add a video host.'])
+                ->withInput();
+        }
+
+        $tpAPI = new \App\Entities\ThirdPartyApi($data);
 
         if($this->model->insert( $tpAPI )){
 
             return redirect()->to(admin_url( '/third-party-apis' ))
-                            ->with('success', 'New third party API added successfully');
+                            ->with('success', 'Video host API access added successfully');
 
         }
 
@@ -79,63 +85,20 @@ class ThirdPartyApis extends BaseController
     public function update()
     {
         $tpAPI = $this->getApi( $this->request->getGet('id') );
-        $tpAPI->fill( $this->request->getPost() );
+        $data = $this->request->getPost();
+
+        // Never erase a saved token merely because the masked token field is blank.
+        if (empty($data['api_token'])) {
+            unset($data['api_token']);
+        }
+
+        $tpAPI->fill($data);
 
         if($tpAPI->hasChanged()){
             if($this->model->save( $tpAPI )){
 
-                //update links
-                $linksModel = new LinkModel();
-                $movieModel = new MovieModel();
-
-                $isNeedUpdate = false;
-                $type = '';
-
-                if($tpAPI->hasChanged('movie_api')){
-                    $type = 'movie';
-                    $isNeedUpdate = true;
-                }
-                if($tpAPI->hasChanged('series_api')){
-                    $type = 'episode';
-                    $isNeedUpdate = true;
-                }
-
-                if($isNeedUpdate){
-                    //update links
-                    $type == 'movie' ? $linksModel->movies() : $linksModel->episodes();
-                    $movies_links = $linksModel->where('links.api_id', $tpAPI->id)
-                                               ->select('links.*')
-                                               ->findAll();
-
-                    if(! empty($movies_links)){
-                        foreach ($movies_links as $link){
-                            $type == 'movie' ? $movieModel->movies() : $movieModel->episodes();
-                            $movie = $movieModel->getMovie( $link->movie_id );
-                            $updatedUrl = ThirdPartyApi::inject($movie, $tpAPI);
-
-                            $link->link = $updatedUrl;
-                            if($link->hasChanged()){
-                                $linksModel->save( $link );
-                            }
-                        }
-                    }
-                }
-
-
-                //update links status
-                if($tpAPI->hasChanged('status')){
-
-                    $isBroken = (int) ($tpAPI->status == 'paused');
-
-                    $linksModel->db->table('links')
-                                   ->where('api_id', $tpAPI->id)
-                                   ->set('is_broken', $isBroken)
-                                   ->update();
-
-                }
-
                 return redirect()->to(admin_url( '/third-party-apis' ))
-                                  ->with('success', $tpAPI->name . ' API updated successfully');
+                                  ->with('success', $tpAPI->name . ' API access updated successfully');
             }else{
                 return redirect()->back()
                                  ->with('errors', $this->model->errors())
@@ -150,6 +113,12 @@ class ThirdPartyApis extends BaseController
     public function delete()
     {
         $tpAPI = $this->getApi( $this->request->getGet('id') );
+
+        // Old template-based APIs may still be attached to links. Detach them
+        // before deletion so changing API Access never deletes those links.
+        db_connect()->table('links')
+            ->where('api_id', $tpAPI->id)
+            ->update(['api_id' => null]);
 
         if($this->model->delete( $tpAPI->id )){
             return redirect()->back()

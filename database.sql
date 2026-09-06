@@ -862,6 +862,9 @@ INSERT INTO `settings` (`name`, `value`, `data_type`) VALUES
 CREATE TABLE `third_party_apis` (
   `id` int(10) UNSIGNED NOT NULL,
   `name` varchar(128) COLLATE utf8mb4_bin NOT NULL,
+  `provider` varchar(30) COLLATE utf8mb4_bin NOT NULL DEFAULT 'custom',
+  `api_base_url` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
+  `api_token` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `movie_api` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `series_api` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `status` enum('active','paused') COLLATE utf8mb4_bin DEFAULT 'active',

@@ -13,113 +13,17 @@ class ThirdPartyApi extends Model
 {
     protected $table            = 'third_party_apis';
     protected $returnType       = 'App\Entities\ThirdPartyApi';
-    protected $allowedFields    = ['name', 'movie_api', 'series_api', 'status'];
+    protected $allowedFields    = ['name', 'provider', 'api_base_url', 'api_token', 'status'];
     protected $useTimestamps = true;
 
     // Validation
     protected $validationRules      = [
-        'name' => 'required|alpha_numeric_space',
-        'movie_api' => 'permit_empty|valid_url',
-        'series_api' => 'permit_empty|valid_url',
+        'name' => 'required|max_length[128]',
+        'provider' => 'required|in_list[upnshare,vidhide,xvideosharing,custom]',
+        'api_base_url' => 'required|valid_url|max_length[255]',
+        'api_token' => 'permit_empty|max_length[255]',
         'status' => 'permit_empty|in_list[active,paused]'
     ];
-
-    protected $afterInsert = ['insertLinks'];
-
-
-    public function active()
-    {
-        $this->where('status', 'active');
-        return $this;
-    }
-
-    public function injectAll(\App\Entities\Movie $movie): array
-    {
-        $apis = $this->active()->findAll();
-        $links = [];
-
-
-        if(! empty($apis)){
-            foreach ($apis as $api) {
-
-                if($url = $this::inject($movie, $api)){
-
-                    $links[] = [
-                        'url' => $url,
-                        'api_id' => $api->id
-                    ];
-
-                }
-
-            }
-        }
-
-        return $links;
-    }
-
-    public static function inject(\App\Entities\Movie $movie, \App\Entities\ThirdPartyApi $api)
-    {
-        $variables = [
-            'VE_MV_IMDB' => $movie->imdb_id,
-            'VE_SE_IMDB' => $movie->series_imdb_id,
-            'VE_MV_TMDB' => $movie->tmdb_id,
-            'VE_SE_TMDB' => $movie->series_tmdb_id,
-            'VE_SEASON'  => $movie->season,
-            'VE_EPISODE' => $movie->episode
-        ];
-
-        $url =  ! $movie->isEpisode() ? $api->movie_api : $api->series_api;
-        return var_replacement($url, $variables);
-    }
-
-
-    protected function insertLinks(array $data): array
-    {
-        if(! empty( $data['id'] )){
-
-            $movieModel = new MovieModel();
-            $movies = [];
-
-            $tpAPI = $this->getApi( $data['id'] );
-            if(! empty( $tpAPI->movie_api )){
-
-                $movies = $movieModel->movies()
-                                     ->findAll();
-
-            }
-
-            if(! empty( $tpAPI->series_api )){
-
-                $episodes = $movieModel->episodes()
-                                       ->findAll();
-
-                $movies = array_merge($movies, $episodes);
-            }
-
-            if(! empty($movies)){
-
-                foreach ($movies as $movie) {
-
-                    if($url = ThirdPartyApi::inject($movie, $tpAPI)){
-
-                        $data = [
-                            'url' => $url,
-                            'api_id' => $tpAPI->id
-                        ];
-
-                        $movieModel->addLinks($movie->id, [ $data ]);
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-        return $data;
-    }
 
 
     public function getApi($id)

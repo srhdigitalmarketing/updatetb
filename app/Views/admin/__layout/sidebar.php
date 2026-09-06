@@ -35,10 +35,10 @@
                         </ul>
                     </li>
 
-                    <li><a><i class="fa fa-magic"></i> Third Party APIs <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-magic"></i> API Access <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="<?= admin_url('/third-party-apis') ?>">View All</a></li>
-                            <li><a href="<?= admin_url('/third-party-apis/new') ?>">Add New</a></li>
+                            <li><a href="<?= admin_url('/third-party-apis') ?>">All API Access</a></li>
+                            <li><a href="<?= admin_url('/third-party-apis/new') ?>">Add API Access</a></li>
                         </ul>
                     </li>
 

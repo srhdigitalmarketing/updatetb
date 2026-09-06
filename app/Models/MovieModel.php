@@ -69,7 +69,7 @@ class MovieModel extends Model
 
     // Callbacks
     protected $beforeInsert = ['setDefaultQuality', 'emptyToNull'];
-    protected $afterInsert  = ['removeTmpMovie', 'injectStreamLinks', 'importRequest'];
+    protected $afterInsert  = ['removeTmpMovie', 'importRequest'];
     protected $beforeUpdate = ['emptyToNull'];
     protected $beforeDelete = ['setTmpData', 'deleteMediaFiles'];
     protected $afterDelete  = ['cleanSeasonData', 'unimportRequest'];
@@ -820,28 +820,6 @@ class MovieModel extends Model
             $requestModel = new RequestsModel();
             $requestModel->itemImported( $data['data'] );
 
-        }
-
-        return $data;
-    }
-
-    protected function injectStreamLinks(array $data)
-    {
-
-        if(! empty( $data['id'] )){
-
-            $thirdPartyApis = new ThirdPartyApi();
-            $innerData = $data['data'];
-
-            $innerData['type'] == 'movie' ? $this->movies() : $this->episodes();
-            $movie = $this->getMovie( $data['id'] );
-
-            if($movie !== null){
-
-                $st_links = $thirdPartyApis->injectAll( $movie );
-                $this->addLinks($movie->id, $st_links);
-
-            }
         }
 
         return $data;
