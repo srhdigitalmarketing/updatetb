@@ -29,9 +29,12 @@
 <div class="dashboard-metric metric-revenue">
     <div class="tile-stats metric-card metric-card--revenue">
         <div class="icon"><i class="fa fa-line-chart"></i></div>
-        <div class="count">—</div>
+        <div class="count js-revenue-total"><?= esc($revenueSummary['display_total']) ?></div>
         <h3>Pendapatan hari ini</h3>
-        <p><?= $revenueConfigured ? 'Kredensial pendapatan tersimpan pada network iklan aktif.' : 'Tambahkan Zone ID dan API token pada network di Ads → Embed.' ?></p>
+        <p class="js-revenue-caption"><?= esc($revenueSummary['message']) ?></p>
+        <small class="js-revenue-updated">
+            <?= ! empty($revenueSummary['updated_at']) ? 'Terakhir diperbarui ' . esc(date('H:i', strtotime($revenueSummary['updated_at']))) : '' ?>
+        </small>
         <a href="<?= admin_url('/ads/embed_page') ?>">Konfigurasi monetisasi <i class="fa fa-arrow-right"></i></a>
     </div>
 </div>

@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\AdRevenueToday;
 use App\Models\AdsModel;
 use App\Models\PopupAdUnitModel;
 
@@ -271,6 +272,8 @@ class Ads extends BaseController
                 ->with('errors', ['Popup ad units could not be saved. Run the database migration first.'])
                 ->withInput();
         }
+
+        AdRevenueToday::forgetCachedRevenue();
 
         return redirect()->back()
             ->with('success', 'Popup ad units updated successfully.');

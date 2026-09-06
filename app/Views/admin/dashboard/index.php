@@ -70,6 +70,31 @@
 
     window.setInterval(refreshLiveTraffic, 30000);
 })();
+
+(function () {
+    var endpoint = <?= json_encode(admin_url('/dashboard/revenue-today')) ?>;
+    var total = document.querySelector('.js-revenue-total');
+    var caption = document.querySelector('.js-revenue-caption');
+    var updated = document.querySelector('.js-revenue-updated');
+    if (! total || ! window.fetch) return;
+
+    fetch(endpoint, {credentials: 'same-origin'})
+        .then(function (response) { return response.ok ? response.json() : null; })
+        .then(function (data) {
+            if (! data) return;
+            total.textContent = data.display_total || '—';
+            if (caption) caption.textContent = data.message || '';
+            if (updated && data.updated_at) {
+                var time = new Date(data.updated_at);
+                updated.textContent = 'Terakhir diperbarui ' + time.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            }
+        })
+        .catch(function () {
+            if (caption && caption.textContent === 'Memuat pendapatan hari ini…') {
+                caption.textContent = 'Pendapatan belum dapat dimuat. Coba segarkan halaman.';
+            }
+        });
+})();
 </script>
 
 <?php $this->endSection() ?>

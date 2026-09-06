@@ -115,13 +115,13 @@ $providerOptions = [
                 </div>
                 <div class="popup-ad-unit__credentials">
                     <div class="form-group mb-0">
-                        <label>Zone ID <small>Optional</small></label>
+                        <label>Zone / placement ID <small>Optional</small></label>
                         <?= form_input([
                             'name' => "popup_units[{$key}][zone_id]",
                             'class' => 'form-control',
                             'value' => $unit['zone_id'] ?? '',
                             'maxlength' => 100,
-                            'placeholder' => 'Zone ID for this network',
+                            'placeholder' => 'ClickAdu/Clickadilla: ID · Adsterra: domain_id:placement_id',
                             'autocomplete' => 'off',
                         ]) ?>
                     </div>
@@ -201,8 +201,8 @@ $providerOptions = [
             </div>
             <div class="popup-ad-unit__credentials">
                 <div class="form-group mb-0">
-                    <label>Zone ID <small>Optional</small></label>
-                    <input type="text" name="popup_units[__KEY__][zone_id]" class="form-control" maxlength="100" placeholder="Zone ID for this network" autocomplete="off">
+                    <label>Zone / placement ID <small>Optional</small></label>
+                    <input type="text" name="popup_units[__KEY__][zone_id]" class="form-control" maxlength="100" placeholder="ClickAdu/Clickadilla: ID · Adsterra: domain_id:placement_id" autocomplete="off">
                 </div>
                 <div class="form-group mb-0">
                     <label>API token <small>Optional</small></label>
