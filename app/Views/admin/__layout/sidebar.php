@@ -49,7 +49,6 @@
                             <li><a href="<?= admin_url('/settings/profile') ?>">Profile</a></li>
                             <li><a href="<?= admin_url('/settings/general') ?>">General</a></li>
                             <li><a href="<?= admin_url('/settings/player') ?>">Player</a></li>
-                            <li><a href="<?= admin_url('/settings/analytics') ?>">Analytics</a></li>
                             <li><a href="<?= admin_url('/settings/servers') ?>">Servers</a></li>
                             <li><a href="<?= admin_url('/settings/firewall') ?>">Firewall</a></li>
                             <li><a href="<?= admin_url('/settings/cache') ?>">Cache</a></li>

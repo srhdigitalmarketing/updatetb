@@ -964,34 +964,6 @@ body,
 .dashboard-chart-notice { background: #fff8e8; border-radius: 7px; color: #8b6415 !important; margin: 0 0 5px !important; padding: 8px 10px; }
 .dashboard-chart-notice i { margin-right: 4px; }
 
-/* Cloudflare owns long-term audience and device analytics. */
-.dashboard-cloudflare-panel { display: flex; flex-direction: column; min-height: 238px; }
-.dashboard-period-chip.is-connected { background: #ecfdf3; border-color: #c8eed8; color: #087443; }
-.dashboard-cloudflare-panel__body { align-items: center; background: linear-gradient(135deg, #f8faff, #fff); border: 1px solid #e5ecf8; border-radius: 10px; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr); margin-top: 20px; padding: 15px; }
-.dashboard-cloudflare-panel__icon { align-items: center; background: #eaf1ff; border-radius: 10px; color: #3569ef; display: flex; font-size: 19px; height: 42px; justify-content: center; width: 42px; }
-.dashboard-cloudflare-panel__icon--purple { background: #f0edff; color: #7659d8; }
-.dashboard-cloudflare-panel__body strong { color: #344054; display: block; font-size: 12px; font-weight: 800; margin-bottom: 3px; }
-.dashboard-cloudflare-panel__body p { font-size: 11px; line-height: 1.45; }
-.dashboard-cloudflare-panel__actions { display: flex; gap: 8px; margin-top: auto; padding-top: 14px; }
-.dashboard-cloudflare-panel__actions .btn { font-size: 11px; padding: 7px 10px; }
-.dashboard-cloudflare-panel__note { border-top: 1px solid #edf1f7; color: #667085; font-size: 11px; line-height: 1.4; margin-top: auto; padding-top: 14px; }
-.dashboard-cloudflare-panel__note .fa { color: #3569ef; margin-right: 4px; }
-
-/* Cloudflare Web Analytics configuration. */
-.analytics-settings-panel .x_content { padding: 22px; }
-.analytics-settings-intro { align-items: center; background: linear-gradient(135deg, #f5f9ff 0%, #fff 75%); border: 1px solid #dbe7fa; border-radius: 11px; display: grid; gap: 14px; grid-template-columns: auto minmax(0, 1fr) auto; margin-bottom: 22px; padding: 17px; }
-.analytics-settings-intro__icon { align-items: center; background: #e7f0ff; border-radius: 10px; color: #3569ef; display: flex; font-size: 21px; height: 46px; justify-content: center; width: 46px; }
-.analytics-settings-eyebrow { color: #3569ef; display: block; font-size: 10px; font-weight: 800; letter-spacing: .07em; }
-.analytics-settings-intro h3 { color: #1d2939; font-size: 14px; font-weight: 800; margin: 3px 0 4px; }
-.analytics-settings-intro p { color: #667085; font-size: 12px; line-height: 1.45; margin: 0; }
-.analytics-settings-status { background: #fff7e8; border-radius: 99px; color: #9b6900; font-size: 10px; font-weight: 800; padding: 6px 9px; white-space: nowrap; }
-.analytics-settings-status.is-connected { background: #ecfdf3; color: #087443; }
-.analytics-settings-field .control-label { color: #344054; font-size: 12px; font-weight: 800; padding-top: 8px; }
-.analytics-settings-field small { color: #667085; display: block; font-size: 11px; line-height: 1.45; margin-top: 6px; }
-.analytics-settings-links { border-top: 1px solid #edf1f5; display: flex; gap: 18px; margin-top: 19px; padding-top: 15px; }
-.analytics-settings-links a { color: #2758d4; font-size: 12px; font-weight: 700; }
-.analytics-settings-links .fa { margin-right: 3px; }
-
 .dashboard-library-panel .x_content { padding: 0 20px 14px; }
 .dashboard-library-panel .table { margin-bottom: 0; }
 
@@ -1007,10 +979,6 @@ body,
   .dashboard-health-content { grid-template-columns: 1fr; padding: 16px; }
   .dashboard-visitor-panel { padding: 19px 16px 13px; }
   .dashboard-platform-legend { grid-template-columns: 1fr 1fr; }
-  .analytics-settings-intro { align-items: flex-start; grid-template-columns: auto minmax(0, 1fr); }
-  .analytics-settings-status { grid-column: 1 / -1; }
-  .analytics-settings-field .control-label { padding-top: 0; text-align: left; }
-  .analytics-settings-links { align-items: flex-start; flex-direction: column; gap: 8px; }
 }
 
 /* Sidebar navigation refinements */

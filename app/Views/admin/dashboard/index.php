@@ -43,6 +43,10 @@
 
 <?php $this->section('scripts'); ?>
 
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<?= $this->include('admin/dashboard/charts_js') ?>
+
 <script>
 (function () {
     var endpoint = <?= json_encode(admin_url('/dashboard/live-traffic')) ?>;

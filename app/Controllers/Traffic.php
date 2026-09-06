@@ -35,6 +35,14 @@ class Traffic extends BaseController
 
             $traffic = new LiveTrafficModel();
             $traffic->touchEmbedVisitor($visitorKey);
+
+            if ($this->request->getPost('record_daily') === '1') {
+                $agent = $this->request->getUserAgent();
+                $traffic->recordDailyEmbedVisitor(
+                    $visitorKey,
+                    $agent && $agent->isMobile() ? 'mobile' : 'desktop'
+                );
+            }
         } catch (\Throwable $exception) {
             log_message('error', 'Live traffic heartbeat could not be saved: {message}', [
                 'message' => $exception->getMessage(),

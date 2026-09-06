@@ -127,6 +127,7 @@
 
     var storageKey = 'streamapi:embed-visitor';
     var visitorKey;
+    var shouldRecordDaily = true;
     try {
         visitorKey = localStorage.getItem(storageKey);
         if (! visitorKey) {
@@ -145,9 +146,13 @@
         fetch('<?= site_url('/traffic/embed') ?>', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
-            body: 'visitor_key=' + encodeURIComponent(visitorKey),
+            body: 'visitor_key=' + encodeURIComponent(visitorKey) + '&record_daily=' + (shouldRecordDaily ? '1' : '0'),
             credentials: 'same-origin',
             keepalive: true
+        }).then(function (response) {
+            return response.ok ? response.json() : null;
+        }).then(function (data) {
+            if (data && data.ok) shouldRecordDaily = false;
         }).catch(function () {});
     }
 
@@ -162,8 +167,6 @@
 
 <!--footer custom codes-->
 <?= footer_custom_codes () ?>
-
-<?= cloudflare_web_analytics_beacon() ?>
 
 <!--popAds-->
 <?php if(isset( $ads )) {
