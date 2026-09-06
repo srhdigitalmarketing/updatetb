@@ -2717,7 +2717,8 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 
 /* Scale the desktop navigation together with the workspace on wide displays. */
 @media (min-width: 1440px) {
-  :root { --admin-sidebar-width: clamp(240px, 10vw, 320px); }
+  /* Keep the expanded rail proportional to its menu, not to ultra-wide screens. */
+  :root { --admin-sidebar-width: 230px; }
 
   .nav-md .container.body .col-md-3.left_col,
   .nav-md .nav_title { width: var(--admin-sidebar-width); }
@@ -2742,7 +2743,12 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
    Pin every compact-state measurement to the icon rail so it cannot leave a
    desktop-width blank strip beside the navigation. */
 .nav-sm .container.body .col-md-3.left_col,
-.nav-sm .navbar.nav_title {
+.nav-sm .navbar.nav_title,
+.nav-sm .left_col.scroll-view,
+.nav-sm .main_menu_side,
+.nav-sm .sidebar-footer {
+  max-width: 70px !important;
+  min-width: 70px !important;
   width: 70px !important;
 }
 .nav-sm .container.body .right_col,
@@ -2750,6 +2756,7 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
   margin-left: 70px !important;
   width: calc(100% - 70px);
 }
+.nav-sm .container.body { overflow-x: hidden; }
 
 /* The compact sidebar is icon-only: labels must not overflow into the workspace. */
 .nav-sm .sidebar-menu-label,
