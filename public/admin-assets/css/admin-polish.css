@@ -1451,6 +1451,43 @@ body,
   color: #475467 !important;
 }
 
+/* The original theme applies white text to an active menu item. That colour
+   is unreadable after the sidebar was changed to a light surface. */
+.left_col .nav.side-menu > li > a:hover,
+.left_col .nav.side-menu > li > a:focus,
+.left_col .nav.side-menu > li.active > a,
+.left_col .nav.side-menu > li.current-page > a {
+  color: #2457d6 !important;
+  text-shadow: none !important;
+}
+
+.left_col .nav.side-menu > li > a:hover i,
+.left_col .nav.side-menu > li > a:focus i,
+.left_col .nav.side-menu > li.active > a i,
+.left_col .nav.side-menu > li.current-page > a i {
+  color: #3569ef !important;
+}
+
+.left_col .nav.child_menu > li > a:hover,
+.left_col .nav.child_menu > li > a:focus,
+.left_col .nav.child_menu > li.active > a,
+.left_col .nav.child_menu > li.current-page > a {
+  color: #2457d6 !important;
+  text-shadow: none !important;
+}
+
+/* A small in-table status keeps server-side pagination responsive without
+   shifting the table layout while a new page is being fetched. */
+.right_col .dataTables_processing {
+  background: #ffffff;
+  border: 1px solid #dbe5f4;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, .10);
+  color: #344054;
+  font-size: 13px;
+  padding: 10px 18px;
+}
+
 /* Video list controls and pagination */
 .right_col .video-table-toolbar,
 .right_col .video-table-controls,

@@ -30,7 +30,7 @@ $typeLabels = [
 <div class="x_panel link-table-panel">
     <div class="card-box table-responsive">
 
-        <table id="links-list-datatable" class="table link-operations-table data-list-table" style="width:100%">
+        <table id="links-list-datatable" class="table link-operations-table data-list-table" data-source="<?= admin_url('/ajax/tables/links') ?>" data-filter="<?= esc($activeFilter) ?>" style="width:100%">
             <thead>
             <tr>
                 <th>ID</th>
@@ -43,34 +43,7 @@ $typeLabels = [
             </tr>
             </thead>
 
-
-            <tbody>
-
-            <?php foreach ($links as $link) : ?>
-                <?php $host = parse_url($link->link, PHP_URL_HOST) ?: 'External link'; ?>
-                <tr>
-                    <td><span class="link-id">#<?= $link->id ?></span></td>
-                    <td class="text-left link-destination">
-                        <a href="<?= esc($link->link) ?>" class="link-destination__url" target="_blank" rel="noopener noreferrer" title="<?= esc($link->link) ?>">
-                            <?= esc($link->link) ?> <i class="fa fa-external-link"></i>
-                        </a>
-                        <span class="link-destination__host"><?= esc($host) ?></span>
-                    </td>
-                    <td><span class="link-type-badge link-type-badge--<?= esc($link->type) ?>"><?= esc($typeLabels[$link->type] ?? 'Other') ?></span></td>
-                    <td><span class="link-request-count"><?= number_format($link->requests) ?></span></td>
-                    <td><span class="link-date"><?= format_date_time($link->created_at) ?></span></td>
-                    <td><span class="link-date"><?= format_date_time($link->updated_at) ?></span></td>
-                    <td>
-                        <div class="table-actions link-table-actions">
-                            <a href="<?= admin_url("/links/edit/{$link->id}") ?>" class="btn btn-sm link-action-btn link-action-btn--edit"><i class="fa fa-pencil"></i> Edit</a>
-                            <a href="<?= admin_url("/movies/edit/{$link->movie_id}") ?>" class="btn btn-sm link-action-btn link-action-btn--video"><i class="fa fa-play"></i> Video</a>
-                            <a href="javascript:void(0)" class="btn btn-sm link-action-btn link-action-btn--delete del-item" data-url="<?= admin_url("/links/delete/{$link->id}") ?>"><i class="fa fa-trash"></i> Delete</a>
-                        </div>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 </div>

@@ -40,6 +40,11 @@ class Movies extends BaseController
             'without_dl_links'
         ];
 
+        // The table itself is loaded page-by-page through the DataTables AJAX
+        // endpoint.  Only calculate the count here, so opening this page does
+        // not fetch every video into PHP and the browser at once.
+        $countModel = new \App\Models\MovieModel();
+
         if(in_array($filter, $allowedFilters)){
 
             $linkType = '';
@@ -51,16 +56,14 @@ class Movies extends BaseController
                 $linkType = 'download';
 
             if($filter == 'with_st_links' || $filter == 'with_dl_links')
-                $this->model->notEmptyLinks( $linkType );
+                $countModel->notEmptyLinks( $linkType );
 
             if($filter == 'without_st_links' || $filter == 'without_dl_links')
-                $this->model->emptyLinks( $linkType );
+                $countModel->emptyLinks( $linkType );
 
         }
 
-        $movies = $this->model->where('type', $type)
-                              ->orderBy('id', 'desc')
-                              ->findAll();
+        $moviesCount = $countModel->where('type', $type)->countAllResults();
 
 
 
@@ -78,11 +81,10 @@ class Movies extends BaseController
 
         }
 
-        $title .= ' - ( ' . count( $movies ) . ' )';
+        $title .= ' - ( ' . $moviesCount . ' )';
 
         $data = [
             'title' => $title,
-            'movies' => $movies,
             'filter' => $filter,
             'topBtnGroup' => $topBtnGroup
         ];

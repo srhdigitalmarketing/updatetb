@@ -41,12 +41,13 @@ class Links extends BaseController
             }
         }
 
-        $links = $this->model->orderBy('id', 'DESC')
-                             ->findAll();
+        // Rows are loaded asynchronously in small pages. Avoid loading all
+        // link records merely to render the first administration screen.
+        $linksCount = $this->model->countAllResults();
 
-        $title .= ' - ( ' . count( $links ) . ' )';
+        $title .= ' - ( ' . $linksCount . ' )';
 
-        return view('admin/links/list', compact('title', 'links', 'filter'));
+        return view('admin/links/list', compact('title', 'filter'));
     }
 
     public function reported()
@@ -54,13 +55,9 @@ class Links extends BaseController
         $title = 'Reported Links';
 
 
-        $links = $this->model->reported()
-                           ->orderBy('reports_not_working', 'DESC')
-                           ->orderBy('reports_wrong_link', 'DESC')
-                           ->findAll();
+        $linksCount = $this->model->reported()->countAllResults();
 
-
-        $data = compact('title', 'links');
+        $data = compact('title', 'linksCount');
 
         return view('admin/links/reported', $data);
     }

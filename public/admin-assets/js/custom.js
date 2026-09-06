@@ -22,7 +22,9 @@
     });
 
 
-    $(".del-item").on('click', function (){
+    // Table rows are loaded after the initial page render. Delegation keeps the
+    // delete confirmation working for every newly loaded page of results.
+    $(document).on('click', '.del-item', function (){
         let delConfirmModal = $('#del-confirm-modal');
         let url = $(this).attr('data-url');
         delConfirmModal.find('.del-link').attr('href', url);
@@ -1299,8 +1301,25 @@
             ],
             responsive: true,
             stateSave: false,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: $('#movies-list-datatable').data('source'),
+                data: function (data) {
+                    data.filter = new URLSearchParams(window.location.search).get('filter') || '';
+                }
+            },
             order: [],
-            pageLength: 25
+            pageLength: 25,
+            columnDefs: [{ targets: 6, orderable: false }],
+            language: {
+                processing: 'Loading videos…',
+                search: '',
+                searchPlaceholder: 'Search title or Video ID...',
+                lengthMenu: 'Show _MENU_ per page',
+                info: 'Showing _START_–_END_ of _TOTAL_ videos',
+                infoEmpty: 'No videos found'
+            }
         } );
 
         $('#links-list-datatable').DataTable( {
@@ -1343,11 +1362,20 @@
             ],
             responsive: true,
             stateSave: false,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: $('#links-list-datatable').data('source'),
+                data: function (data) {
+                    data.filter = $('#links-list-datatable').data('filter') || '';
+                }
+            },
             order: [[5, 'desc']],
             pageLength: 25,
             autoWidth: false,
             columnDefs: [{ targets: 6, orderable: false }],
             language: {
+                processing: 'Loading links…',
                 search: '',
                 searchPlaceholder: 'Search links...',
                 lengthMenu: 'Show _MENU_ per page',
@@ -1360,11 +1388,17 @@
             dom: '<"link-table-toolbar"<"link-table-toolbar__left"l><"link-table-toolbar__right"f>>rt<"link-table-footer"<"link-table-footer__info"i><"link-table-footer__pagination"p>>',
             responsive: true,
             stateSave: false,
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: $('#reported-links-datatable').data('source')
+            },
             order: [[4, 'desc']],
             pageLength: 25,
             autoWidth: false,
             columnDefs: [{ targets: 6, orderable: false }],
             language: {
+                processing: 'Loading reported links…',
                 search: '',
                 searchPlaceholder: 'Search reported links...',
                 lengthMenu: 'Show _MENU_ per page',

@@ -22,7 +22,7 @@
 <div class="x_panel">
     <div class="card-box table-responsive">
 
-        <table id="movies-list-datatable" class="table table-hover data-list-table" style="width:100%">
+        <table id="movies-list-datatable" class="table table-hover data-list-table" data-source="<?= admin_url('/ajax/tables/videos') ?>" style="width:100%">
             <thead>
             <tr>
                 <th>ID</th>
@@ -35,31 +35,7 @@
             </tr>
             </thead>
 
-
-            <tbody>
-
-            <?php foreach ($movies as $movie) : ?>
-                <tr>
-                    <td> <?= $movie->id ?> </td>
-                    <td class="text-left video-title"> <?= esc( $movie->title ) ?> </td>
-                    <td> <?= esc( $movie->imdb_id ) ?> </td>
-                    <td> <?= format_date_time( $movie->created_at ) ?> </td>
-                    <td> <?= format_date_time( $movie->updated_at ) ?> </td>
-                    <td> <?= number_format( $movie->views ) ?> </td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="<?= admin_url("/movies/edit/{$movie->id}") ?>" class="btn btn-sm btn-primary">
-                                <i class="fa fa-pencil"></i> Edit
-                            </a>
-                            <a href="javascript:void(0)" data-url="<?= admin_url("/movies/delete/{$movie->id}") ?>" class="btn btn-sm btn-danger del-item">
-                                <i class="fa fa-trash"></i> Delete
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 </div>
