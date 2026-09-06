@@ -1045,6 +1045,17 @@
             });
 
             panel.append(list);
+
+            if(data.responses){
+                Object.keys(data.responses).forEach(function(name){
+                    let json = JSON.stringify(data.responses[name], null, 2);
+                    let responsePanel = $('<details>', {class: 'host-api-test-result__response'});
+                    responsePanel.append($('<summary>').text(name === 'file_info' ? 'File Info API response' : 'File List API response'));
+                    responsePanel.append($('<pre>').text(json || '{}'));
+                    panel.append(responsePanel);
+                });
+            }
+
             result.empty().append(panel);
         }
     }

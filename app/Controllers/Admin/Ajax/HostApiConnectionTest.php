@@ -169,6 +169,9 @@ class HostApiConnectionTest extends BaseAjax
                 ?? $list['payload']['data']['items']
                 ?? [];
             $sample = is_array($files) && ! empty($files) && is_array($files[0]) ? $files[0] : [];
+            $apiResponses = $provider === 'earnvids'
+                ? ['file_list' => $this->redactSensitivePayload($list['payload'])]
+                : [];
 
             // A File List record confirms the key works. For EarnVids, fetch
             // the matching File Info record as well so the connection screen
@@ -183,6 +186,7 @@ class HostApiConnectionTest extends BaseAjax
                     ], $token, true);
 
                     if ($info !== null && $info['status'] >= 200 && $info['status'] < 300 && is_array($info['payload'])) {
+                        $apiResponses['file_info'] = $this->redactSensitivePayload($info['payload']);
                         $record = $info['payload']['result'] ?? $info['payload']['data'] ?? [];
                         if (is_array($record) && $record !== [] && array_keys($record) === range(0, count($record) - 1)) {
                             $record = $record[0] ?? [];
@@ -195,7 +199,12 @@ class HostApiConnectionTest extends BaseAjax
                 }
             }
 
-            return $this->testResponse($provider, $endpoint, $list['status'], $sample);
+            $result = $this->testResponse($provider, $endpoint, $list['status'], $sample);
+            if ($apiResponses !== []) {
+                $result['responses'] = $apiResponses;
+            }
+
+            return $result;
         }
 
         return null;
@@ -302,6 +311,22 @@ class HostApiConnectionTest extends BaseAjax
         }
 
         return '';
+    }
+
+    /** @param array<string, mixed> $payload @return array<string, mixed> */
+    private function redactSensitivePayload(array $payload): array
+    {
+        $redactedKeys = ['key', 'api_key', 'api_token', 'token', 'authorization', 'password', 'secret'];
+
+        foreach ($payload as $key => $value) {
+            if (in_array(strtolower((string) $key), $redactedKeys, true)) {
+                $payload[$key] = '[redacted]';
+            } elseif (is_array($value)) {
+                $payload[$key] = $this->redactSensitivePayload($value);
+            }
+        }
+
+        return $payload;
     }
 
     private function safeExternalUrl(string $url): ?string
