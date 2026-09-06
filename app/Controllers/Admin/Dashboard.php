@@ -27,9 +27,10 @@ class Dashboard extends BaseController
 
         $liveTraffic = $this->liveTrafficSummary();
         $visitorStats = $this->visitorStatistics();
+        $dailyPlayerAnalytics = $this->dailyPlayerAnalytics();
         $revenueSummary = (new AdRevenueToday())->cachedSummary();
 
-        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'revenueSummary');
+        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'dailyPlayerAnalytics', 'revenueSummary');
 
         return view('admin/dashboard/index', $data);
     }
@@ -151,6 +152,83 @@ class Dashboard extends BaseController
             }
         } catch (\Throwable $exception) {
             log_message('error', 'Visitor statistics could not be loaded: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Keep the dashboard focused on daily player activity rather than a
+     * cumulative table: embeds opened, first plays, and unique browsers.
+     */
+    private function dailyPlayerAnalytics(): array
+    {
+        $start = new \DateTimeImmutable('-6 days');
+        $rowsByDate = [];
+
+        for ($day = 0; $day < 7; $day++) {
+            $date = $start->modify("+{$day} days")->format('Y-m-d');
+            $rowsByDate[$date] = [
+                'date' => $date,
+                'impressions' => 0,
+                'play_clicks' => 0,
+                'unique_visitors' => 0,
+            ];
+        }
+
+        $result = [
+            'rows' => array_values(array_reverse($rowsByDate)),
+            'tracking_ready' => false,
+        ];
+
+        try {
+            $db = db_connect();
+            $metricsReady = $db->tableExists('traffic_daily_player_metrics');
+            $visitorsReady = $db->tableExists('traffic_daily_visitors');
+
+            if (! $metricsReady && ! $visitorsReady) {
+                return $result;
+            }
+
+            $from = $start->format('Y-m-d');
+            if ($metricsReady) {
+                $metrics = $db->table('traffic_daily_player_metrics')
+                    ->select('visit_date, impressions, play_clicks')
+                    ->where('visit_date >=', $from)
+                    ->get()
+                    ->getResultArray();
+
+                foreach ($metrics as $metric) {
+                    $date = (string) $metric['visit_date'];
+                    if (isset($rowsByDate[$date])) {
+                        $rowsByDate[$date]['impressions'] = (int) $metric['impressions'];
+                        $rowsByDate[$date]['play_clicks'] = (int) $metric['play_clicks'];
+                    }
+                }
+            }
+
+            if ($visitorsReady) {
+                $visitors = $db->table('traffic_daily_visitors')
+                    ->select('visit_date, COUNT(*) AS visitors')
+                    ->where('visit_date >=', $from)
+                    ->groupBy('visit_date')
+                    ->get()
+                    ->getResultArray();
+
+                foreach ($visitors as $visitor) {
+                    $date = (string) $visitor['visit_date'];
+                    if (isset($rowsByDate[$date])) {
+                        $rowsByDate[$date]['unique_visitors'] = (int) $visitor['visitors'];
+                    }
+                }
+            }
+
+            $result['rows'] = array_values(array_reverse($rowsByDate));
+            $result['tracking_ready'] = $metricsReady && $visitorsReady;
+        } catch (\Throwable $exception) {
+            log_message('error', 'Daily player analytics could not be loaded: {message}', [
                 'message' => $exception->getMessage(),
             ]);
         }

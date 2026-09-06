@@ -30,9 +30,12 @@
     </div>
 
     <div class="dashboard-tables-grid">
-    <div class="dashboard-table-cell">
-        <?= $this->include('admin/dashboard/x_panel/most_viewed_movies') ?>
-    </div>
+        <div class="dashboard-table-cell">
+            <?= $this->include('admin/dashboard/x_panel/most_viewed_movies') ?>
+        </div>
+        <div class="dashboard-table-cell">
+            <?= $this->include('admin/dashboard/x_panel/daily_player_analytics') ?>
+        </div>
     </div>
 </div>
 

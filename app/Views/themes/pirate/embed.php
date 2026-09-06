@@ -118,7 +118,7 @@
 
 <script src="<?= theme_assets('js/template.min.js?v=1.2') ?>"></script>
 <script src="<?= theme_assets('js/custom.min.js?v=1.2') ?>"></script>
-<script src="<?= theme_assets('js/player.js?v=20260906-2') ?>"></script>
+<script src="<?= theme_assets('js/player.js?v=20260906-3') ?>"></script>
 
 <?php if (! empty($links)): ?>
 <script>
@@ -140,16 +140,36 @@
         return;
     }
 
+    function sendAnalytics(eventName) {
+        if (! visitorKey) return;
+
+        var body = 'visitor_key=' + encodeURIComponent(visitorKey);
+        if (eventName === 'play') {
+            body += '&event=play';
+        } else {
+            body += '&record_daily=' + (shouldRecordDaily ? '1' : '0')
+                + '&record_impression=' + (shouldRecordDaily ? '1' : '0');
+        }
+
+        return fetch('<?= site_url('/traffic/embed') ?>', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+            body: body,
+            credentials: 'same-origin',
+            keepalive: true
+        });
+    }
+
+    window.StreamPlayerAnalytics = {
+        recordPlay: function () {
+            sendAnalytics('play').catch(function () {});
+        }
+    };
+
     function pingLiveTraffic() {
         if (document.visibilityState && document.visibilityState !== 'visible') return;
 
-        fetch('<?= site_url('/traffic/embed') ?>', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
-            body: 'visitor_key=' + encodeURIComponent(visitorKey) + '&record_daily=' + (shouldRecordDaily ? '1' : '0'),
-            credentials: 'same-origin',
-            keepalive: true
-        }).then(function (response) {
+        sendAnalytics('impression').then(function (response) {
             return response.ok ? response.json() : null;
         }).then(function (data) {
             if (data && data.ok) shouldRecordDaily = false;

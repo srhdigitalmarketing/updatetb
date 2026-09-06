@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\PopupAdSelector;
+use App\Models\DailyPlayerAnalyticsModel;
 use App\Models\LiveTrafficModel;
 
 class Traffic extends BaseController
@@ -42,6 +43,15 @@ class Traffic extends BaseController
                     $visitorKey,
                     $agent && $agent->isMobile() ? 'mobile' : 'desktop'
                 );
+            }
+
+            $analytics = new DailyPlayerAnalyticsModel();
+            if ($this->request->getPost('record_impression') === '1') {
+                $analytics->recordImpression();
+            }
+
+            if ($this->request->getPost('event') === 'play') {
+                $analytics->recordPlayClick();
             }
         } catch (\Throwable $exception) {
             log_message('error', 'Live traffic heartbeat could not be saved: {message}', [
