@@ -4,8 +4,8 @@
             <a id="menu_toggle"><i class="fa fa-bars"></i></a>
         </div>
         <div class="admin-workspace-heading">
-            <span>STREAMAPI CONTROL</span>
-            <strong>Video operations workspace</strong>
+            <span>DASHBOARD</span>
+            <strong>Good <?= date('H') < 12 ? 'morning' : (date('H') < 18 ? 'afternoon' : 'evening') ?>, <?= esc(get_admin_user()->display_name) ?>!</strong>
         </div>
         <div class="admin-top-search" role="search">
             <i class="fa fa-search" aria-hidden="true"></i>
