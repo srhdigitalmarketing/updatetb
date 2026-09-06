@@ -11,6 +11,7 @@
         init_data_list_datatable();
         init_discover();
         init_suggestion();
+        init_host_api_provider_structure();
         init_host_api_connection_test();
         init_stream_poster();
 
@@ -944,6 +945,38 @@
         }
     }
 
+    function init_host_api_provider_structure()
+    {
+        let providerField = $('#host-api-provider');
+        if(providerField.length === 0){
+            return;
+        }
+
+        let fixedRoots = {
+            earnvids: 'https://earnvidsapi.com/api',
+            upnshare: 'https://upnshare.com/api/v1'
+        };
+
+        function renderProviderStructure()
+        {
+            let provider = $.trim(providerField.val());
+            $('[data-provider-note]').prop('hidden', function(){
+                return $(this).data('provider-note') !== provider;
+            });
+            $('[data-provider-structure]').prop('hidden', function(){
+                let supported = $(this).data('provider-structure');
+                return supported !== provider && !(supported === 'other' && provider !== 'earnvids' && provider !== 'upnshare');
+            });
+
+            if(fixedRoots[provider]){
+                $('#host-api-base-url').val(fixedRoots[provider]);
+            }
+        }
+
+        providerField.on('change', renderProviderStructure);
+        renderProviderStructure();
+    }
+
     function init_host_api_connection_test()
     {
         let button = $('#host-api-test');
@@ -1050,7 +1083,13 @@
                 Object.keys(data.responses).forEach(function(name){
                     let json = JSON.stringify(data.responses[name], null, 2);
                     let responsePanel = $('<details>', {class: 'host-api-test-result__response'});
-                    responsePanel.append($('<summary>').text(name === 'file_info' ? 'File Info API response' : 'File List API response'));
+                    let labels = {
+                        file_info: 'File Info API response',
+                        file_list: 'File List API response',
+                        video_list: 'Video List API response',
+                        video_info: 'Video Detail API response'
+                    };
+                    responsePanel.append($('<summary>').text(labels[name] || 'Provider API response'));
                     responsePanel.append($('<pre>').text(json || '{}'));
                     panel.append(responsePanel);
                 });

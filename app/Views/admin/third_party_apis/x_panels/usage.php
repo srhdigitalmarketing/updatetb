@@ -10,6 +10,7 @@
         <span><i class="fa fa-image"></i> Poster image</span>
     </div>
     <div class="host-api-guide__docs">
+        <a href="https://upnshare.com/api-document/index.html" target="_blank" rel="noopener noreferrer">UPNShare API documentation <i class="fa fa-external-link"></i></a>
         <a href="https://earnvids.com/api.html" target="_blank" rel="noopener noreferrer">EarnVids API documentation <i class="fa fa-external-link"></i></a>
     </div>
 </section>

@@ -11,6 +11,7 @@ use CodeIgniter\Model;
 class ThirdPartyApis extends BaseController
 {
     private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
+    private const UPNSHARE_API_ROOT = 'https://upnshare.com/api/v1';
 
     protected $model;
 
@@ -157,9 +158,11 @@ class ThirdPartyApis extends BaseController
             return self::EARNVIDS_API_ROOT;
         }
 
-        return $provider === 'upnshare'
-            ? $url
-            : (preg_replace('#/file/(?:info|list)$#i', '', $url) ?: $url);
+        if ($provider === 'upnshare') {
+            return self::UPNSHARE_API_ROOT;
+        }
+
+        return preg_replace('#/file/(?:info|list)$#i', '', $url) ?: $url;
     }
 
 }

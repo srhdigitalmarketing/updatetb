@@ -15,6 +15,7 @@ use Throwable;
 class HostApiConnectionTest extends BaseAjax
 {
     private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
+    private const UPNSHARE_API_ROOT = 'https://upnshare.com/api/v1';
     /** @var string|null */
     private $lastFailure = null;
 
@@ -35,6 +36,8 @@ class HostApiConnectionTest extends BaseAjax
         // administrator-supplied connection setting.
         if ($provider === 'earnvids') {
             $baseUrl = self::EARNVIDS_API_ROOT;
+        } elseif ($provider === 'upnshare') {
+            $baseUrl = self::UPNSHARE_API_ROOT;
         }
 
         if (mb_strlen($baseUrl) > 255 || $this->getSafeHostConfig($baseUrl) === null) {
@@ -76,7 +79,8 @@ class HostApiConnectionTest extends BaseAjax
             log_message('warning', 'Video-host API connection test failed: {message}', [
                 'message' => $exception->getMessage(),
             ]);
-            $this->addError('The connection test could not reach EarnVids. Check the API key and this server\'s outbound network access.');
+            $hostLabel = $provider === 'upnshare' ? 'UPNShare' : ($provider === 'earnvids' ? 'EarnVids' : 'the provider');
+            $this->addError('The connection test could not reach ' . $hostLabel . '. Check the API key and this server\'s outbound network access.');
         }
 
         return $this->jsonResponse();
@@ -112,6 +116,8 @@ class HostApiConnectionTest extends BaseAjax
             }
 
             $sample = [];
+            $apiResponses = ['video_list' => $this->redactSensitivePayload($list['payload'])];
+            $endpoint = $apiRoot . '/video/manage';
             if (! empty($videos) && is_array($videos[0])) {
                 $sample = $videos[0];
                 $videoId = $this->firstString($sample, ['id', 'video_id', 'videoId', 'uuid']);
@@ -124,6 +130,8 @@ class HostApiConnectionTest extends BaseAjax
                         false
                     );
                     if ($detail !== null && $detail['status'] >= 200 && $detail['status'] < 300 && is_array($detail['payload'])) {
+                        $apiResponses['video_info'] = $this->redactSensitivePayload($detail['payload']);
+                        $endpoint .= '/{id}';
                         $detailData = $detail['payload']['data'] ?? $detail['payload']['result'] ?? $detail['payload'];
                         if (is_array($detailData)) {
                             if (isset($detailData['video']) && is_array($detailData['video'])) {
@@ -135,7 +143,10 @@ class HostApiConnectionTest extends BaseAjax
                 }
             }
 
-            return $this->testResponse('upnshare', $apiRoot . '/video/manage', $list['status'], $sample);
+            $result = $this->testResponse('upnshare', $endpoint, $list['status'], $sample);
+            $result['responses'] = $apiResponses;
+
+            return $result;
         }
 
         return null;
