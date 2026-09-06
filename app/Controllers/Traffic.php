@@ -21,6 +21,14 @@ class Traffic extends BaseController
 
     public function embed()
     {
+        // This endpoint is only used by the background player analytics request.
+        // If a browser submits to it normally (for example after an accidental
+        // form submission), return the visitor to the previous page instead of
+        // rendering a raw JSON response such as {"ok":false}.
+        if (! $this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
         $visitorKey = trim((string) $this->request->getPost('visitor_key'));
 
         if (! preg_match('/^[a-zA-Z0-9_-]{16,64}$/', $visitorKey)) {

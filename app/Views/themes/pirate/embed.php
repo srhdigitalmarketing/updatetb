@@ -128,12 +128,31 @@
     var storageKey = 'streamapi:embed-visitor';
     var visitorKey;
     var shouldRecordDaily = true;
+
+    function isValidVisitorKey(value) {
+        return typeof value === 'string' && /^[a-zA-Z0-9_-]{16,64}$/.test(value);
+    }
+
+    function createVisitorKey() {
+        if (window.crypto && window.crypto.randomUUID) {
+            return window.crypto.randomUUID().replace(/-/g, '');
+        }
+
+        if (window.crypto && window.crypto.getRandomValues) {
+            var values = new Uint32Array(4);
+            window.crypto.getRandomValues(values);
+            return Array.prototype.map.call(values, function (value) {
+                return value.toString(36);
+            }).join('');
+        }
+
+        return String(Date.now()) + Math.random().toString(36).slice(2);
+    }
+
     try {
         visitorKey = localStorage.getItem(storageKey);
-        if (! visitorKey) {
-            visitorKey = (window.crypto && window.crypto.randomUUID)
-                ? window.crypto.randomUUID().replace(/-/g, '')
-                : String(Date.now()) + Math.random().toString(36).slice(2);
+        if (! isValidVisitorKey(visitorKey)) {
+            visitorKey = createVisitorKey();
             localStorage.setItem(storageKey, visitorKey);
         }
     } catch (error) {
@@ -153,7 +172,11 @@
 
         return fetch('<?= site_url('/traffic/embed') ?>', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: body,
             credentials: 'same-origin',
             keepalive: true
