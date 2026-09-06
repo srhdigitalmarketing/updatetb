@@ -14,20 +14,20 @@ class Servers extends BaseSettings
         $title = 'Servers Settings';
 
         $linksModel = new LinkModel();
-        $distLinks = $linksModel->select('link')
-                                ->distinct()
-                                ->findAll();
+        $links = $linksModel->select('link')->findAll();
 
-        $servers = get_config('renamed_servers');
+        $servers = (array) get_config('renamed_servers');
+        $serverLinkCounts = [];
 
-        if(! empty($distLinks)){
+        if(! empty($links)){
 
-            foreach ($distLinks as $link) {
+            foreach ($links as $link) {
                 $host = $link->getHost();
                 if(! empty($host)){
                     if(! isset( $servers[$host] )){
                         $servers[$host] = '';
                     }
+                    $serverLinkCounts[$host] = ($serverLinkCounts[$host] ?? 0) + 1;
                 }
             }
 
@@ -45,7 +45,52 @@ class Servers extends BaseSettings
         }
 
 
-        return view('admin/settings/servers', compact('title', 'servers', 'serverOptions'));
+        return view('admin/settings/servers', compact('title', 'servers', 'serverOptions', 'serverLinkCounts'));
+    }
+
+    /**
+     * Remove a host configuration and every stored link that points to it.
+     * A host is derived from links, so deleting only its label would cause it
+     * to be listed again the next time the settings page is opened.
+     */
+    public function delete()
+    {
+        if ($this->request->getMethod() !== 'post') {
+            return redirect()->back();
+        }
+
+        $host = trim((string) $this->request->getPost('host'));
+        if ($host === '') {
+            return redirect()->back()->with('errors', 'Server host is required.');
+        }
+
+        $linksModel = new LinkModel();
+        $links = $linksModel->select('id, link')->findAll();
+        $linkIds = [];
+
+        foreach ($links as $link) {
+            if ($link->getHost() === $host) {
+                $linkIds[] = $link->id;
+            }
+        }
+
+        if ($linkIds !== []) {
+            $linksModel->whereIn('id', $linkIds)->delete();
+        }
+
+        $servers = (array) get_config('renamed_servers');
+        $deletedName = ! empty($servers[$host]) ? $servers[$host] : $host;
+        unset($servers[$host]);
+
+        $defaultServer = (string) get_config('default_server');
+        if ($defaultServer === $host || $defaultServer === $deletedName) {
+            $defaultServer = '';
+        }
+
+        return $this->save([
+            'renamed_servers' => json_encode($servers),
+            'default_server' => $defaultServer,
+        ]);
     }
 
 

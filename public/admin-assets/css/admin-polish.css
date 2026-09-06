@@ -2157,6 +2157,7 @@ body,
 .server-settings-table tbody td { border-color: #edf1f5; padding: 10px 15px; vertical-align: middle; }
 .server-settings-table tbody tr:hover { background: #fafcff; }
 .server-settings-table strong { color: #344054; font-size: 12px; font-weight: 800; }
+.server-link-count { color: #98a2b3; display: block; font-size: 10px; margin-top: 2px; }
 .server-alias-input { background: #f8fafc; border-color: #e1e7ef; box-shadow: none !important; color: #475467; font-size: 12px; height: 35px; }
 .server-alias-input[readonly] { cursor: default; }
 .server-settings-table tr.is-editing .server-alias-input { background: #fff; border-color: #7ea1f6; }

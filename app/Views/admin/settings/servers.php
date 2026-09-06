@@ -20,7 +20,7 @@
 
                 <?php if(! empty($servers)): ?>
 
-                <p class="server-settings-intro">Manage the display name used for each video host. Deleting a display name never removes its existing movie links.</p>
+                <p class="server-settings-intro">Manage the display name used for each video host. Deleting a host permanently removes its associated links.</p>
 
                 <div class="server-settings-default">
                     <div>
@@ -52,9 +52,10 @@
                         <tbody>
                         <?php foreach ($servers as $key => $val) : ?>
                         <?php $serverName = $val !== '' ? $val : $key; ?>
-                        <tr data-server-row>
+                        <tr data-server-row data-server-host="<?= esc($key, 'attr') ?>" data-server-links="<?= (int) ($serverLinkCounts[$key] ?? 0) ?>">
                             <td>
                                 <strong><?= esc($key) ?></strong>
+                                <span class="server-link-count"><?= number_format($serverLinkCounts[$key] ?? 0) ?> link<?= ($serverLinkCounts[$key] ?? 0) === 1 ? '' : 's' ?></span>
                                 <?php if (get_config('default_server') === $serverName): ?>
                                     <span class="server-default-badge"><i class="fa fa-star"></i> Default</span>
                                 <?php endif; ?>
@@ -97,6 +98,10 @@
 
         <?= form_close() ?>
 
+        <?= form_open('/admin/settings/servers/delete', ['method' => 'post', 'id' => 'server-delete-form', 'class' => 'd-none']) ?>
+            <input type="hidden" name="host" value="">
+        <?= form_close() ?>
+
     </div>
 </div>
 
@@ -124,11 +129,14 @@ document.addEventListener('click', function (event) {
         return;
     }
 
-    if (window.confirm('Delete this display name? Existing video links will remain available.')) {
-        input.removeAttribute('readonly');
-        input.value = '';
-        row.classList.add('is-cleared');
-        input.focus();
+    var host = row.getAttribute('data-server-host');
+    var linkCount = Number(row.getAttribute('data-server-links') || 0);
+    var message = 'Delete ' + host + '? This permanently removes ' + linkCount + ' linked video record' + (linkCount === 1 ? '' : 's') + ' and cannot be undone.';
+
+    if (window.confirm(message)) {
+        var deleteForm = document.getElementById('server-delete-form');
+        deleteForm.querySelector('[name="host"]').value = host;
+        deleteForm.submit();
     }
 });
 </script>
