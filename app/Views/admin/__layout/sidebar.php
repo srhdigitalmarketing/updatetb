@@ -13,29 +13,29 @@
             <div class="menu_section">
                 <ul class="nav side-menu">
                     <li class="sidebar-menu-label"><span>Workspace</span></li>
-                    <li><a href="<?= admin_url('/dashboard') ?>"><i class="fa fa-dashboard"></i> Dashboard </a></li>
+                    <li><a href="<?= admin_url('/dashboard') ?>"><i class="fa fa-dashboard"></i><span class="sidebar-item-label">Dashboard</span></a></li>
 
-                    <li><a><i class="fa fa-play-circle"></i> Video <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-play-circle"></i><span class="sidebar-item-label">Video</span><span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/movies/new') ?>">Add Video</a></li>
                             <li><a href="<?= admin_url('/movies') ?>">All Videos</a></li>
                         </ul>
                     </li>
 
-                    <li><a><i class="fa fa-dollar"></i> Advertisement <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-dollar"></i><span class="sidebar-item-label">Advertisement</span><span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/ads/embed_page') ?>">Embed page</a></li>
                         </ul>
                     </li>
 
-                    <li><a><i class="fa fa-unlink"></i> Links <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-unlink"></i><span class="sidebar-item-label">Links</span><span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/links') ?>">View All</a></li>
                             <li><a href="<?= admin_url('/links/reported') ?>">Reported</a></li>
                         </ul>
                     </li>
 
-                    <li><a><i class="fa fa-magic"></i> API Access <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-magic"></i><span class="sidebar-item-label">API Access</span><span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/third-party-apis') ?>">All API Access</a></li>
                             <li><a href="<?= admin_url('/third-party-apis/new') ?>">Add API Access</a></li>
@@ -43,7 +43,7 @@
                     </li>
 
                     <li class="sidebar-menu-label sidebar-menu-label--system"><span>System</span></li>
-                    <li><a><i class="fa fa-gear"></i> Settings <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-gear"></i><span class="sidebar-item-label">Settings</span><span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="<?= admin_url('/settings/site') ?>">Site</a></li>
                             <li><a href="<?= admin_url('/settings/profile') ?>">Profile</a></li>

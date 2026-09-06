@@ -2652,7 +2652,9 @@ body,
   padding: 0 !important;
   width: 48px;
 }
-.admin-topbar__toggle a:hover { background: var(--bs-primary); color: #fff !important; }
+.admin-topbar__toggle a:hover,
+.admin-topbar__toggle a:active { background: #fff; color: #64748b !important; }
+.admin-topbar__toggle a:focus-visible { outline: 2px solid rgba(var(--bs-primary-rgb), .45); outline-offset: 2px; }
 .admin-topbar__toggle a .fa { font-size: 16px; }
 .admin-topbar__greeting { color: #303345; flex: 1 1 auto; min-width: 180px; }
 .admin-topbar__greeting strong { font-size: 1.375rem; font-weight: 750; letter-spacing: -.02em; }
@@ -2728,3 +2730,29 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
     width: clamp(28px, 2vw, 32px);
   }
 }
+
+/* The compact sidebar is icon-only: labels must not overflow into the workspace. */
+.nav-sm .sidebar-menu-label,
+.nav-sm .sidebar-item-label,
+.nav-sm .nav.side-menu > li > a .fa-chevron-down { display: none !important; }
+.nav-sm .nav.side-menu > li > a {
+  justify-content: center;
+  margin-left: 8px;
+  margin-right: 8px;
+  min-height: 48px;
+  padding: 8px !important;
+}
+.nav-sm .nav.side-menu > li > a i:first-child {
+  height: 30px !important;
+  margin: 0 !important;
+  width: 30px !important;
+}
+.nav-sm .nav.child_menu {
+  background: #fff;
+  border: 1px solid #e5eaf2;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .12);
+  padding: 5px !important;
+}
+.nav-sm .nav.child_menu > li { padding: 0 !important; }
+.nav-sm .nav.child_menu > li > a { padding: 8px 10px !important; }
