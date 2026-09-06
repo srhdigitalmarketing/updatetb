@@ -61,6 +61,7 @@ class ThirdPartyApis extends BaseController
     public function create(): \CodeIgniter\HTTP\RedirectResponse
     {
         $data = $this->request->getPost();
+        $data['api_base_url'] = $this->normaliseApiBaseUrl($data['api_base_url'] ?? '', $data['provider'] ?? '');
 
         if (empty($data['api_token'])) {
             return redirect()->back()
@@ -86,6 +87,7 @@ class ThirdPartyApis extends BaseController
     {
         $tpAPI = $this->getApi( $this->request->getGet('id') );
         $data = $this->request->getPost();
+        $data['api_base_url'] = $this->normaliseApiBaseUrl($data['api_base_url'] ?? '', $data['provider'] ?? '');
 
         // Never erase a saved token merely because the masked token field is blank.
         if (empty($data['api_token'])) {
@@ -140,6 +142,16 @@ class ThirdPartyApis extends BaseController
         }
 
         return $api;
+    }
+
+    /** Convert pasted File Info/List endpoint URLs into the API root. */
+    private function normaliseApiBaseUrl($url, $provider): string
+    {
+        $url = rtrim(trim((string) $url), '/');
+
+        return $provider === 'upnshare'
+            ? $url
+            : (preg_replace('#/file/(?:info|list)$#i', '', $url) ?: $url);
     }
 
 }

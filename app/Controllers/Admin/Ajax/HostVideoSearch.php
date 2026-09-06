@@ -428,6 +428,9 @@ class HostVideoSearch extends BaseAjax
     private function apiRoots(object $api): array
     {
         $base = rtrim((string) $api->api_base_url, '/');
+        if ((string) $api->provider !== 'upnshare') {
+            $base = preg_replace('#/file/(?:info|list)$#i', '', $base) ?: $base;
+        }
         $roots = [$base];
 
         if (! preg_match('#/api(?:/v1)?$#i', $base)) {

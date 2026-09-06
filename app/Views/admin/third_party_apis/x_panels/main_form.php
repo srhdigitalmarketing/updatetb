@@ -64,7 +64,7 @@ if (! $isExisting) {
                 'maxlength' => 255,
                 'required' => 'required',
             ]) ?>
-            <small>Enter either the host URL or its API root. UPNShare searches <code>/api/v1/video/manage</code>; Vidhide and XVideoSharing hosts use <code>/api/file/list</code>.</small>
+            <small>Enter the API root, not a File Info/List endpoint. For EarnVids use <code>https://earnvidsapi.com/api</code>; the connection test uses <code>/file/list</code> automatically.</small>
         </div>
 
         <div class="form-group">

@@ -245,6 +245,9 @@ class HostApiConnectionTest extends BaseAjax
     private function standardApiRoots(string $baseUrl): array
     {
         $baseUrl = rtrim($baseUrl, '/');
+        // API Access stores an API root. When the documented File Info URL
+        // is pasted, strip that endpoint before this test adds /file/list.
+        $baseUrl = preg_replace('#/file/(?:info|list)$#i', '', $baseUrl) ?: $baseUrl;
         $roots = [$baseUrl];
 
         if (! preg_match('#/api(?:/v1)?$#i', $baseUrl)) {

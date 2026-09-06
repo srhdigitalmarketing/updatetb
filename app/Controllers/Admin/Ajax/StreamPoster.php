@@ -209,6 +209,10 @@ class StreamPoster extends BaseAjax
             return [];
         }
 
+        if ($provider !== 'upnshare') {
+            $baseUrl = preg_replace('#/file/(?:info|list)$#i', '', $baseUrl) ?: $baseUrl;
+        }
+
         $roots = [$baseUrl];
         if ($provider === 'upnshare') {
             $parts = parse_url($baseUrl);

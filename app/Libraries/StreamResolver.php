@@ -272,6 +272,12 @@ class StreamResolver
             return [];
         }
 
+        if ($provider !== 'upnshare') {
+            // Existing settings can contain /api/file/info or /api/file/list.
+            // The availability request below appends its own endpoint.
+            $baseUrl = preg_replace('#/file/(?:info|list)$#i', '', $baseUrl) ?: $baseUrl;
+        }
+
         $roots = [$baseUrl];
         if ($provider === 'upnshare') {
             $parts = parse_url($baseUrl);
