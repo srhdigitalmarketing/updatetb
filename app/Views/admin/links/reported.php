@@ -7,7 +7,7 @@
     <div>
         <span class="link-workspace-header__eyebrow">LINK HEALTH</span>
         <h4>Reported links</h4>
-        <p>Prioritize links with the most visitor reports, then clear or correct them quickly.</p>
+        <p>Reported stream links are rechecked automatically; healthy links clear “Not working” reports without manual review.</p>
     </div>
     <span class="reported-links-summary"><i class="fa fa-exclamation-circle"></i> <?= number_format($linksCount) ?> need review</span>
 </div>

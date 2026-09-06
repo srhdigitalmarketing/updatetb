@@ -273,6 +273,13 @@ class StreamResolver
         }
 
         $this->links->protect(false)->update($link->id, $data);
+
+        // A successful provider/API or HTTP check confirms the visitor report
+        // is no longer actionable. Keep "wrong video" reports for a person to
+        // review because availability alone cannot validate video contents.
+        if ((int) ($link->reports_not_working ?? 0) > 0) {
+            $this->links->clearNotWorkingReports((int) $link->id);
+        }
     }
 
     private function probeHost(string $url): bool

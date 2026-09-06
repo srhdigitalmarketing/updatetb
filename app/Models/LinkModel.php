@@ -157,6 +157,25 @@ class LinkModel extends Model
     }
 
     /**
+     * Clear only visitor reports that say a link is not working. Reports for a
+     * wrong video need manual review and must remain visible to administrators.
+     */
+    public function clearNotWorkingReports(int $linkId): bool
+    {
+        try {
+            return $this->set('reports_not_working', 0)
+                        ->protect(false)
+                        ->update($linkId);
+        } catch (\ReflectionException $exception) {
+            log_message('warning', 'Could not auto-clear link reports: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        return false;
+    }
+
+    /**
      * Select broken links
      * @param bool $st
      * @return $this
