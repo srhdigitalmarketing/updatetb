@@ -1794,6 +1794,9 @@ body,
   margin-top: 6px;
 }
 
+.popup-ad-unit__credentials { background: #f8faff; border: 1px solid #e1e9f6; border-radius: 8px; display: grid; gap: 14px; grid-template-columns: 1fr 1fr; margin-top: 14px; padding: 14px; }
+.popup-ad-unit__credentials label small { color: #98a2b3 !important; display: inline; font-size: 10px; margin: 0 0 0 4px; }
+
 .popup-ad-actions {
   align-items: center;
   display: flex;
@@ -1831,6 +1834,7 @@ body,
 
 @media (max-width: 991px) {
   .popup-ad-unit__fields { grid-template-columns: 1fr 1fr; }
+  .popup-ad-unit__credentials { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 767px) {

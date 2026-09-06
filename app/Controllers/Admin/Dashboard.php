@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Libraries\Analytics;
 use App\Models\LiveTrafficModel;
 use App\Models\MovieModel;
+use App\Models\PopupAdUnitModel;
 
 
 class Dashboard extends BaseController
@@ -26,9 +27,9 @@ class Dashboard extends BaseController
 
         $liveTraffic = $this->liveTrafficSummary();
         $visitorStats = $this->visitorStatistics();
-        $zodeConfigured = ! empty(get_config('zode_id')) && ! empty(get_config('zode_api_token'));
+        $revenueConfigured = $this->popupRevenueConfigured();
 
-        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'zodeConfigured');
+        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'revenueConfigured');
 
         return view('admin/dashboard/index', $data);
     }
@@ -55,6 +56,33 @@ class Dashboard extends BaseController
             ]);
 
             return ['active_now' => 0, 'tracking_ready' => false];
+        }
+    }
+
+    private function popupRevenueConfigured(): bool
+    {
+        try {
+            $db = db_connect();
+            if (! $db->tableExists('popup_ad_units')) {
+                return false;
+            }
+
+            $fields = $db->getFieldNames('popup_ad_units');
+            if (! in_array('zone_id', $fields, true) || ! in_array('api_token', $fields, true)) {
+                return false;
+            }
+
+            return (new PopupAdUnitModel())
+                ->where('page', 'embed')
+                ->where('status', 'active')
+                ->where('zone_id !=', '')
+                ->where('api_token !=', '')
+                ->countAllResults() > 0;
+        } catch (\Throwable $exception) {
+            log_message('warning', 'Unable to determine popup revenue configuration: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+            return false;
         }
     }
 

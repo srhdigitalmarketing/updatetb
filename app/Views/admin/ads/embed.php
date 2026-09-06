@@ -12,58 +12,16 @@ $providerOptions = [
 ];
 ?>
 
-<?= form_open('/admin/ads/zode-settings/save', ['method' => 'post', 'class' => 'zode-settings-form']) ?>
-<section class="zode-settings-card">
-    <div class="zode-settings-card__heading">
-        <div>
-            <span class="popup-ads-intro__eyebrow">Revenue integration</span>
-            <h4>Zode Analytics</h4>
-            <p>Save the credentials that will be used to sync today's ad revenue to the dashboard.</p>
-        </div>
-        <span class="zode-settings-card__state <?= $zodeApiTokenConfigured ? 'is-configured' : '' ?>">
-            <i class="fa fa-<?= $zodeApiTokenConfigured ? 'check-circle' : 'plug' ?>"></i>
-            <?= $zodeApiTokenConfigured ? 'Credentials saved' : 'Not connected' ?>
-        </span>
-    </div>
-    <div class="zode-settings-card__fields">
-        <div class="form-group">
-            <label for="zode-id">Zode ID</label>
-            <?= form_input([
-                'id' => 'zode-id',
-                'name' => 'zode_id',
-                'class' => 'form-control',
-                'value' => $zodeId,
-                'maxlength' => 100,
-                'placeholder' => 'Enter your Zode ID',
-                'autocomplete' => 'off',
-            ]) ?>
-        </div>
-        <div class="form-group">
-            <label for="zode-api-token">API token</label>
-            <?= form_input([
-                'id' => 'zode-api-token',
-                'name' => 'zode_api_token',
-                'type' => 'password',
-                'class' => 'form-control',
-                'maxlength' => 255,
-                'placeholder' => $zodeApiTokenConfigured ? 'Saved — leave blank to keep it' : 'Paste your API token',
-                'autocomplete' => 'new-password',
-            ]) ?>
-            <small>Your token is never shown again. Leave it blank to keep the saved token.</small>
-        </div>
-    </div>
-    <div class="zode-settings-card__footer">
-        <span><i class="fa fa-lock"></i> Used only for the future Zode revenue sync.</span>
-        <?= form_button(['type' => 'submit', 'class' => 'btn btn-primary'], 'Save Zode settings') ?>
-    </div>
-</section>
-<?= form_close() ?>
-
 <?php if ($popupAdUnitsUnavailable): ?>
     <div class="alert alert-warning">
         The Popup Ads table is not visible in this site's active database. Verify <code>php spark migrate</code> was run in the same site directory and with the same database configuration.
     </div>
 <?php else: ?>
+    <?php if ($popupAdCredentialsUnavailable): ?>
+        <div class="alert alert-warning">
+            Run <code>php spark migrate</code> to add Zone ID and API Token fields for each ad network.
+        </div>
+    <?php endif; ?>
     <?php if ($popupAdUnitsLoadError): ?>
         <div class="alert alert-warning">
             The Popup Ads table exists, but its saved units could not be loaded. The detailed database error is recorded in <code>writable/logs</code>; you can still add a new unit below.
@@ -155,6 +113,31 @@ $providerOptions = [
                     ], $unit['ad_code']) ?>
                     <small>Paste only one network code per unit. The loader chooses one active unit and keeps the other scripts from competing.</small>
                 </div>
+                <div class="popup-ad-unit__credentials">
+                    <div class="form-group mb-0">
+                        <label>Zone ID <small>Optional</small></label>
+                        <?= form_input([
+                            'name' => "popup_units[{$key}][zone_id]",
+                            'class' => 'form-control',
+                            'value' => $unit['zone_id'] ?? '',
+                            'maxlength' => 100,
+                            'placeholder' => 'Zone ID for this network',
+                            'autocomplete' => 'off',
+                        ]) ?>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label>API token <small>Optional</small></label>
+                        <?= form_input([
+                            'name' => "popup_units[{$key}][api_token]",
+                            'type' => 'password',
+                            'class' => 'form-control',
+                            'maxlength' => 255,
+                            'placeholder' => ! empty($unit['api_token_configured']) ? 'Saved — leave blank to keep it' : 'API token for this network',
+                            'autocomplete' => 'new-password',
+                        ]) ?>
+                        <small>Leave blank to keep the saved token.</small>
+                    </div>
+                </div>
             </article>
         <?php endforeach; ?>
     </div>
@@ -215,6 +198,17 @@ $providerOptions = [
                 <label>Network ad code</label>
                 <textarea name="popup_units[__KEY__][ad_code]" class="form-control popup-ad-code" rows="7" placeholder="Paste the code supplied by this ad network"></textarea>
                 <small>Paste only one network code per unit. The loader chooses one active unit and keeps the other scripts from competing.</small>
+            </div>
+            <div class="popup-ad-unit__credentials">
+                <div class="form-group mb-0">
+                    <label>Zone ID <small>Optional</small></label>
+                    <input type="text" name="popup_units[__KEY__][zone_id]" class="form-control" maxlength="100" placeholder="Zone ID for this network" autocomplete="off">
+                </div>
+                <div class="form-group mb-0">
+                    <label>API token <small>Optional</small></label>
+                    <input type="password" name="popup_units[__KEY__][api_token]" class="form-control" maxlength="255" placeholder="API token for this network" autocomplete="new-password">
+                    <small>Leave blank to keep the saved token.</small>
+                </div>
             </div>
         </article>
     </template>

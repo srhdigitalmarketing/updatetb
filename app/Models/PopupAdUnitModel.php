@@ -14,13 +14,18 @@ class PopupAdUnitModel extends Model
         'provider',
         'name',
         'ad_code',
+        'zone_id',
+        'api_token',
         'weight',
         'status',
     ];
 
     public function activeForEmbed(): array
     {
-        return $this->where('page', 'embed')
+        // Credentials are only used by the admin revenue integration and must
+        // never be passed to the public embed page.
+        return $this->select('id, page, provider, name, ad_code, weight, status, created_at, updated_at')
+            ->where('page', 'embed')
             ->where('status', 'active')
             ->orderBy('weight', 'DESC')
             ->orderBy('id', 'ASC')

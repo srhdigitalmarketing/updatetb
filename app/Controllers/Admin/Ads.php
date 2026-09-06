@@ -53,13 +53,20 @@ class Ads extends BaseController
         $popupAdUnits = [];
         $popupAdUnitsLoadError = false;
         $popupAdUnitsUnavailable = ! db_connect()->tableExists('popup_ad_units');
+        $popupAdCredentialsUnavailable = false;
 
         if (! $popupAdUnitsUnavailable) {
             try {
+                $popupAdCredentialsUnavailable = ! $this->popupAdCredentialsAvailable();
                 $popupAdUnits = $this->popupAdModel
                     ->where('page', 'embed')
                     ->orderBy('id', 'ASC')
                     ->findAll();
+
+                foreach ($popupAdUnits as $index => $unit) {
+                    $popupAdUnits[$index]['api_token_configured'] = ! empty($unit['api_token']);
+                    unset($popupAdUnits[$index]['api_token']);
+                }
             } catch (\Throwable $exception) {
                 log_message('error', 'Unable to load managed popup ads: {message}', [
                     'message' => $exception->getMessage(),
@@ -68,10 +75,7 @@ class Ads extends BaseController
             }
         }
 
-        $zodeId = (string) (get_config('zode_id') ?? '');
-        $zodeApiTokenConfigured = ! empty(get_config('zode_api_token'));
-
-        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable', 'popupAdUnitsLoadError', 'zodeId', 'zodeApiTokenConfigured');
+        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable', 'popupAdCredentialsUnavailable', 'popupAdUnitsLoadError');
 
         return view('admin/ads/embed', $data);
     }
@@ -182,6 +186,12 @@ class Ads extends BaseController
                 ->withInput();
         }
 
+        if (! $this->popupAdCredentialsAvailable()) {
+            return redirect()->back()
+                ->with('errors', ['Zone ID and API Token columns are not available yet. Run the latest database migration first.'])
+                ->withInput();
+        }
+
         try {
             foreach ((array) $removeIds as $id) {
                 $id = (int) $id;
@@ -207,6 +217,8 @@ class Ads extends BaseController
                 $provider = strtolower(trim((string) ($unitData['provider'] ?? 'custom')));
                 $name = trim((string) ($unitData['name'] ?? ''));
                 $code = trim((string) ($unitData['ad_code'] ?? ''));
+                $zoneId = trim((string) ($unitData['zone_id'] ?? ''));
+                $apiToken = trim((string) ($unitData['api_token'] ?? ''));
 
                 if ($id < 1 && $code === '') {
                     continue;
@@ -218,11 +230,18 @@ class Ads extends BaseController
                         ->withInput();
                 }
 
+                if (mb_strlen($zoneId) > 100 || mb_strlen($apiToken) > 255) {
+                    return redirect()->back()
+                        ->with('errors', ['Zone ID or API token is too long.'])
+                        ->withInput();
+                }
+
                 $data = [
                     'page' => 'embed',
                     'provider' => $provider,
                     'name' => $name !== '' ? substr($name, 0, 100) : ucfirst($provider),
                     'ad_code' => $code,
+                    'zone_id' => $zoneId,
                     'weight' => max(1, min(100, (int) ($unitData['weight'] ?? 1))),
                     'status' => ($unitData['status'] ?? 'paused') === 'active' ? 'active' : 'paused',
                 ];
@@ -237,6 +256,12 @@ class Ads extends BaseController
                     }
 
                     $data['id'] = $id;
+                }
+
+                // A blank token on an existing unit intentionally preserves the
+                // secret already stored for that network.
+                if ($apiToken !== '') {
+                    $data['api_token'] = $apiToken;
                 }
 
                 $this->popupAdModel->save($data);
@@ -297,6 +322,24 @@ class Ads extends BaseController
         db_connect()->table('settings')
             ->where('name', $name)
             ->update(['value' => $value]);
+    }
+
+    private function popupAdCredentialsAvailable(): bool
+    {
+        try {
+            $db = db_connect();
+            if (! $db->tableExists('popup_ad_units')) {
+                return false;
+            }
+
+            $fields = $db->getFieldNames('popup_ad_units');
+            return in_array('zone_id', $fields, true) && in_array('api_token', $fields, true);
+        } catch (\Throwable $exception) {
+            log_message('error', 'Unable to inspect popup ad credential fields: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+            return false;
+        }
     }
 
 

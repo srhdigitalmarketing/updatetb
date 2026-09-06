@@ -31,7 +31,7 @@
         <div class="icon"><i class="fa fa-line-chart"></i></div>
         <div class="count">—</div>
         <h3>Pendapatan hari ini</h3>
-        <p><?= $zodeConfigured ? 'Koneksi Zode siap untuk sinkronisasi pendapatan.' : 'Hubungkan Zode ID dan API token di Ads → Embed.' ?></p>
+        <p><?= $revenueConfigured ? 'Kredensial pendapatan tersimpan pada network iklan aktif.' : 'Tambahkan Zone ID dan API token pada network di Ads → Embed.' ?></p>
         <a href="<?= admin_url('/ads/embed_page') ?>">Konfigurasi monetisasi <i class="fa fa-arrow-right"></i></a>
     </div>
 </div>
