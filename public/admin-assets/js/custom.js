@@ -312,6 +312,13 @@
                 clonedGroup.find('.upnshare-video-id').val('');
                 clonedGroup.find('.upnshare-video-id').attr('name', 'st_links['+ uniqId +'][upnshare_video_id]');
 
+                clonedGroup.find('.stream-server-host').html('<i class="fa fa-server"></i> Host detected after saving');
+                clonedGroup.find('.stream-server-badge')
+                    .removeClass('is-healthy is-broken')
+                    .addClass('is-unchecked')
+                    .attr('title', 'Waiting for the first availability check')
+                    .html('<i class="fa fa-clock-o"></i> Not checked');
+
                 clonedGroup.find('input[type="hidden"]').remove();
                 clonedGroup.find('.link-meta-info').remove();
                 clonedGroup.find('label:first').text('Link ' + uniqId);

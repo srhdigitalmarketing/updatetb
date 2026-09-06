@@ -2820,6 +2820,32 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
   border-color: #64748b !important;
   color: #fff !important;
 }
+.stream-server-status {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  min-height: 38px;
+}
+.stream-server-host {
+  color: #334155;
+  font-size: .875rem;
+  font-weight: 700;
+}
+.stream-server-host .fa { color: #64748b; margin-right: .25rem; }
+.stream-server-badge {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: .75rem;
+  font-weight: 700;
+  gap: .3rem;
+  line-height: 1;
+  padding: .4rem .6rem;
+}
+.stream-server-badge.is-healthy { background: #dcfce7; color: #15803d; }
+.stream-server-badge.is-broken { background: #fee2e2; color: #b91c1c; }
+.stream-server-badge.is-unchecked { background: #e2e8f0; color: #475569; }
 
 /* Modern, compact DataTables pagination for every administration table. */
 .right_col .dataTables_wrapper .dataTables_paginate {

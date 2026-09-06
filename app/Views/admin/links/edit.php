@@ -139,13 +139,23 @@
                             </div>
                             <div class="col-md-8">
                                 <div class="form-group">
-                                    <?= form_label('Provider video ID (optional)') ?>
-                                    <?= form_input([
-                                        'name' => 'upnshare_video_id',
-                                        'class' => 'form-control',
-                                        'value' => old('upnshare_video_id', $link->upnshare_video_id ?? ''),
-                                        'placeholder' => 'Used for API availability checks (UPNShare/VidHide)'
-                                    ]) ?>
+                                    <?php
+                                    $serverHost = parse_url((string) $link->link, PHP_URL_HOST);
+                                    $serverHost = is_string($serverHost) && $serverHost !== '' ? preg_replace('/^www\./i', '', $serverHost) : 'Unknown server';
+                                    $isUnavailable = (bool) ($link->is_broken ?? false) || ! empty($link->last_error);
+                                    $isHealthy = ! $isUnavailable && ! empty($link->last_checked_at) && ! empty($link->last_success_at);
+                                    ?>
+                                    <?= form_label('Server status') ?>
+                                    <div class="stream-server-status">
+                                        <span class="stream-server-host"><i class="fa fa-server"></i> <?= esc($serverHost) ?></span>
+                                        <?php if ($isUnavailable): ?>
+                                            <span class="stream-server-badge is-broken" title="The last availability check failed"><i class="fa fa-times"></i> Unavailable</span>
+                                        <?php elseif ($isHealthy): ?>
+                                            <span class="stream-server-badge is-healthy" title="Video link passed the latest check"><i class="fa fa-check"></i> Healthy</span>
+                                        <?php else: ?>
+                                            <span class="stream-server-badge is-unchecked" title="Waiting for the first availability check"><i class="fa fa-clock-o"></i> Not checked</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>

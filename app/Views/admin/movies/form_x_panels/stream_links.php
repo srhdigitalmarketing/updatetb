@@ -1,3 +1,20 @@
+<?php
+$streamServerStatus = static function ($link): array {
+    $host = parse_url((string) $link->link, PHP_URL_HOST);
+    $host = is_string($host) && $host !== '' ? preg_replace('/^www\./i', '', $host) : 'Unknown server';
+
+    if ((bool) ($link->is_broken ?? false) || ! empty($link->last_error)) {
+        return [$host, 'is-broken', 'fa-times', 'Unavailable', 'The last availability check failed'];
+    }
+
+    if (! empty($link->last_checked_at) && ! empty($link->last_success_at)) {
+        return [$host, 'is-healthy', 'fa-check', 'Healthy', 'Video link passed the latest check'];
+    }
+
+    return [$host, 'is-unchecked', 'fa-clock-o', 'Not checked', 'Waiting for the first availability check'];
+};
+?>
+
 <div class="x_panel">
     <div class="x_title">
         <h2>Stream Links</h2>
@@ -53,14 +70,15 @@
                             <small class="form-text text-muted">Higher values are tried first; the next link is used automatically if playback fails.</small>
                         </div>
                         <div class="col-md-8">
-                            <?= form_label('Provider video ID (optional)', '') ?>
-                            <?= form_input([
-                                'type' => 'text',
-                                'name' => "st_links[{$key}][upnshare_video_id]",
-                                'class' => 'form-control upnshare-video-id',
-                                'value' => old("st_links.{$key}.upnshare_video_id", $link->upnshare_video_id ?? ''),
-                                'placeholder' => 'Used for API availability checks (UPNShare/VidHide)'
-                            ]) ?>
+                            <?php [$serverHost, $serverStatusClass, $serverStatusIcon, $serverStatusLabel, $serverStatusHelp] = $streamServerStatus($link); ?>
+                            <?= form_label('Server status', '') ?>
+                            <div class="stream-server-status">
+                                <span class="stream-server-host"><i class="fa fa-server"></i> <?= esc($serverHost) ?></span>
+                                <span class="stream-server-badge <?= esc($serverStatusClass) ?>" title="<?= esc($serverStatusHelp) ?>">
+                                    <i class="fa <?= esc($serverStatusIcon) ?>"></i> <?= esc($serverStatusLabel) ?>
+                                </span>
+                            </div>
+                            <?= form_hidden("st_links[{$key}][upnshare_video_id]", old("st_links.{$key}.upnshare_video_id", $link->upnshare_video_id ?? '')) ?>
                         </div>
                     </div>
 
@@ -104,14 +122,11 @@
                             <small class="form-text text-muted">Higher values are tried first; the next link is used automatically if playback fails.</small>
                         </div>
                         <div class="col-md-8">
-                            <?= form_label('Provider video ID (optional)', '') ?>
-                            <?= form_input([
-                                'type' => 'text',
-                                'name' => "st_links[{$i}][upnshare_video_id]",
-                                'class' => 'form-control upnshare-video-id',
-                                'value' => old("st_links.{$i}.upnshare_video_id"),
-                                'placeholder' => 'Used for API availability checks (UPNShare/VidHide)'
-                            ]) ?>
+                            <?= form_label('Server status', '') ?>
+                            <div class="stream-server-status">
+                                <span class="stream-server-host"><i class="fa fa-server"></i> Host detected after saving</span>
+                                <span class="stream-server-badge is-unchecked"><i class="fa fa-clock-o"></i> Not checked</span>
+                            </div>
                         </div>
                     </div>
 
