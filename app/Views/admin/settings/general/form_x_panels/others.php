@@ -1,83 +1,32 @@
 <div class="x_panel">
     <div class="x_title">
-        <h2>Others</h2>
+        <h2>Link reporting <small>Visitor feedback</small></h2>
         <ul class="nav navbar-right panel_toolbox">
             <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
             </li>
         </ul>
         <div class="clearfix"></div>
     </div>
-    <div class="x_content">
-
-        <div class="form-group row">
-            <label class="control-label col-md-3">Stream Quality Formats</label>
-            <div class="col-md-9">
-                <?= form_textarea([
-                    'name' => 'stream_quality_formats',
-                    'class' => 'form-control',
-                    'rows' => 2
-                ], implode(', ', get_config('stream_quality_formats'))) ?>
-                <small>Separate each resolution format by comma. <br> Ex: HD , SD , CAM </small>
+    <div class="x_content general-report-panel">
+        <div class="general-report-card">
+            <div class="general-report-card__icon"><i class="fa fa-flag-o"></i></div>
+            <div class="general-report-card__content">
+                <span class="general-report-card__eyebrow">Links Report</span>
+                <h3>Let visitors report broken links</h3>
+                <p>Show a report option to help your team identify unavailable or incorrect links.</p>
             </div>
+            <label class="general-report-toggle" for="is_links_report">
+                <input id="is_links_report" type="checkbox" name="is_links_report" value="1" <?= get_config('is_links_report') ? 'checked' : '' ?>>
+                <span>Enable reporting</span>
+                <small><?= get_config('is_links_report') ? 'Active' : 'Inactive' ?></small>
+            </label>
         </div>
 
-        <div class="form-group row">
-            <label class="control-label col-md-3">Download Quality Formats</label>
-            <div class="col-md-9">
-                <?= form_textarea([
-                    'name' => 'download_quality_formats',
-                    'class' => 'form-control',
-                    'rows' => 2
-                ], implode(', ', get_config('download_quality_formats'))) ?>
-                <small>Separate each quality format by comma. <br> Ex: HDRip , CAM </small>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <label class="control-label col-md-3">Download Resolution Formats</label>
-            <div class="col-md-9">
-                <?= form_textarea([
-                    'name' => 'download_resolution_formats',
-                    'class' => 'form-control',
-                    'rows' => 2
-                ], implode(', ', get_config('download_resolution_formats'))) ?>
-                <small>Separate each resolution format by comma. <br> Ex: 720p.xxx , 480p.xxx </small>
-
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <label class="control-label col-md-3">Links Report</label>
-            <div class="col-md-9">
-                <div class="checkbox  mt-2">
-                    <label>
-                        <?= form_checkbox('is_links_report','', get_config('is_links_report')) ?>
-                        Enable/ Disable
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <label class="control-label col-md-3">Download System</label>
-            <div class="col-md-9">
-                <div class="checkbox  mt-2">
-                    <label>
-                        <?= form_checkbox('download_system','', get_config('download_system')) ?>
-                        Enable/ Disable
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-right">
+        <div class="text-right general-report-actions">
             <?= form_button([
                 'type' => 'submit',
                 'class' => 'btn btn-primary'
-            ], 'update') ?>
+            ], 'Save changes') ?>
         </div>
-
-
-
     </div>
 </div>

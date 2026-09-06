@@ -19,29 +19,18 @@ class General extends BaseSettings
         if($this->request->getMethod() == 'post') {
 
             $validationRules = [
-                'tmdb_api_key' => 'permit_empty|alpha_numeric',
-                'omdb_api_key' => 'permit_empty|alpha_numeric',
-                'dl_link_waiting_time' => 'required|integer|greater_than[2]'
+                'is_media_download_to_server' => 'required|in_list[0,1]',
             ];
 
             if($this->validate( $validationRules )){
 
-                $data = $this->request->getPost();
+                $data = $this->request->getPost([
+                    'is_media_download_to_server',
+                    'is_links_report',
+                ]);
 
-                $data['download_quality_formats'] = separate_by_comma( $data['download_quality_formats'] );
-                $data['download_resolution_formats'] = separate_by_comma( $data['download_resolution_formats'] );
-                $data['stream_quality_formats'] = separate_by_comma( $data['stream_quality_formats'] );
-
-                $data['is_stream_gcaptcha_enabled'] =  isset( $data['is_stream_gcaptcha_enabled'] );
-                $data['is_count_down_timer'] =  isset( $data['is_count_down_timer'] );
-                $data['is_download_link_captcha'] =  isset( $data['is_download_link_captcha'] );
-
-                $data['is_links_report'] =  isset( $data['is_links_report'] );
-                $data['download_system'] =  isset( $data['download_system'] );
-
-                $data['request_system'] =  isset( $data['request_system'] );
-                $data['req_email_subscription'] =  isset( $data['req_email_subscription'] );
-                $data['is_request_captcha_enabled'] =  isset( $data['is_request_captcha_enabled'] );
+                $data['is_media_download_to_server'] = $data['is_media_download_to_server'] == 1;
+                $data['is_links_report'] = isset($data['is_links_report']);
 
 
                 //save media files

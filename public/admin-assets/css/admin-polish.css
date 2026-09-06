@@ -2131,6 +2131,18 @@ body,
 .host-search-selected { background: #ecfdf3; border: 1px solid #abefc6; border-radius: 8px; color: #027a48; font-size: 12px; font-weight: 700; margin: 6px 0 18px; padding: 11px 12px; }
 .host-search-selected .fa { margin-right: 3px; }
 
+/* Focused, unobtrusive controls for General Settings. */
+.general-report-panel { padding: 20px; }
+.general-report-card { align-items: center; background: linear-gradient(135deg, #f7faff 0%, #fff 72%); border: 1px solid #dbe7fb; border-radius: 10px; display: grid; gap: 15px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 18px; }
+.general-report-card__icon { align-items: center; background: #e9f1ff; border-radius: 10px; color: #3569ef; display: flex; font-size: 19px; height: 42px; justify-content: center; width: 42px; }
+.general-report-card__eyebrow { color: #3569ef; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.general-report-card h3 { color: #1d2939; font-size: 14px; font-weight: 800; margin: 3px 0 4px; }
+.general-report-card p { color: #667085; font-size: 12px; line-height: 1.45; margin: 0; }
+.general-report-toggle { align-items: center; background: #fff; border: 1px solid #d9e2f2; border-radius: 8px; color: #344054; cursor: pointer; display: flex; font-size: 12px; font-weight: 700; gap: 7px; margin: 0; padding: 10px 12px; white-space: nowrap; }
+.general-report-toggle input { accent-color: #3569ef; height: 15px; margin: 0; width: 15px; }
+.general-report-toggle small { color: #667085; font-size: 10px; font-weight: 700; margin-left: 3px; }
+.general-report-actions { margin-top: 16px; }
+
 @media (max-width: 767px) {
   .host-api-guide,
   .host-api-overview,
@@ -2148,4 +2160,6 @@ body,
   .player-settings-fields .control-label { padding-top: 0; text-align: left; }
   .player-preview { min-height: 245px; }
   .host-search-results__heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .general-report-card { align-items: flex-start; grid-template-columns: auto minmax(0, 1fr); }
+  .general-report-toggle { grid-column: 1 / -1; justify-content: center; width: 100%; }
 }

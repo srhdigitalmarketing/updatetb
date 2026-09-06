@@ -8,11 +8,7 @@
 
         <?= form_open_multipart('/admin/settings/general/update', [ 'method' => 'post', 'class' => 'form-horizontal form-label-left' ] ) ?>
 
-        <?= $this->include('/admin/settings/general/form_x_panels/data_api') ?>
         <?= $this->include('/admin/settings/general/form_x_panels/media_files') ?>
-        <?= $this->include('/admin/settings/general/form_x_panels/gcaptcha') ?>
-        <?= $this->include('/admin/settings/general/form_x_panels/download') ?>
-        <?= $this->include('/admin/settings/general/form_x_panels/request') ?>
         <?= $this->include('/admin/settings/general/form_x_panels/others') ?>
 
 
