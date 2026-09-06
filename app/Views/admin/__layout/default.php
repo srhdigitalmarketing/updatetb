@@ -10,7 +10,7 @@
 
         <!-- page content -->
         <div class="right_col" role="main">
-            <div class="">
+            <div class="admin-content-container">
 
                 <?php if (empty($hidePageTitle)): ?>
                     <div class="page-title">
