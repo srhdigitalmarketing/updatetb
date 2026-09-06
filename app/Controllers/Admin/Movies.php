@@ -36,8 +36,8 @@ class Movies extends BaseController
         $allowedFilters = [
             'with_st_links',
             'without_st_links',
-            'with_dl_links',
-            'without_dl_links'
+            'good_health_servers',
+            'bad_health_network'
         ];
 
         // The table itself is loaded page-by-page through the DataTables AJAX
@@ -52,14 +52,17 @@ class Movies extends BaseController
             if($filter == 'with_st_links' || $filter == 'without_st_links')
                 $linkType = 'stream';
 
-            if($filter == 'with_dl_links' || $filter == 'without_dl_links')
-                $linkType = 'download';
-
-            if($filter == 'with_st_links' || $filter == 'with_dl_links')
+            if($filter == 'with_st_links')
                 $countModel->notEmptyLinks( $linkType );
 
-            if($filter == 'without_st_links' || $filter == 'without_dl_links')
+            if($filter == 'without_st_links')
                 $countModel->emptyLinks( $linkType );
+
+            if($filter == 'good_health_servers')
+                $countModel->withHealthyStreamLinks();
+
+            if($filter == 'bad_health_network')
+                $countModel->withUnhealthyStreamLinks();
 
         }
 

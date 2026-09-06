@@ -231,14 +231,36 @@ class TableData extends BaseController
             $builder->whereNotIn('id', static function ($query) {
                 return $query->select('movie_id')->from('links')->where('type', 'stream');
             });
-        } elseif ($filter === 'with_dl_links') {
-            $builder->whereIn('id', static function ($query) {
-                return $query->select('movie_id')->from('links')->where('type !=', 'stream');
-            });
-        } elseif ($filter === 'without_dl_links') {
-            $builder->whereNotIn('id', static function ($query) {
-                return $query->select('movie_id')->from('links')->where('type !=', 'stream');
-            });
+        } elseif ($filter === 'good_health_servers') {
+            if (! (new LinkModel())->supportsStreamHealthFields()) {
+                $builder->where('1 = 0', null, false);
+            } else {
+                $builder->whereIn('id', static function ($query) {
+                    return $query->select('movie_id')
+                        ->from('links')
+                        ->where('type', 'stream')
+                        ->where('is_broken', 0)
+                        ->where('last_success_at IS NOT NULL', null, false)
+                        ->where('last_error IS NULL', null, false);
+                });
+            }
+        } elseif ($filter === 'bad_health_network') {
+            if (! (new LinkModel())->supportsStreamHealthFields()) {
+                $builder->where('1 = 0', null, false);
+            } else {
+                $builder->whereIn('id', static function ($query) {
+                    return $query->select('movie_id')
+                        ->from('links')
+                        ->where('type', 'stream')
+                        ->groupStart()
+                            ->where('is_broken', 1)
+                            ->orGroupStart()
+                                ->where('last_error IS NOT NULL', null, false)
+                                ->where('last_error !=', '')
+                            ->groupEnd()
+                        ->groupEnd();
+                });
+            }
         }
 
         return $builder;

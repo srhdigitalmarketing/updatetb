@@ -12,8 +12,8 @@
                     'all' => 'All',
                     'with_st_links' => 'Have Stream Links',
                     'without_st_links' => 'Haven\'t Stream Links',
-                    'with_dl_links' => 'Have Download Links',
-                    'without_dl_links' => 'Haven\'t Download Links'
+                    'good_health_servers' => 'Good Health Server',
+                    'bad_health_network' => 'Bad Health Network'
             ],
             'selected' => $filter ?? ''
     ]) ?>

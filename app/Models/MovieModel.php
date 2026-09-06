@@ -768,6 +768,44 @@ class MovieModel extends Model
 
     }
 
+    /** Select videos with at least one stream link confirmed healthy. */
+    public function withHealthyStreamLinks(): MovieModel
+    {
+        if (! (new LinkModel())->supportsStreamHealthFields()) {
+            return $this->where('1 = 0', null, false);
+        }
+
+        return $this->whereIn('id', static function ($model) {
+            return $model->select('movie_id')
+                ->from('links')
+                ->where('type', 'stream')
+                ->where('is_broken', 0)
+                ->where('last_success_at IS NOT NULL', null, false)
+                ->where('last_error IS NULL', null, false);
+        });
+    }
+
+    /** Select videos with a stream link whose latest health check failed. */
+    public function withUnhealthyStreamLinks(): MovieModel
+    {
+        if (! (new LinkModel())->supportsStreamHealthFields()) {
+            return $this->where('1 = 0', null, false);
+        }
+
+        return $this->whereIn('id', static function ($model) {
+            return $model->select('movie_id')
+                ->from('links')
+                ->where('type', 'stream')
+                ->groupStart()
+                    ->where('is_broken', 1)
+                    ->orGroupStart()
+                        ->where('last_error IS NOT NULL', null, false)
+                        ->where('last_error !=', '')
+                    ->groupEnd()
+                ->groupEnd();
+        });
+    }
+
 
 
     /**
