@@ -13,6 +13,7 @@ class Movies extends BaseController
 
     protected $model;
     protected $translation;
+    protected $mediaWarnings = [];
 
     public function __construct()
     {
@@ -157,7 +158,8 @@ class Movies extends BaseController
             //create movie entity
             $movie = new Movie( $this->request->getPost() );
 
-            if(! is_media_download_to_server()){
+            $usesR2BannerStorage = \App\Libraries\CloudflareR2Storage::active() !== null;
+            if(! is_media_download_to_server() && ! $usesR2BannerStorage){
                 $movie->banner = $movie->banner_url;
             }
 
@@ -177,16 +179,14 @@ class Movies extends BaseController
                 }
 
                 //save media files
-                if( is_media_download_to_server() ){
+                if( is_media_download_to_server() || $usesR2BannerStorage ){
                     $this->saveMediaFiles( $movie );
                 }
 
                 //save links
                 $this->saveLinks( $movie );
 
-                if($this->validator !== null) {
-                    $warningAlerts = $this->validator->getErrors();
-                }
+                $warningAlerts = array_merge($this->mediaWarnings, $this->validator !== null ? $this->validator->getErrors() : []);
 
                 return redirect()->to('/admin/movies/edit/' . $movie->id)
                                  ->with('warning', $warningAlerts)
@@ -224,7 +224,8 @@ class Movies extends BaseController
                 'status'
             ]);
 
-            if(! is_media_download_to_server()){
+            $usesR2BannerStorage = \App\Libraries\CloudflareR2Storage::active() !== null;
+            if(! is_media_download_to_server() && ! $usesR2BannerStorage){
                 if(! empty( $this->request->getPost('banner_url') )){
                     $movie->banner = $this->request->getPost('banner_url');
                 }
@@ -239,9 +240,9 @@ class Movies extends BaseController
                     ->withInput();
             }
 
-            // Remove a local upload only after the database no longer points
-            // to it. Remote URLs are never deleted from their source host.
-            if ($previousBanner !== null && $previousBanner !== '' && filter_var($previousBanner, FILTER_VALIDATE_URL) === false) {
+            // The helper removes a local upload, or an R2 object owned by this
+            // application. It never deletes an arbitrary remote URL.
+            if ($previousBanner !== null && $previousBanner !== '') {
                 delete_banner($previousBanner);
             }
 
@@ -256,14 +257,14 @@ class Movies extends BaseController
             }
 
             // save media files
-            if(is_media_download_to_server()){
+            if(is_media_download_to_server() || $usesR2BannerStorage){
                 $this->saveMediaFiles( $movie );
             }
 
             // save links
             $this->saveLinks( $movie );
 
-            $warningAlerts = $this->validator !== null ? $this->validator->getErrors() : [];
+            $warningAlerts = array_merge($this->mediaWarnings, $this->validator !== null ? $this->validator->getErrors() : []);
 
             return redirect()->back()
                              ->with('warning', $warningAlerts)
@@ -304,7 +305,7 @@ class Movies extends BaseController
                 'label' => 'banner image',
                 'rules' => 'uploaded[banner_file]'
                     . '|is_image[banner_file]'
-                    . '|mime_in[banner_file,image/jpg,image/jpeg,image/png]'
+                    . '|mime_in[banner_file,image/jpg,image/jpeg,image/png,image/webp]'
                     . '|max_size[banner_file,4096]'
             ];
         }
@@ -329,16 +330,33 @@ class Movies extends BaseController
 
 
         if($bannerFile !== null){
-            //remote old banner file if exist
-            $movie->addBanner( $bannerFile );
+            $previousBanner = $movie->banner;
+            $r2 = \App\Libraries\CloudflareR2Storage::active();
+            $storedInR2 = $r2 !== null;
+
+            if ($storedInR2) {
+                try {
+                    $movie->banner = $r2->uploadBanner($bannerFile);
+                } catch (\Throwable $exception) {
+                    log_message('error', 'Cloudflare R2 banner upload failed: {message}', ['message' => $exception->getMessage()]);
+                    $this->mediaWarnings[] = 'Banner could not be uploaded to Cloudflare R2. Please verify the R2 API Access settings and try again.';
+                    return;
+                }
+            } else {
+                // Keep existing local storage as a fallback when R2 is not configured.
+                $movie->addBanner( $bannerFile );
+            }
+
+            if($movie->hasChanged()) {
+                if (! $this->model->save($movie)) {
+                    $this->mediaWarnings[] = 'Banner could not be saved after upload. Please try again.';
+                    return;
+                }
+            }
+            if ($storedInR2 && ! empty($previousBanner) && $previousBanner !== $movie->banner) {
+                delete_banner($previousBanner);
+            }
         }
-
-
-        if($movie->hasChanged()) {
-            $this->model->save($movie);
-        }
-
-
 
     }
 

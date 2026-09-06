@@ -37,6 +37,20 @@ if(! function_exists( 'delete_banner' ))
 {
     function delete_banner($filename)
     {
+        if (filter_var($filename, FILTER_VALIDATE_URL) !== false) {
+            try {
+                $storage = \App\Libraries\CloudflareR2Storage::active();
+                if ($storage !== null && $storage->isManagedUrl($filename)) {
+                    return $storage->deletePublicUrl($filename);
+                }
+            } catch (\Throwable $exception) {
+                log_message('warning', 'Unable to remove Cloudflare R2 banner: {message}', ['message' => $exception->getMessage()]);
+            }
+
+            // Never attempt to delete an arbitrary remote URL.
+            return false;
+        }
+
         return delete_media_file("/". banners_dir_name() ."/{$filename}");
     }
 }

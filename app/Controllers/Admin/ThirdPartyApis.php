@@ -12,6 +12,7 @@ class ThirdPartyApis extends BaseController
 {
     private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
     private const UPNSHARE_API_ROOT = 'https://upnshare.com/api/v1';
+    private const CLOUDFLARE_R2_ROOT = 'https://r2.cloudflarestorage.com';
 
     protected $model;
 
@@ -65,7 +66,12 @@ class ThirdPartyApis extends BaseController
         $data = $this->request->getPost();
         $data['api_base_url'] = $this->normaliseApiBaseUrl($data['api_base_url'] ?? '', $data['provider'] ?? '');
 
-        if (empty($data['api_token'])) {
+        if (($data['provider'] ?? '') === 'cloudflare_r2') {
+            $errors = $this->r2Errors($data);
+            if (! empty($errors)) {
+                return redirect()->back()->with('errors', $errors)->withInput();
+            }
+        } elseif (empty($data['api_token'])) {
             return redirect()->back()
                 ->with('errors', ['An API token is required to add a video host.'])
                 ->withInput();
@@ -94,6 +100,17 @@ class ThirdPartyApis extends BaseController
         // Never erase a saved token merely because the masked token field is blank.
         if (empty($data['api_token'])) {
             unset($data['api_token']);
+        }
+        if (($data['provider'] ?? '') === 'cloudflare_r2') {
+            foreach (['r2_access_key_id', 'r2_secret_access_key'] as $field) {
+                if (empty($data[$field])) {
+                    unset($data[$field]);
+                }
+            }
+            $errors = $this->r2Errors(array_merge($tpAPI->toRawArray(), $data));
+            if (! empty($errors)) {
+                return redirect()->back()->with('errors', $errors)->withInput();
+            }
         }
 
         $tpAPI->fill($data);
@@ -162,7 +179,34 @@ class ThirdPartyApis extends BaseController
             return self::UPNSHARE_API_ROOT;
         }
 
+        if ($provider === 'cloudflare_r2') {
+            return self::CLOUDFLARE_R2_ROOT;
+        }
+
         return preg_replace('#/file/(?:info|list)$#i', '', $url) ?: $url;
+    }
+
+    /** @return array<int, string> */
+    private function r2Errors(array $data): array
+    {
+        $labels = [
+            'r2_account_id' => 'Cloudflare account ID',
+            'r2_access_key_id' => 'R2 access key ID',
+            'r2_secret_access_key' => 'R2 secret access key',
+            'r2_bucket' => 'R2 bucket name',
+            'r2_public_url' => 'Public bucket URL',
+        ];
+        $errors = [];
+        foreach ($labels as $field => $label) {
+            if (empty($data[$field])) {
+                $errors[] = $label . ' is required for Cloudflare R2.';
+            }
+        }
+        if (! empty($data['r2_public_url']) && (filter_var($data['r2_public_url'], FILTER_VALIDATE_URL) === false || strpos($data['r2_public_url'], 'https://') !== 0)) {
+            $errors[] = 'Public bucket URL must be a valid HTTPS URL.';
+        }
+
+        return $errors;
     }
 
 }

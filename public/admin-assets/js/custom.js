@@ -981,7 +981,8 @@
 
         let fixedRoots = {
             earnvids: 'https://earnvidsapi.com/api',
-            upnshare: 'https://upnshare.com/api/v1'
+            upnshare: 'https://upnshare.com/api/v1',
+            cloudflare_r2: 'https://r2.cloudflarestorage.com'
         };
 
         function renderProviderStructure()
@@ -992,8 +993,10 @@
             });
             $('[data-provider-structure]').prop('hidden', function(){
                 let supported = $(this).data('provider-structure');
-                return supported !== provider && !(supported === 'other' && provider !== 'earnvids' && provider !== 'upnshare');
+                return supported !== provider && !(supported === 'other' && provider !== 'earnvids' && provider !== 'upnshare' && provider !== 'cloudflare_r2');
             });
+            $('[data-r2-settings]').prop('hidden', provider !== 'cloudflare_r2');
+            $('[data-video-api-token], [data-video-api-scopes], .host-api-test, #host-api-test-result').prop('hidden', provider === 'cloudflare_r2');
 
             if(fixedRoots[provider]){
                 $('#host-api-base-url').val(fixedRoots[provider]);

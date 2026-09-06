@@ -14,6 +14,8 @@ class Series extends BaseController
 {
 
     protected $model;
+    protected $mediaWarnings = [];
+    protected $r2BannersToDelete = [];
 
     public function __construct()
     {
@@ -127,9 +129,12 @@ class Series extends BaseController
 
             $series = new \App\Entities\Series( $this->request->getPost() );
 
+            $usesR2BannerStorage = \App\Libraries\CloudflareR2Storage::active() !== null;
             if(! is_media_download_to_server()){
                 $series->poster = $series->poster_url;
-                $series->banner = $series->banner_url;
+                if (! $usesR2BannerStorage) {
+                    $series->banner = $series->banner_url;
+                }
             }
 
             if($this->model->insert( $series )) {
@@ -141,13 +146,11 @@ class Series extends BaseController
                     $this->request->getPost( 'genres' )
                 );
 
-                if( is_media_download_to_server() ){
+                if( is_media_download_to_server() || $usesR2BannerStorage ){
                     $this->saveMediaFiles( $series );
                 }
 
-                if($this->validator !== null) {
-                    $warningAlerts = $this->validator->getErrors();
-                }
+                $warningAlerts = array_merge($this->mediaWarnings, $this->validator !== null ? $this->validator->getErrors() : []);
 
                 return redirect()->to('/admin/series/edit/' . $series->id )
                                  ->with('warning', $warningAlerts)
@@ -188,11 +191,12 @@ class Series extends BaseController
                 'status'
             ]);
 
+            $usesR2BannerStorage = \App\Libraries\CloudflareR2Storage::active() !== null;
             if(! is_media_download_to_server()){
                 if(! empty( $this->request->getPost('poster_url') )){
                     $series->poster = $this->request->getPost('poster_url');
                 }
-                if(! empty( $this->request->getPost('banner_url') )){
+                if(! $usesR2BannerStorage && ! empty( $this->request->getPost('banner_url') )){
                     $series->banner = $this->request->getPost('banner_url');
                 }
             }
@@ -211,9 +215,9 @@ class Series extends BaseController
 
             }
 
-            // Clear only this application's local upload after its database
-            // reference has been removed. A remote URL is never deleted.
-            if ($previousBanner !== null && $previousBanner !== '' && filter_var($previousBanner, FILTER_VALIDATE_URL) === false) {
+            // The helper removes a local upload, or an R2 object owned by this
+            // application. It never deletes an arbitrary remote URL.
+            if ($previousBanner !== null && $previousBanner !== '') {
                 delete_banner($previousBanner);
             }
 
@@ -222,14 +226,12 @@ class Series extends BaseController
                 $this->request->getPost( 'genres' )
             );
 
-            if( is_media_download_to_server() ){
+            if( is_media_download_to_server() || $usesR2BannerStorage ){
                 $this->saveMediaFiles( $series );
             }
             $this->updateSeasonData();
 
-            if($this->validator !== null) {
-                $warningAlerts = $this->validator->getErrors();
-            }
+            $warningAlerts = array_merge($this->mediaWarnings, $this->validator !== null ? $this->validator->getErrors() : []);
 
             return redirect()->back()
                              ->with('warning', $warningAlerts)
@@ -300,8 +302,15 @@ class Series extends BaseController
         $posterUrl = $this->request->getPost('poster_url');
         $bannerUrl = $this->request->getPost('banner_url');
 
-        if(! $posterFile->isValid()) $posterFile = null;
-        if(! $bannerFile->isValid()) $bannerFile = null;
+        // R2 is configured only for banners. Preserve the global media
+        // setting for posters instead of unexpectedly storing them locally.
+        if (! is_media_download_to_server()) {
+            $posterFile = null;
+            $posterUrl = null;
+        }
+
+        if($posterFile !== null && ! $posterFile->isValid()) $posterFile = null;
+        if($bannerFile !== null && ! $bannerFile->isValid()) $bannerFile = null;
 
         if($posterFile !== null) {
             $imageValidationRules['poster_file'] = [
@@ -318,7 +327,7 @@ class Series extends BaseController
                 'label' => 'banner image',
                 'rules' => 'uploaded[banner_file]'
                     . '|is_image[banner_file]'
-                    . '|mime_in[banner_file,image/jpg,image/jpeg,image/png]'
+                    . '|mime_in[banner_file,image/jpg,image/jpeg,image/png,image/webp]'
                     . '|max_size[banner_file,4096]'
             ];
         }
@@ -358,14 +367,36 @@ class Series extends BaseController
         }
 
         if($bannerFile !== null){
-            //remote old banner file if exist
-            $series->addBanner( $bannerFile );
+            $previousBanner = $series->banner;
+            $r2 = \App\Libraries\CloudflareR2Storage::active();
+            $storedInR2 = $r2 !== null;
+
+            if ($storedInR2) {
+                try {
+                    $series->banner = $r2->uploadBanner($bannerFile);
+                } catch (\Throwable $exception) {
+                    log_message('error', 'Cloudflare R2 banner upload failed: {message}', ['message' => $exception->getMessage()]);
+                    $this->mediaWarnings[] = 'Banner could not be uploaded to Cloudflare R2. Please verify the R2 API Access settings and try again.';
+                }
+            } else {
+                // Keep existing local storage as a fallback when R2 is not configured.
+                $series->addBanner( $bannerFile );
+            }
+
+            if ($storedInR2 && ! empty($previousBanner) && $previousBanner !== $series->banner) {
+                $this->r2BannersToDelete[] = $previousBanner;
+            }
         }
 
 
         if($series->hasChanged()) {
-            $this->model->protect(false)
-                ->save( $series );
+            if ($this->model->protect(false)->save($series)) {
+                foreach ($this->r2BannersToDelete as $bannerUrl) {
+                    delete_banner($bannerUrl);
+                }
+            } else {
+                $this->mediaWarnings[] = 'Banner could not be saved after upload. Please try again.';
+            }
         }
 
 

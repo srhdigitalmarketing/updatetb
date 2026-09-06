@@ -5,6 +5,7 @@
 $providerOptions = [
     'earnvids' => 'EarnVids',
     'upnshare' => 'UPNShare',
+    'cloudflare_r2' => 'Cloudflare R2 banner storage',
     'vidhide' => 'Vidhide',
     'xvideosharing' => 'XVideoSharing compatible',
     'custom' => 'Custom host',
@@ -67,6 +68,10 @@ if (! $isExisting) {
             <strong>UPNShare data scope</strong>
             <span>Endpoint <code>/api/v1/video/manage</code> dan header <code>api-token</code> mengikuti dokumentasi UPNShare secara otomatis.</span>
         </div>
+        <div class="host-api-fixed-endpoint" data-provider-note="cloudflare_r2"<?= $selectedProvider !== 'cloudflare_r2' ? ' hidden' : '' ?>>
+            <strong>Cloudflare R2 banner storage</strong>
+            <span>File banner dari PC diunggah ke bucket R2 melalui S3 API. Browser hanya menerima URL publik gambar, bukan kredensial Cloudflare.</span>
+        </div>
 
         <section class="provider-api-structure" data-provider-structure="earnvids" aria-labelledby="earnvids-api-structure-title"<?= $selectedProvider !== 'earnvids' ? ' hidden' : '' ?>>
             <div class="provider-api-structure__header">
@@ -96,6 +101,14 @@ if (! $isExisting) {
                     <p><b>Input:</b> key dan file_code dari File List.</p>
                     <p><b>Data dibaca:</b> thumbnail atau player_img untuk banner video.</p>
                 </article>
+            </div>
+        </section>
+
+        <section class="provider-api-structure" data-provider-structure="cloudflare_r2" aria-labelledby="r2-api-structure-title"<?= $selectedProvider !== 'cloudflare_r2' ? ' hidden' : '' ?>>
+            <div class="provider-api-structure__header">
+                <span>CLOUDFLARE R2 · BANNER STORAGE</span>
+                <h3 id="r2-api-structure-title">PC upload → private R2 API → public banner URL</h3>
+                <p>Gunakan <em>R2 Access Key ID</em> dan <em>R2 Secret Access Key</em>, bukan Global API Key Cloudflare. Masukkan domain publik bucket (custom domain atau <code>r2.dev</code>) agar gambar dapat ditampilkan.</p>
             </div>
         </section>
 
@@ -138,22 +151,50 @@ if (! $isExisting) {
             </div>
         </section>
 
-        <div class="form-group">
+        <div class="form-group" data-video-api-token<?= $selectedProvider === 'cloudflare_r2' ? ' hidden' : '' ?>>
             <label class="control-label" for="host-api-token">Provider API key</label>
             <?= form_input($tokenAttributes) ?>
             <small>The token is never displayed after it has been saved.</small>
         </div>
 
-        <div class="host-api-test" data-api-id="<?= $isExisting ? (int) $tpAPI->id : 0 ?>">
+        <section class="r2-settings" data-r2-settings<?= $selectedProvider === 'cloudflare_r2' ? '' : ' hidden' ?>>
+            <div class="host-api-form-grid">
+                <div class="form-group">
+                    <label class="control-label" for="r2-account-id">Cloudflare account ID</label>
+                    <?= form_input(['id' => 'r2-account-id', 'name' => 'r2_account_id', 'class' => 'form-control', 'value' => old('r2_account_id', $tpAPI->r2_account_id), 'maxlength' => 64, 'autocomplete' => 'off']) ?>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="r2-bucket">Bucket name</label>
+                    <?= form_input(['id' => 'r2-bucket', 'name' => 'r2_bucket', 'class' => 'form-control', 'value' => old('r2_bucket', $tpAPI->r2_bucket), 'maxlength' => 255, 'autocomplete' => 'off']) ?>
+                </div>
+            </div>
+            <div class="host-api-form-grid">
+                <div class="form-group">
+                    <label class="control-label" for="r2-access-key">R2 access key ID</label>
+                    <?= form_input(['id' => 'r2-access-key', 'name' => 'r2_access_key_id', 'type' => 'password', 'class' => 'form-control', 'value' => '', 'placeholder' => $isExisting && ! empty($tpAPI->r2_access_key_id) ? 'Saved — leave blank to keep the current key' : 'R2 access key ID', 'maxlength' => 128, 'autocomplete' => 'new-password']) ?>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="r2-secret-key">R2 secret access key</label>
+                    <?= form_input(['id' => 'r2-secret-key', 'name' => 'r2_secret_access_key', 'type' => 'password', 'class' => 'form-control', 'value' => '', 'placeholder' => $isExisting && ! empty($tpAPI->r2_secret_access_key) ? 'Saved — leave blank to keep the current secret' : 'R2 secret access key', 'maxlength' => 255, 'autocomplete' => 'new-password']) ?>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="r2-public-url">Public bucket URL</label>
+                <?= form_input(['id' => 'r2-public-url', 'name' => 'r2_public_url', 'type' => 'url', 'class' => 'form-control', 'value' => old('r2_public_url', $tpAPI->r2_public_url), 'placeholder' => 'https://media.example.com', 'maxlength' => 255]) ?>
+                <small>URL publik tanpa nama file. Contoh: <code>https://media.example.com</code>. Bucket harus mengizinkan URL ini dibaca publik.</small>
+            </div>
+        </section>
+
+        <div class="host-api-test" data-api-id="<?= $isExisting ? (int) $tpAPI->id : 0 ?>"<?= $selectedProvider === 'cloudflare_r2' ? ' hidden' : '' ?>>
             <div>
                 <strong><i class="fa fa-plug"></i> Connection check</strong>
                 <small>Tests the saved API key without saving and displays the documented list/detail response for the selected provider.</small>
             </div>
             <button type="button" class="btn btn-outline-primary" id="host-api-test"><i class="fa fa-refresh"></i> Test connection</button>
         </div>
-        <div id="host-api-test-result" aria-live="polite"></div>
+        <div id="host-api-test-result" aria-live="polite"<?= $selectedProvider === 'cloudflare_r2' ? ' hidden' : '' ?>></div>
 
-        <div class="host-api-permissions">
+        <div class="host-api-permissions" data-video-api-scopes<?= $selectedProvider === 'cloudflare_r2' ? ' hidden' : '' ?>>
             <span class="host-api-permissions__label">Enabled provider scopes</span>
             <span><i class="fa fa-check-circle"></i> List / inventory</span>
             <span><i class="fa fa-check-circle"></i> Video delivery</span>
