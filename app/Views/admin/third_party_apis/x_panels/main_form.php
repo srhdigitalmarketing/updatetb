@@ -72,6 +72,15 @@ if (! $isExisting) {
             <small>The token is never displayed after it has been saved.</small>
         </div>
 
+        <div class="host-api-test" data-api-id="<?= $isExisting ? (int) $tpAPI->id : 0 ?>">
+            <div>
+                <strong><i class="fa fa-plug"></i> Connection check</strong>
+                <small>Tests the current URL and token without saving. A returned sample shows the exact title, file name, player link, and poster supplied by the host.</small>
+            </div>
+            <button type="button" class="btn btn-outline-primary" id="host-api-test"><i class="fa fa-refresh"></i> Test connection</button>
+        </div>
+        <div id="host-api-test-result" aria-live="polite"></div>
+
         <div class="host-api-permissions">
             <span class="host-api-permissions__label">Enabled data scopes</span>
             <span><i class="fa fa-check-circle"></i> Video direct link</span>

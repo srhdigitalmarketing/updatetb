@@ -11,6 +11,7 @@
         init_data_list_datatable();
         init_discover();
         init_suggestion();
+        init_host_api_connection_test();
 
         if($('.summernote').length > 0){
             $('.summernote').summernote({
@@ -867,6 +868,112 @@
 
 
         });
+    }
+
+    function init_host_api_connection_test()
+    {
+        let button = $('#host-api-test');
+        let result = $('#host-api-test-result');
+
+        if(button.length === 0 || result.length === 0){
+            return;
+        }
+
+        button.on('click', function(){
+            let provider = $.trim($('#host-api-provider').val());
+            let apiBaseUrl = $.trim($('#host-api-base-url').val());
+            let token = $.trim($('#host-api-token').val());
+            let apiId = parseInt($('.host-api-test').attr('data-api-id'), 10) || 0;
+
+            if(apiBaseUrl === ''){
+                renderHostApiTestError('Enter the API base URL before testing the connection.');
+                return;
+            }
+
+            if(token === '' && apiId === 0){
+                renderHostApiTestError('Enter the API token before testing the connection.');
+                return;
+            }
+
+            button.prop('disabled', true).addClass('is-loading');
+            button.find('.fa').removeClass('fa-refresh').addClass('fa-spinner fa-spin');
+            result.empty();
+
+            $.ajax({
+                url: BASE_URL + '/ajax/host-api-test',
+                type: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                data: {
+                    provider: provider,
+                    api_base_url: apiBaseUrl,
+                    api_token: token,
+                    api_id: apiId
+                },
+                dataType: 'JSON',
+                success: function(data){
+                    if(data.success && data.data){
+                        renderHostApiTestSuccess(data.data);
+                        return;
+                    }
+
+                    renderHostApiTestError(data.error || 'The host did not return a valid API response.');
+                },
+                error: function(){
+                    renderHostApiTestError('The connection test could not be completed. Please try again.');
+                },
+                complete: function(){
+                    button.prop('disabled', false).removeClass('is-loading');
+                    button.find('.fa').removeClass('fa-spinner fa-spin').addClass('fa-refresh');
+                }
+            });
+        });
+
+        function renderHostApiTestError(message)
+        {
+            result.empty().append(
+                $('<div>', {class: 'host-api-test-result is-error'}).append(
+                    $('<i>', {class: 'fa fa-exclamation-circle', 'aria-hidden': 'true'}),
+                    $('<span>').text(message)
+                )
+            );
+        }
+
+        function renderHostApiTestSuccess(data)
+        {
+            let panel = $('<section>', {class: 'host-api-test-result is-success'});
+            panel.append($('<div>', {class: 'host-api-test-result__summary'}).append(
+                $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
+                $('<div>').append(
+                    $('<strong>').text('Connection verified'),
+                    $('<span>').text(data.message || 'The host returned a valid API response.')
+                ),
+                $('<small>').text('HTTP ' + (data.http_status || 200) + ' · ' + (data.provider || 'host'))
+            ));
+
+            if(! data.sample){
+                panel.append($('<p>', {class: 'host-api-test-result__empty'}).text('No video sample is currently available from this account.'));
+                result.empty().append(panel);
+                return;
+            }
+
+            let sample = data.sample;
+            let fields = [
+                ['Endpoint', data.endpoint],
+                ['Title', sample.title],
+                ['File name', sample.file_name],
+                ['Video ID', sample.video_id],
+                ['Player link', sample.player_url],
+                ['Poster', sample.poster_url]
+            ];
+            let list = $('<dl>', {class: 'host-api-test-result__fields'});
+            fields.forEach(function(field){
+                list.append($('<dt>').text(field[0]));
+                list.append($('<dd>').text(field[1] || 'Not supplied by this host response'));
+            });
+
+            panel.append(list);
+            result.empty().append(panel);
+        }
     }
 
     function init_suggestion()

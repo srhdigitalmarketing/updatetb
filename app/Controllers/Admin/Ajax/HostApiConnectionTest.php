@@ -1,0 +1,307 @@
+<?php
+
+namespace App\Controllers\Admin\Ajax;
+
+use App\Controllers\BaseAjax;
+use App\Models\ThirdPartyApi;
+use CodeIgniter\HTTP\CURLRequest;
+use Throwable;
+
+/**
+ * Safely validates a configured video-host API and returns only an admin-facing
+ * sample record. Tokens are accepted for the current request only and are
+ * never included in the JSON response or application logs.
+ */
+class HostApiConnectionTest extends BaseAjax
+{
+    /** @var string|null */
+    private $lastFailure = null;
+
+    public function index()
+    {
+        $provider = trim((string) $this->request->getPost('provider'));
+        $baseUrl = trim((string) $this->request->getPost('api_base_url'));
+        $token = trim((string) $this->request->getPost('api_token'));
+        $apiId = (int) $this->request->getPost('api_id');
+
+        if (! in_array($provider, ['upnshare', 'vidhide', 'xvideosharing', 'custom'], true)) {
+            $this->addError('Choose a supported video-host provider before testing the connection.');
+
+            return $this->jsonResponse();
+        }
+
+        if (mb_strlen($baseUrl) > 255 || $this->getSafeHostConfig($baseUrl) === null) {
+            $this->addError('Enter a public HTTP(S) API base URL before testing the connection.');
+
+            return $this->jsonResponse();
+        }
+
+        // When editing an existing entry, a blank password field intentionally
+        // means "reuse the saved token". The client never receives that token.
+        if ($token === '' && $apiId > 0) {
+            $savedApi = (new ThirdPartyApi())->find($apiId);
+            if ($savedApi !== null) {
+                $token = trim((string) $savedApi->api_token);
+            }
+        }
+
+        if ($token === '') {
+            $this->addError('Enter an API token, or save the API access first so its saved token can be tested.');
+
+            return $this->jsonResponse();
+        }
+
+        try {
+            $result = $provider === 'upnshare'
+                ? $this->testUpnShare($baseUrl, $token)
+                : $this->testXVideoSharingHost($baseUrl, $token, $provider);
+
+            if ($result === null) {
+                $this->addError($this->lastFailure ?: 'The host did not return a valid API response. Check the base URL, token, and provider setting.');
+
+                return $this->jsonResponse();
+            }
+
+            $this->addData($result);
+        } catch (Throwable $exception) {
+            log_message('warning', 'Video-host API connection test failed: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+            $this->addError('The connection test could not reach the host. Check the API base URL and server network access.');
+        }
+
+        return $this->jsonResponse();
+    }
+
+    /** @return array<string, mixed>|null */
+    private function testUpnShare(string $baseUrl, string $token): ?array
+    {
+        foreach ($this->upnShareRoots($baseUrl) as $apiRoot) {
+            $list = $this->requestJson($apiRoot . '/video/manage', [
+                'page' => 1,
+                'perPage' => 1,
+            ], $token, false);
+
+            if ($list === null) {
+                $this->lastFailure = 'The UPNShare host could not be reached from this server.';
+                continue;
+            }
+
+            if ($list['status'] < 200 || $list['status'] >= 300) {
+                $this->lastFailure = 'UPNShare returned HTTP ' . $list['status'] . '. Verify the API token and base URL.';
+                continue;
+            }
+
+            if (! is_array($list['payload'])) {
+                $this->lastFailure = 'UPNShare returned a non-JSON response. Verify the API base URL.';
+                continue;
+            }
+
+            $videos = $list['payload']['data'] ?? [];
+            if (! is_array($videos)) {
+                return null;
+            }
+
+            $sample = [];
+            if (! empty($videos) && is_array($videos[0])) {
+                $sample = $videos[0];
+                $videoId = $this->firstString($sample, ['id', 'video_id', 'videoId', 'uuid']);
+
+                if ($videoId !== '') {
+                    $detail = $this->requestJson(
+                        $apiRoot . '/video/manage/' . rawurlencode($videoId),
+                        [],
+                        $token,
+                        false
+                    );
+                    if ($detail !== null && $detail['status'] >= 200 && $detail['status'] < 300 && is_array($detail['payload'])) {
+                        $detailData = $detail['payload']['data'] ?? $detail['payload']['result'] ?? $detail['payload'];
+                        if (is_array($detailData)) {
+                            if (isset($detailData['video']) && is_array($detailData['video'])) {
+                                $detailData = array_merge($detailData, $detailData['video']);
+                            }
+                            $sample = array_merge($sample, $detailData);
+                        }
+                    }
+                }
+            }
+
+            return $this->testResponse('upnshare', $apiRoot . '/video/manage', $list['status'], $sample);
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function testXVideoSharingHost(string $baseUrl, string $token, string $provider): ?array
+    {
+        foreach ($this->standardApiRoots($baseUrl) as $apiRoot) {
+            $list = $this->requestJson($apiRoot . '/file/list', [
+                'key' => $token,
+                'per_page' => 1,
+            ], $token, true);
+
+            if ($list === null) {
+                $this->lastFailure = 'The video-host API could not be reached from this server.';
+                continue;
+            }
+
+            if ($list['status'] < 200 || $list['status'] >= 300) {
+                $this->lastFailure = 'The video host returned HTTP ' . $list['status'] . '. Verify the API token and base URL.';
+                continue;
+            }
+
+            if (! is_array($list['payload'])) {
+                $this->lastFailure = 'The video host returned a non-JSON response. Verify the API base URL.';
+                continue;
+            }
+
+            $files = $list['payload']['result']['files']
+                ?? $list['payload']['files']
+                ?? $list['payload']['data']['files']
+                ?? $list['payload']['data']['items']
+                ?? [];
+            $sample = is_array($files) && ! empty($files) && is_array($files[0]) ? $files[0] : [];
+
+            return $this->testResponse($provider, $apiRoot . '/file/list', $list['status'], $sample);
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> */
+    private function testResponse(string $provider, string $endpoint, int $status, array $record): array
+    {
+        $playerUrl = $this->safeExternalUrl($this->firstString($record, [
+            'player_url', 'playerUrl', 'play_url', 'playUrl', 'video_url', 'videoUrl', 'embed_url', 'embedUrl',
+            'watch_url', 'watchUrl', 'stream_url', 'streamUrl', 'download_url', 'downloadUrl', 'public_url',
+            'publicUrl', 'file_url', 'fileUrl', 'video_link', 'videoLink', 'link', 'url',
+        ]));
+        $posterUrl = $this->safeExternalUrl($this->firstString($record, [
+            'poster_url', 'posterUrl', 'poster', 'thumbnail', 'thumbnail_url', 'thumbnailUrl', 'player_img',
+            'preview_url', 'previewUrl', 'preview', 'image_url', 'imageUrl', 'image',
+        ]));
+
+        return [
+            'provider' => $provider,
+            'endpoint' => $endpoint,
+            'http_status' => $status,
+            'message' => empty($record)
+                ? 'Connection successful. The API accepted the token, but this account has no video sample to display.'
+                : 'Connection successful. A sample video record was returned by the host.',
+            'sample' => empty($record) ? null : [
+                'title' => $this->firstString($record, ['title', 'video_title', 'videoTitle', 'file_title', 'fileTitle', 'name', 'original_name', 'originalName']),
+                'file_name' => $this->firstString($record, ['file_name', 'fileName', 'filename', 'original_name', 'originalName', 'name', 'title']),
+                'video_id' => $this->firstString($record, ['id', 'video_id', 'videoId', 'uuid', 'file_code', 'filecode', 'code']),
+                'player_url' => $playerUrl ?: '',
+                'poster_url' => $posterUrl ?: '',
+            ],
+        ];
+    }
+
+    /** @return array{status: int, payload: array<string, mixed>|null}|null */
+    private function requestJson(string $url, array $query, string $token, bool $includeKeyHeader): ?array
+    {
+        $host = $this->getSafeHostConfig($url);
+        if ($host === null) {
+            return null;
+        }
+
+        $headers = ['Accept' => 'application/json', 'api-token' => $token];
+        if ($includeKeyHeader) {
+            $headers['X-Api-Key'] = $token;
+        }
+
+        $response = $this->httpClient($host)->get($url, [
+            'query' => $query,
+            'headers' => $headers,
+        ]);
+        $payload = json_decode($response->getBody(), true);
+
+        return [
+            'status' => $response->getStatusCode(),
+            'payload' => is_array($payload) ? $payload : null,
+        ];
+    }
+
+    /** @return array<int, string> */
+    private function upnShareRoots(string $baseUrl): array
+    {
+        $baseUrl = rtrim($baseUrl, '/');
+        $parts = parse_url($baseUrl);
+        $origin = ! empty($parts['scheme']) && ! empty($parts['host'])
+            ? $parts['scheme'] . '://' . $parts['host'] . (! empty($parts['port']) ? ':' . $parts['port'] : '')
+            : $baseUrl;
+        $roots = [$baseUrl];
+
+        if (! preg_match('#/api/v1$#i', $baseUrl)) {
+            $roots[] = rtrim($origin, '/') . '/api/v1';
+        }
+
+        return array_values(array_unique($roots));
+    }
+
+    /** @return array<int, string> */
+    private function standardApiRoots(string $baseUrl): array
+    {
+        $baseUrl = rtrim($baseUrl, '/');
+        $roots = [$baseUrl];
+
+        if (! preg_match('#/api(?:/v1)?$#i', $baseUrl)) {
+            array_unshift($roots, $baseUrl . '/api');
+        }
+
+        return array_values(array_unique($roots));
+    }
+
+    private function firstString(array $record, array $keys): string
+    {
+        foreach ($keys as $key) {
+            if (isset($record[$key]) && is_scalar($record[$key]) && trim((string) $record[$key]) !== '') {
+                return trim((string) $record[$key]);
+            }
+        }
+
+        return '';
+    }
+
+    private function safeExternalUrl(string $url): ?string
+    {
+        $config = $this->getSafeHostConfig($url);
+
+        return $config === null ? null : $url;
+    }
+
+    /** @return array{host: string, port: int, ip: string}|null */
+    private function getSafeHostConfig(string $baseUrl): ?array
+    {
+        $parts = parse_url($baseUrl);
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+
+        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || $host === 'localhost' || substr($host, -10) === '.localhost') {
+            return null;
+        }
+
+        $ip = filter_var($host, FILTER_VALIDATE_IP) ? $host : gethostbyname($host);
+        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return null;
+        }
+
+        return [
+            'host' => $host,
+            'port' => (int) ($parts['port'] ?? ($scheme === 'https' ? 443 : 80)),
+            'ip' => $ip,
+        ];
+    }
+
+    private function httpClient(array $host): CURLRequest
+    {
+        return service('curlrequest', [
+            'timeout' => 10,
+            'http_errors' => false,
+            'allow_redirects' => false,
+            'curl' => [CURLOPT_RESOLVE => ["{$host['host']}:{$host['port']}:{$host['ip']}"]],
+        ], false);
+    }
+}

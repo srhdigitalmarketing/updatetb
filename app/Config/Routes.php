@@ -57,6 +57,7 @@ $routes->get('/admin/third-party-apis/delete', 'Admin/ThirdPartyApis::delete');
 $routes->post('/admin/third-party-apis/create', 'Admin/ThirdPartyApis::create');
 $routes->post('/admin/third-party-apis/update', 'Admin/ThirdPartyApis::update');
 $routes->get('/admin/ajax/host-video-search', 'Admin/Ajax/HostVideoSearch::index');
+$routes->post('/admin/ajax/host-api-test', 'Admin/Ajax/HostApiConnectionTest::index');
 
 $routes->post('/admin/ads/popup-units/save', 'Admin/Ads::save_popup_units');
 $routes->post('/admin/ads/zode-settings/save', 'Admin/Ads::save_zode_settings');

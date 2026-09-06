@@ -214,7 +214,7 @@ class HostVideoSearch extends BaseAjax
 
             $files = [];
             foreach (array_slice($matches, 0, self::RESULTS_PER_HOST) as $video) {
-                $videoId = $this->firstString($video, ['id', 'video_id', 'uuid', 'file_code', 'filecode', 'code']);
+                $videoId = $this->firstString($video, ['id', 'video_id', 'videoId', 'uuid', 'file_code', 'filecode', 'code']);
                 $details = $videoId === '' ? [] : $this->upnShareVideoDetails($api, $apiRoot, $videoId);
                 $file = $this->normaliseUpnShareVideo($video, $details, $videoId);
 
@@ -368,9 +368,9 @@ class HostVideoSearch extends BaseAjax
         $record = array_merge($video, $details);
 
         return [
-            'title' => $this->firstString($record, ['title', 'video_title', 'file_title', 'name', 'original_name']),
-            'link' => $this->firstString($record, ['player_url', 'play_url', 'video_url', 'embed_url', 'watch_url', 'stream_url', 'download_url', 'public_url', 'file_url', 'video_link', 'link', 'url']),
-            'thumbnail' => $this->firstString($record, ['poster_url', 'poster', 'thumbnail', 'thumbnail_url', 'player_img', 'preview_url', 'preview', 'image_url', 'image']),
+            'title' => $this->firstString($record, ['title', 'video_title', 'videoTitle', 'file_title', 'fileTitle', 'name', 'original_name', 'originalName']),
+            'link' => $this->firstString($record, ['player_url', 'playerUrl', 'play_url', 'playUrl', 'video_url', 'videoUrl', 'embed_url', 'embedUrl', 'watch_url', 'watchUrl', 'stream_url', 'streamUrl', 'download_url', 'downloadUrl', 'public_url', 'publicUrl', 'file_url', 'fileUrl', 'video_link', 'videoLink', 'link', 'url']),
+            'thumbnail' => $this->firstString($record, ['poster_url', 'posterUrl', 'poster', 'thumbnail', 'thumbnail_url', 'thumbnailUrl', 'player_img', 'preview_url', 'previewUrl', 'preview', 'image_url', 'imageUrl', 'image']),
             'file_code' => $videoId,
             'canplay' => $record['canplay'] ?? $record['playable'] ?? true,
         ];
