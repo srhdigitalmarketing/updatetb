@@ -28,15 +28,18 @@ class TableData extends BaseController
 
         $builder = $this->movieBuilder($filter);
         $this->applySearch($builder, ['title', 'imdb_id'], $this->searchTerm());
-        $this->applyPage($builder, ['id', 'title', 'imdb_id', 'created_at', 'updated_at', 'views'], 'id', 'desc');
+        $this->applyPage($builder, ['id', 'title', 'imdb_id', 'id', 'created_at', 'updated_at', 'views', 'id'], 'id', 'desc');
 
+        $movies = $builder->get()->getResultArray();
+        $serversByMovie = $this->videoServersByMovie(array_column($movies, 'id'));
         $rows = [];
-        foreach ($builder->get()->getResultArray() as $movie) {
+        foreach ($movies as $movie) {
             $id = (int) $movie['id'];
             $rows[] = [
                 (string) $id,
                 '<span class="video-title">' . esc($movie['title']) . '</span>',
                 esc($movie['imdb_id']),
+                $this->videoServerLabels($serversByMovie[$id] ?? []),
                 format_date_time($movie['created_at']),
                 format_date_time($movie['updated_at']),
                 number_format((int) $movie['views']),
@@ -48,6 +51,70 @@ class TableData extends BaseController
         }
 
         return $this->dataTableResponse($total, $filtered, $rows);
+    }
+
+    /**
+     * Get the configured display names for the streaming hosts used by the
+     * current DataTables page. Keeping this separate avoids a join that would
+     * duplicate video rows when a video has more than one stream link.
+     *
+     * @param array<int, mixed> $movieIds
+     * @return array<int, array<int, string>>
+     */
+    private function videoServersByMovie(array $movieIds): array
+    {
+        $movieIds = array_values(array_filter(array_map('intval', $movieIds)));
+        if ($movieIds === []) {
+            return [];
+        }
+
+        $configuredNames = [];
+        foreach ((array) get_config('renamed_servers') as $host => $displayName) {
+            $host = strtolower(preg_replace('/^www\\./i', '', trim((string) $host)));
+            $configuredNames[$host] = trim((string) $displayName);
+        }
+
+        $servers = [];
+        $links = db_connect()->table('links')
+            ->select('movie_id, link')
+            ->whereIn('movie_id', $movieIds)
+            ->where('type', 'stream')
+            ->orderBy('id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        foreach ($links as $link) {
+            $movieId = (int) $link['movie_id'];
+            $host = parse_url((string) $link['link'], PHP_URL_HOST);
+            $host = strtolower(preg_replace('/^www\\./i', '', (string) $host));
+            if ($host === '') {
+                continue;
+            }
+
+            $displayName = $configuredNames[$host] ?? '';
+            $displayName = $displayName !== '' ? $displayName : $host;
+            $servers[$movieId][$displayName] = $displayName;
+        }
+
+        foreach ($servers as $movieId => $names) {
+            $servers[$movieId] = array_values($names);
+        }
+
+        return $servers;
+    }
+
+    /** @param array<int, string> $servers */
+    private function videoServerLabels(array $servers): string
+    {
+        if ($servers === []) {
+            return '<span class="video-server-list video-server-list--empty">No stream link</span>';
+        }
+
+        $labels = array_map(static function (string $server): string {
+            return '<span class="video-server-label"><i class="fa fa-server"></i> ' . esc($server) . '</span>';
+        }, $servers);
+
+        return '<div class="video-server-list">' . implode('', $labels) . '</div>';
     }
 
     public function links()

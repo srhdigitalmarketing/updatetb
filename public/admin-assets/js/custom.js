@@ -1311,7 +1311,7 @@
             },
             order: [],
             pageLength: 25,
-            columnDefs: [{ targets: 6, orderable: false }],
+            columnDefs: [{ targets: [3, 7], orderable: false }],
             language: {
                 processing: 'Loading videos…',
                 search: '',

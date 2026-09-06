@@ -2784,6 +2784,24 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 .nav-sm .nav.child_menu > li { padding: 0 !important; }
 .nav-sm .nav.child_menu > li > a { padding: 8px 10px !important; }
 
+.video-server-list { display: flex; flex-wrap: wrap; gap: 4px; max-width: 210px; }
+.video-server-list--empty { color: var(--bs-secondary-color); font-size: .75rem; }
+.video-server-label {
+  align-items: center;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  color: #2563eb;
+  display: inline-flex;
+  font-size: .6875rem;
+  font-weight: 700;
+  gap: 4px;
+  line-height: 1.2;
+  padding: .28rem .48rem;
+  white-space: nowrap;
+}
+.video-server-label .fa { font-size: .625rem; }
+
 /* Lightweight footer card, aligned with the centered admin workspace. */
 footer.admin-footer {
   align-items: center;
