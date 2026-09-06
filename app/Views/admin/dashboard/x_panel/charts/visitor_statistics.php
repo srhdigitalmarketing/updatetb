@@ -1,4 +1,3 @@
-<div class="col-12 col-xl-8 dashboard-analytics-cell">
 <section class="dashboard-visitor-panel dashboard-visitor-panel--latest" aria-labelledby="latest-statistics-title">
     <header class="dashboard-visitor-panel__header">
         <div>
@@ -17,9 +16,7 @@
         <p class="dashboard-chart-notice"><i class="fa fa-info-circle"></i> Jalankan migration untuk mulai mencatat statistik pengunjung.</p>
     <?php endif; ?>
 </section>
-</div>
 
-<div class="col-12 col-xl-4 dashboard-analytics-cell">
 <section class="dashboard-visitor-panel dashboard-visitor-panel--platform" aria-labelledby="platform-title">
     <header class="dashboard-visitor-panel__header">
         <div>
@@ -35,4 +32,3 @@
         <span><i class="fa fa-mobile"></i> Mobile <b><?= number_format($visitorStats['platforms']['mobile']) ?></b></span>
     </div>
 </section>
-</div>
