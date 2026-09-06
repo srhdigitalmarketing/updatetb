@@ -12,9 +12,6 @@
         init_discover();
         init_suggestion();
         init_banner_image_controls();
-        init_host_api_provider_structure();
-        init_host_api_connection_test();
-        init_stream_poster();
 
         if($('.summernote').length > 0){
             $('.summernote').summernote({
@@ -882,70 +879,6 @@
         });
     }
 
-    function init_stream_poster()
-    {
-        let button = $('.stream-poster-fetch');
-        let result = $('.stream-poster-result');
-
-        if(button.length === 0 || result.length === 0){
-            return;
-        }
-
-        button.on('click', function(){
-            let movieId = parseInt(button.attr('data-movie-id'), 10) || 0;
-            if(movieId < 1){
-                return;
-            }
-
-            button.prop('disabled', true);
-            button.find('.fa').removeClass('fa-image').addClass('fa-spinner fa-spin');
-            result.empty();
-
-            $.ajax({
-                url: BASE_URL + '/ajax/stream-poster',
-                type: 'GET',
-                headers: {'X-Requested-With': 'XMLHttpRequest'},
-                data: {movie_id: movieId},
-                dataType: 'JSON',
-                success: function(data){
-                    if(! data.success || ! data.data || ! data.data.poster_url){
-                        renderError(data.error || 'This host did not provide a usable image.');
-                        return;
-                    }
-
-                    let posterUrl = data.data.poster_url;
-                    $('input[name="banner_url"]').val(posterUrl).trigger('change');
-                    $('.banner-wrap').empty().append(
-                        $('<img>', {src: posterUrl, class: 'w-100 mb-2', alt: 'stream host banner preview'})
-                    );
-                    result.empty().append(
-                        $('<div>', {class: 'stream-poster-result__success'}).append(
-                            $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
-                            document.createTextNode(' Image found via ' + (data.data.source || 'the stream host') + '. Save the video to use it as the banner.')
-                        )
-                    );
-                },
-                error: function(){
-                    renderError('Could not reach the stream host. Please try again later.');
-                },
-                complete: function(){
-                    button.prop('disabled', false);
-                    button.find('.fa').removeClass('fa-spinner fa-spin').addClass('fa-image');
-                }
-            });
-        });
-
-        function renderError(message)
-        {
-            result.empty().append(
-                $('<div>', {class: 'stream-poster-result__error'}).append(
-                    $('<i>', {class: 'fa fa-exclamation-circle', 'aria-hidden': 'true'}),
-                    document.createTextNode(' ' + message)
-                )
-            );
-        }
-    }
-
     function init_banner_image_controls()
     {
         let bannerInputs = $('input[name="banner_file"]');
@@ -982,171 +915,12 @@
         });
     }
 
-    function init_host_api_provider_structure()
-    {
-        let providerField = $('#host-api-provider');
-        if(providerField.length === 0){
-            return;
-        }
-
-        let fixedRoots = {
-            earnvids: 'https://earnvidsapi.com/api',
-            upnshare: 'https://upnshare.com/api/v1',
-            cloudflare_r2: 'https://r2.cloudflarestorage.com'
-        };
-
-        function renderProviderStructure()
-        {
-            let provider = $.trim(providerField.val());
-            $('[data-provider-note]').prop('hidden', function(){
-                return $(this).data('provider-note') !== provider;
-            });
-            $('[data-provider-structure]').prop('hidden', function(){
-                let supported = $(this).data('provider-structure');
-                return supported !== provider && !(supported === 'other' && provider !== 'earnvids' && provider !== 'upnshare' && provider !== 'cloudflare_r2');
-            });
-            $('[data-r2-settings]').prop('hidden', provider !== 'cloudflare_r2');
-            $('[data-video-api-token], [data-video-api-scopes], .host-api-test, #host-api-test-result').prop('hidden', provider === 'cloudflare_r2');
-
-            if(fixedRoots[provider]){
-                $('#host-api-base-url').val(fixedRoots[provider]);
-            }
-        }
-
-        providerField.on('change', renderProviderStructure);
-        renderProviderStructure();
-    }
-
-    function init_host_api_connection_test()
-    {
-        let button = $('#host-api-test');
-        let result = $('#host-api-test-result');
-
-        if(button.length === 0 || result.length === 0){
-            return;
-        }
-
-        button.on('click', function(){
-            let provider = $.trim($('#host-api-provider').val());
-            let apiBaseUrl = $.trim($('#host-api-base-url').val());
-            let token = $.trim($('#host-api-token').val());
-            let apiId = parseInt($('.host-api-test').attr('data-api-id'), 10) || 0;
-
-            if(token === '' && apiId === 0){
-                renderHostApiTestError('Enter the API token before testing the connection.');
-                return;
-            }
-
-            button.prop('disabled', true).addClass('is-loading');
-            button.find('.fa').removeClass('fa-refresh').addClass('fa-spinner fa-spin');
-            result.empty();
-
-            $.ajax({
-                url: BASE_URL + '/ajax/host-api-test',
-                type: 'POST',
-                headers: {'X-Requested-With': 'XMLHttpRequest'},
-                data: {
-                    provider: provider,
-                    api_base_url: apiBaseUrl,
-                    api_token: token,
-                    api_id: apiId
-                },
-                dataType: 'JSON',
-                success: function(data){
-                    if(data.success && data.data){
-                        renderHostApiTestSuccess(data.data);
-                        return;
-                    }
-
-                    renderHostApiTestError(data.error || 'The host did not return a valid API response.');
-                },
-                error: function(){
-                    renderHostApiTestError('The connection test could not be completed. Please try again.');
-                },
-                complete: function(){
-                    button.prop('disabled', false).removeClass('is-loading');
-                    button.find('.fa').removeClass('fa-spinner fa-spin').addClass('fa-refresh');
-                }
-            });
-        });
-
-        function renderHostApiTestError(message)
-        {
-            result.empty().append(
-                $('<div>', {class: 'host-api-test-result is-error'}).append(
-                    $('<i>', {class: 'fa fa-exclamation-circle', 'aria-hidden': 'true'}),
-                    $('<span>').text(message)
-                )
-            );
-        }
-
-        function renderHostApiTestSuccess(data)
-        {
-            let panel = $('<section>', {class: 'host-api-test-result is-success'});
-            panel.append($('<div>', {class: 'host-api-test-result__summary'}).append(
-                $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
-                $('<div>').append(
-                    $('<strong>').text('Connection verified'),
-                    $('<span>').text(data.message || 'The host returned a valid API response.')
-                ),
-                $('<small>').text('HTTP ' + (data.http_status || 200) + ' · ' + (data.provider || 'host'))
-            ));
-
-            if(! data.sample){
-                panel.append($('<p>', {class: 'host-api-test-result__empty'}).text('No video sample is currently available from this account.'));
-                result.empty().append(panel);
-                return;
-            }
-
-            let sample = data.sample;
-            let fields = [
-                ['Endpoint', data.endpoint],
-                ['Title', sample.title],
-                ['File name', sample.file_name],
-                ['Video ID', sample.video_id],
-                ['Playback status', sample.can_play],
-                ['Duration', sample.duration],
-                ['Uploaded', sample.uploaded_at],
-                ['Views', sample.views],
-                ['Player link', sample.player_url],
-                ['Poster', sample.poster_url]
-            ];
-            let list = $('<dl>', {class: 'host-api-test-result__fields'});
-            fields.forEach(function(field){
-                list.append($('<dt>').text(field[0]));
-                list.append($('<dd>').text(field[1] || 'Not supplied by this host response'));
-            });
-
-            panel.append(list);
-
-            if(data.responses){
-                Object.keys(data.responses).forEach(function(name){
-                    let json = JSON.stringify(data.responses[name], null, 2);
-                    let responsePanel = $('<details>', {class: 'host-api-test-result__response'});
-                    let labels = {
-                        file_info: 'File Info API response',
-                        file_list: 'File List API response',
-                        video_list: 'Video List API response',
-                        video_info: 'Video Detail API response'
-                    };
-                    responsePanel.append($('<summary>').text(labels[name] || 'Provider API response'));
-                    responsePanel.append($('<pre>').text(json || '{}'));
-                    panel.append(responsePanel);
-                });
-            }
-
-            result.empty().append(panel);
-        }
-    }
-
     function init_suggestion()
     {
         let search_thread = null;
-        let host_search_thread = null;
         let term = '';
         let type = 'movie';
         let resultsContent = $("#suggest-results");
-        let hostResultsContent = $("#host-api-results");
 
         $('.title-suggest').on('keyup', function (){
 
@@ -1156,9 +930,7 @@
                 type = $this.attr('data-type');
 
                 clearTimeout( search_thread );
-                clearTimeout( host_search_thread );
                 cleanResults();
-                cleanHostResults();
 
                 search_thread = setTimeout(function(){
                     term = $this.val().trim();
@@ -1166,13 +938,6 @@
                         load_results();
                     }
                 }, 500);
-
-                host_search_thread = setTimeout(function(){
-                    let hostTerm = $this.val().trim();
-                    if(hostTerm.length >= 3){
-                        loadHostResults(hostTerm);
-                    }
-                }, 650);
 
             }
         });
@@ -1192,64 +957,6 @@
                 $("#load-tv-data").click();
             }
 
-        });
-
-        $(document).on('click', '.host-video-result', function () {
-            let item = $(this).data('hostVideo');
-            if(! item){
-                return;
-            }
-
-            $('input[name="title"]').val(item.title);
-
-            if(item.poster_url){
-                let bannerInput = $('input[name="banner_url"]');
-                bannerInput.val(item.poster_url).trigger('change');
-                $('.banner-wrap').empty().append(
-                    $('<img>', {
-                        src: item.poster_url,
-                        class: 'w-100 mb-2',
-                        alt: 'video poster preview'
-                    })
-                );
-            }
-
-            let streamInputs = $('input[name^="st_links"][name$="[url]"]').filter(':not([readonly])');
-            let streamInput = streamInputs.filter(function () {
-                return $.trim($(this).val()) === '';
-            }).first();
-
-            if(streamInput.length === 0){
-                streamInput = streamInputs.first();
-            }
-
-            let streamWasFilled = false;
-            if(streamInput.length > 0 && item.player_url){
-                streamInput.val(item.player_url).trigger('change');
-                streamWasFilled = true;
-
-                // Keep the selected provider and file code with the link.
-                // EarnVids direct URLs are requested later for the visitor's
-                // IP address, so an expiring direct URL is never saved here.
-                let fieldName = streamInput.attr('name') || '';
-                let fieldMatch = fieldName.match(/^st_links\[(\d+)\]\[url\]$/);
-                if(fieldMatch && item.api_id && item.file_code){
-                    let streamGroup = streamInput.closest('.st-group');
-                    let key = fieldMatch[1];
-                    streamGroup.find('input[name="st_links[' + key + '][api_id]"], input[name="st_links[' + key + '][upnshare_video_id]"]').remove();
-                    streamGroup.append($('<input>', {type: 'hidden', name: 'st_links[' + key + '][api_id]', value: item.api_id}));
-                    streamGroup.append($('<input>', {type: 'hidden', name: 'st_links[' + key + '][upnshare_video_id]', value: item.file_code}));
-                }
-            }
-
-            hostResultsContent.empty().append(
-                $('<div>', {class: 'host-search-selected'}).append(
-                    $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
-                    document.createTextNode(streamWasFilled
-                        ? ' Host video selected. Title, poster URL, and a stream link have been filled. Video ID is unchanged.'
-                        : ' Host video selected. Title and poster URL have been filled. The host did not return a player URL, so Stream Link is unchanged.')
-                )
-            );
         });
 
         function load_results()
@@ -1295,81 +1002,6 @@
         function cleanResults()
         {
             resultsContent.html('');
-        }
-
-        function loadHostResults(hostTerm)
-        {
-            $.ajax({
-                url : BASE_URL + '/ajax/host-video-search',
-                type: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest'},
-                data: {'title': hostTerm},
-                dataType: 'JSON',
-                success: function(data)
-                {
-                    // Ignore a slow response for an earlier title after the
-                    // administrator has continued typing.
-                    if($.trim($('.title-suggest').val()) !== hostTerm){
-                        return;
-                    }
-
-                    if(data.success && data.data){
-                        addHostResults(data.data.items || [], data.data.configured_hosts || 0);
-                    }
-                },
-                // Host results are optional. The existing form remains usable if
-                // an external provider is unavailable.
-                error: function () {}
-            });
-        }
-
-        function addHostResults(items, configuredHosts)
-        {
-            cleanHostResults();
-
-            if(configuredHosts < 1){
-                return;
-            }
-
-            let section = $('<section>', {class: 'host-search-results'});
-            section.append($('<div>', {class: 'host-search-results__heading'}).append(
-                $('<span>').text('Video host results'),
-                $('<small>').text('Choose a result to fill the title, poster URL, and stream link.')
-            ));
-
-            if(items.length === 0){
-                section.append($('<p>', {class: 'host-search-results__empty'}).text('No playable files matched this title on your active video hosts.'));
-                hostResultsContent.append(section);
-                return;
-            }
-
-            let list = $('<div>', {class: 'host-search-results__list'});
-            items.forEach(function(item){
-                let card = $('<button>', {type: 'button', class: 'host-video-result'}).data('hostVideo', item);
-                let preview = $('<div>', {class: 'host-video-result__preview'});
-
-                if(item.poster_url){
-                    preview.append($('<img>', {src: item.poster_url, alt: ''}));
-                }else{
-                    preview.append($('<i>', {class: 'fa fa-play-circle', 'aria-hidden': 'true'}));
-                }
-
-                let content = $('<div>', {class: 'host-video-result__content'});
-                content.append($('<strong>').text(item.title));
-                content.append($('<span>', {class: 'host-video-result__source'}).text(item.source + ' · ' + item.provider));
-                content.append($('<span>', {class: 'host-video-result__link'}).text(item.player_url || 'Player URL is not available from this host response.'));
-
-                card.append(preview, content, $('<i>', {class: 'fa fa-arrow-right host-video-result__arrow', 'aria-hidden': 'true'}));
-                list.append(card);
-            });
-
-            section.append(list);
-            hostResultsContent.append(section);
-        }
-
-        function cleanHostResults()
-        {
-            hostResultsContent.empty();
         }
 
     }

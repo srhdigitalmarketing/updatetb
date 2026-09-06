@@ -59,7 +59,21 @@ class CloudflareR2Storage
         $this->signedRequest('PUT', $key, $file->getPathname(), $mime);
 
         $publicUrl = rtrim((string) $this->config->r2_public_url, '/') . '/' . $key;
-        $this->verifyPublicImage($publicUrl);
+        try {
+            $this->verifyPublicImage($publicUrl);
+        } catch (\Throwable $exception) {
+            // Do not leave an inaccessible object in R2 when the public
+            // development URL or custom domain is not ready yet.
+            try {
+                $this->signedRequest('DELETE', $key);
+            } catch (\Throwable $cleanupException) {
+                log_message('warning', 'Could not remove an unverified R2 banner: {message}', [
+                    'message' => $cleanupException->getMessage(),
+                ]);
+            }
+
+            throw $exception;
+        }
 
         return $publicUrl;
     }

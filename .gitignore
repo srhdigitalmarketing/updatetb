@@ -5,6 +5,7 @@
 /writable/uploads/
 /public/uploads/
 /env
+/.env
 /ttobrutdb.sql
 /uploads.zip
 /Thumbs.db
