@@ -16,6 +16,7 @@ class HostVideoSearch extends BaseAjax
 {
     private const RESULTS_PER_HOST = 6;
     private const MAX_RESULTS = 12;
+    private const MAX_UPNSHARE_LOCAL_PAGES = 5;
 
     public function index()
     {
@@ -59,7 +60,10 @@ class HostVideoSearch extends BaseAjax
                     $playerUrl = $this->safeExternalUrl(
                         $file['link'] ?? $file['player_url'] ?? $file['video_url'] ?? $file['embed_url'] ?? $file['url'] ?? ''
                     );
-                    if ($playerUrl === null) {
+                    // Keep a UPNShare title result visible even when that host
+                    // omits the player field from both list and manage data.
+                    // The administrator can still fill its title and poster.
+                    if ($playerUrl === null && (string) $api->provider !== 'upnshare') {
                         continue;
                     }
 
@@ -79,7 +83,7 @@ class HostVideoSearch extends BaseAjax
                         'source' => (string) $api->name,
                         'provider' => (string) $api->provider,
                         'title' => trim((string) ($file['title'] ?? $file['file_title'] ?? $file['name'] ?? $title)),
-                        'player_url' => $playerUrl,
+                        'player_url' => $playerUrl ?: '',
                         'poster_url' => $posterUrl,
                         'file_code' => $fileCode,
                     ];
@@ -104,6 +108,10 @@ class HostVideoSearch extends BaseAjax
     /** @return array{files: array<int, array<string, mixed>>, api_root: string}|null */
     private function searchHostFiles(object $api, string $title): ?array
     {
+        if ((string) $api->provider === 'upnshare') {
+            return $this->searchUpnShareFiles($api, $title);
+        }
+
         foreach ($this->apiRoots($api) as $apiRoot) {
             $host = $this->getSafeHostConfig($apiRoot);
             if ($host === null) {
@@ -139,6 +147,269 @@ class HostVideoSearch extends BaseAjax
         }
 
         return null;
+    }
+
+    /**
+     * UPNShare uses a REST video inventory rather than XVideoSharing's
+     * /file/list. First ask the host to search, then fall back to a bounded
+     * local title match across its newest video pages when the host ignores or
+     * does not implement query parameters.
+     *
+     * @return array{files: array<int, array<string, mixed>>, api_root: string}|null
+     */
+    private function searchUpnShareFiles(object $api, string $title): ?array
+    {
+        $cache = cache();
+        $cacheKey = 'upnshare-title-' . sha1((string) $api->id . '|' . $this->normaliseTitle($title));
+        $cached = $cache->get($cacheKey);
+        if (is_array($cached) && isset($cached['files'], $cached['api_root'])) {
+            return $cached;
+        }
+
+        foreach ($this->upnShareApiRoots($api) as $apiRoot) {
+            $firstPage = $this->upnShareVideoPage($api, $apiRoot, [
+                'title' => $title,
+                'search' => $title,
+                'q' => $title,
+                'page' => 1,
+                'per_page' => 50,
+                'limit' => 50,
+            ]);
+
+            if ($firstPage === null) {
+                continue;
+            }
+
+            $matches = $this->matchingUpnShareVideos($firstPage['videos'], $title);
+
+            // A number of UPNShare deployments expose only a paginated list.
+            // In that case get the unfiltered first page and compare titles in
+            // this application, then continue only a small number of pages.
+            if (empty($matches)) {
+                $localPage = $this->upnShareVideoPage($api, $apiRoot, [
+                    'page' => 1,
+                    'per_page' => 50,
+                    'limit' => 50,
+                ]);
+
+                if ($localPage !== null) {
+                    $matches = $this->matchingUpnShareVideos($localPage['videos'], $title);
+                    $lastPage = min(
+                        max(1, (int) $localPage['last_page']),
+                        self::MAX_UPNSHARE_LOCAL_PAGES
+                    );
+
+                    for ($page = 2; $page <= $lastPage && count($matches) < self::RESULTS_PER_HOST; $page++) {
+                        $nextPage = $this->upnShareVideoPage($api, $apiRoot, [
+                            'page' => $page,
+                            'per_page' => 50,
+                            'limit' => 50,
+                        ]);
+
+                        if ($nextPage === null || empty($nextPage['videos'])) {
+                            break;
+                        }
+
+                        $matches = array_merge($matches, $this->matchingUpnShareVideos($nextPage['videos'], $title));
+                    }
+                }
+            }
+
+            $files = [];
+            foreach (array_slice($matches, 0, self::RESULTS_PER_HOST) as $video) {
+                $videoId = $this->firstString($video, ['id', 'video_id', 'uuid', 'file_code', 'filecode', 'code']);
+                $details = $videoId === '' ? [] : $this->upnShareVideoDetails($api, $apiRoot, $videoId);
+                $file = $this->normaliseUpnShareVideo($video, $details, $videoId);
+
+                if ($file['link'] !== '') {
+                    $files[] = $file;
+                }
+            }
+
+            $result = ['files' => $files, 'api_root' => $apiRoot];
+            $cache->save($cacheKey, $result, 60);
+
+            return $result;
+        }
+
+        return null;
+    }
+
+    /** @return array<int, string> */
+    private function upnShareApiRoots(object $api): array
+    {
+        $base = rtrim((string) $api->api_base_url, '/');
+        $parts = parse_url($base);
+        $origin = ! empty($parts['scheme']) && ! empty($parts['host'])
+            ? $parts['scheme'] . '://' . $parts['host'] . (! empty($parts['port']) ? ':' . $parts['port'] : '')
+            : $base;
+
+        $roots = [$base];
+        if (! preg_match('#/api/v1$#i', $base)) {
+            $roots[] = rtrim($origin, '/') . '/api/v1';
+        }
+
+        return array_values(array_unique($roots));
+    }
+
+    /** @return array{videos: array<int, array<string, mixed>>, last_page: int}|null */
+    private function upnShareVideoPage(object $api, string $apiRoot, array $query): ?array
+    {
+        $host = $this->getSafeHostConfig($apiRoot);
+        if ($host === null) {
+            return null;
+        }
+
+        $response = $this->httpClient($host)->get($apiRoot . '/video', [
+            'query' => $query,
+            'headers' => [
+                'Accept' => 'application/json',
+                'api-token' => (string) $api->api_token,
+            ],
+        ]);
+
+        if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+            return null;
+        }
+
+        $payload = json_decode($response->getBody(), true);
+
+        return is_array($payload) ? $this->upnSharePageFromPayload($payload) : null;
+    }
+
+    /** @return array{videos: array<int, array<string, mixed>>, last_page: int}|null */
+    private function upnSharePageFromPayload(array $payload): ?array
+    {
+        $container = $payload['data'] ?? $payload['result'] ?? $payload;
+        if (! is_array($container)) {
+            return null;
+        }
+
+        $videos = null;
+        if ($this->isListArray($container)) {
+            $videos = $container;
+        } else {
+            foreach (['data', 'videos', 'items', 'results'] as $key) {
+                if (isset($container[$key]) && is_array($container[$key])) {
+                    $videos = $container[$key];
+                    break;
+                }
+            }
+        }
+
+        if ($videos === null) {
+            return null;
+        }
+
+        $lastPage = (int) (
+            $container['last_page']
+            ?? $container['meta']['last_page']
+            ?? $payload['last_page']
+            ?? $payload['meta']['last_page']
+            ?? 1
+        );
+
+        return [
+            'videos' => array_values(array_filter($videos, 'is_array')),
+            'last_page' => max(1, $lastPage),
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function matchingUpnShareVideos(array $videos, string $query): array
+    {
+        $matches = [];
+        $needle = $this->normaliseTitle($query);
+
+        foreach ($videos as $video) {
+            $videoTitle = $this->firstString($video, ['title', 'video_title', 'file_title', 'name', 'original_name']);
+            if ($videoTitle !== '' && $this->titlesMatch($needle, $this->normaliseTitle($videoTitle))) {
+                $matches[] = $video;
+            }
+        }
+
+        return $matches;
+    }
+
+    private function upnShareVideoDetails(object $api, string $apiRoot, string $videoId): array
+    {
+        $host = $this->getSafeHostConfig($apiRoot);
+        if ($host === null) {
+            return [];
+        }
+
+        $response = $this->httpClient($host)->get(
+            $apiRoot . '/video/manage/' . rawurlencode($videoId),
+            ['headers' => ['Accept' => 'application/json', 'api-token' => (string) $api->api_token]]
+        );
+
+        if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+            return [];
+        }
+
+        $payload = json_decode($response->getBody(), true);
+        $details = is_array($payload) ? ($payload['data'] ?? $payload['result'] ?? $payload) : [];
+        if (is_array($details) && isset($details['video']) && is_array($details['video'])) {
+            $details = array_merge($details, $details['video']);
+        }
+
+        return is_array($details) && ! $this->isListArray($details) ? $details : [];
+    }
+
+    /** @return array<string, mixed> */
+    private function normaliseUpnShareVideo(array $video, array $details, string $videoId): array
+    {
+        $record = array_merge($video, $details);
+
+        return [
+            'title' => $this->firstString($record, ['title', 'video_title', 'file_title', 'name', 'original_name']),
+            'link' => $this->firstString($record, ['player_url', 'play_url', 'video_url', 'embed_url', 'watch_url', 'stream_url', 'download_url', 'public_url', 'file_url', 'video_link', 'link', 'url']),
+            'thumbnail' => $this->firstString($record, ['poster_url', 'poster', 'thumbnail', 'thumbnail_url', 'player_img', 'preview_url', 'preview', 'image_url', 'image']),
+            'file_code' => $videoId,
+            'canplay' => $record['canplay'] ?? $record['playable'] ?? true,
+        ];
+    }
+
+    private function firstString(array $record, array $keys): string
+    {
+        foreach ($keys as $key) {
+            if (isset($record[$key]) && is_scalar($record[$key]) && trim((string) $record[$key]) !== '') {
+                return trim((string) $record[$key]);
+            }
+        }
+
+        return '';
+    }
+
+    private function normaliseTitle(string $title): string
+    {
+        $title = mb_strtolower($title, 'UTF-8');
+        $title = preg_replace('/[^\p{L}\p{N}]+/u', ' ', $title);
+
+        return trim((string) preg_replace('/\s+/u', ' ', $title));
+    }
+
+    private function titlesMatch(string $needle, string $haystack): bool
+    {
+        if ($needle === '' || $haystack === '') {
+            return false;
+        }
+
+        if (mb_strpos($haystack, $needle, 0, 'UTF-8') !== false || mb_strpos($needle, $haystack, 0, 'UTF-8') !== false) {
+            return true;
+        }
+
+        $tokens = array_filter(explode(' ', $needle), static function ($token) {
+            return mb_strlen($token, 'UTF-8') >= 3;
+        });
+
+        foreach ($tokens as $token) {
+            if (mb_strpos($haystack, $token, 0, 'UTF-8') !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

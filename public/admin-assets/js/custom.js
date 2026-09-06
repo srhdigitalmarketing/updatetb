@@ -953,14 +953,18 @@
                 streamInput = streamInputs.first();
             }
 
-            if(streamInput.length > 0){
+            let streamWasFilled = false;
+            if(streamInput.length > 0 && item.player_url){
                 streamInput.val(item.player_url).trigger('change');
+                streamWasFilled = true;
             }
 
             hostResultsContent.empty().append(
                 $('<div>', {class: 'host-search-selected'}).append(
                     $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
-                    document.createTextNode(' Host video selected. Title, poster URL, and a stream link have been filled. Video ID is unchanged.')
+                    document.createTextNode(streamWasFilled
+                        ? ' Host video selected. Title, poster URL, and a stream link have been filled. Video ID is unchanged.'
+                        : ' Host video selected. Title and poster URL have been filled. The host did not return a player URL, so Stream Link is unchanged.')
                 )
             );
         });
@@ -1070,7 +1074,7 @@
                 let content = $('<div>', {class: 'host-video-result__content'});
                 content.append($('<strong>').text(item.title));
                 content.append($('<span>', {class: 'host-video-result__source'}).text(item.source + ' · ' + item.provider));
-                content.append($('<span>', {class: 'host-video-result__link'}).text(item.player_url));
+                content.append($('<span>', {class: 'host-video-result__link'}).text(item.player_url || 'Player URL is not available from this host response.'));
 
                 card.append(preview, content, $('<i>', {class: 'fa fa-arrow-right host-video-result__arrow', 'aria-hidden': 'true'}));
                 list.append(card);

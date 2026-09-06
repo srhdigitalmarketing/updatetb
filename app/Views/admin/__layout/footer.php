@@ -36,7 +36,7 @@
 
 <!-- Custom Theme Scripts -->
 <script src="<?= site_url('/admin-assets/js/template.min.js?v=1.2') ?>"></script>
-<script src="<?= site_url('/admin-assets/js/custom.js?v=20260906-7') ?>"></script>
+<script src="<?= site_url('/admin-assets/js/custom.js?v=20260906-8') ?>"></script>
 
 
 <?php $this->renderSection('scripts'); ?>
