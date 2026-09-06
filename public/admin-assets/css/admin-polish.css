@@ -2705,3 +2705,26 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 @media (max-width: 1439.98px) {
   .top_nav .admin-topbar { max-width: none; }
 }
+
+/* Scale the desktop navigation together with the workspace on wide displays. */
+@media (min-width: 1440px) {
+  :root { --admin-sidebar-width: clamp(240px, 10vw, 320px); }
+
+  .nav-md .container.body .col-md-3.left_col,
+  .nav-md .nav_title { width: var(--admin-sidebar-width); }
+
+  .nav-md .container.body .right_col,
+  .nav-md .main_container .top_nav { margin-left: var(--admin-sidebar-width); }
+
+  .nav-md .site_title { padding-left: 22px; padding-right: 22px; }
+  .nav-md .site_title b { font-size: clamp(17px, .7vw, 20px); }
+  .nav-md .sidebar-menu-label { font-size: clamp(10px, .4vw, 11px); }
+  .nav-md .nav.side-menu > li > a {
+    font-size: clamp(12px, .55vw, 14px);
+    min-height: clamp(46px, 3vw, 52px);
+  }
+  .nav-md .nav.side-menu > li > a i:first-child {
+    height: clamp(28px, 2vw, 32px);
+    width: clamp(28px, 2vw, 32px);
+  }
+}
