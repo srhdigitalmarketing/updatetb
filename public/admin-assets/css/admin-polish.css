@@ -2867,8 +2867,8 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 .stream-poster-result { font-size: .75rem; margin-top: .5rem; }
 .stream-poster-result__success { color: #15803d; }
 .stream-poster-result__error { color: #b91c1c; }
-.banner-image-delete { align-items: center; display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .8rem; }
-.banner-image-delete small { color: #667085; font-size: .72rem; }
+.banner-image-actions { align-items: center; display: flex; justify-content: space-between; margin-top: .8rem; }
+.banner-image-actions__hint { color: #667085; display: block; font-size: .72rem; margin-top: .5rem; }
 
 /* Modern, compact DataTables pagination for every administration table. */
 .right_col .dataTables_wrapper .dataTables_paginate {

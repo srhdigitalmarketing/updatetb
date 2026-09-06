@@ -953,22 +953,31 @@
             return;
         }
 
-        function toggleDeleteButton(scope)
+        function updateBannerActions(scope)
         {
             let hasInput = $.trim(scope.find('input[name="banner_url"]').val() || '') !== '' || $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
             let hasCurrentBanner = scope.find('.banner-wrap img').length > 0;
-            scope.find('.banner-image-delete').prop('hidden', ! hasInput && ! hasCurrentBanner);
+            scope.find('[data-upload-banner-to-r2]').prop('disabled', ! hasInput);
+            scope.find('[data-clear-banner-image]').prop('disabled', ! hasInput && ! hasCurrentBanner);
         }
 
-        bannerInputs.each(function(){ toggleDeleteButton($(this).closest('.x_content')); });
-        bannerInputs.on('input change', function(){ toggleDeleteButton($(this).closest('.x_content')); });
+        bannerInputs.each(function(){ updateBannerActions($(this).closest('.x_content')); });
+        bannerInputs.on('input change', function(){ updateBannerActions($(this).closest('.x_content')); });
 
         $(document).on('click', '[data-clear-banner-image]', function(){
             let scope = $(this).closest('.x_content');
             scope.find('input[name="banner_url"], input[name="banner_file"]').val('').trigger('input').trigger('change');
             scope.find('input[name="remove_banner"]').val('1');
             scope.find('.banner-wrap').empty();
-            toggleDeleteButton(scope);
+            updateBannerActions(scope);
+        });
+
+        $(document).on('click', '[data-upload-banner-to-r2]', function(event){
+            let scope = $(this).closest('.x_content');
+            let hasInput = $.trim(scope.find('input[name="banner_url"]').val() || '') !== '' || $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
+            if (! hasInput) {
+                event.preventDefault();
+            }
         });
     }
 

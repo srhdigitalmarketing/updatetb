@@ -36,10 +36,11 @@
             ]) ?>
         </div>
         <?= form_hidden('remove_banner', old('remove_banner', '0')) ?>
-        <div class="banner-image-delete" hidden>
-            <button type="button" class="btn btn-danger" data-clear-banner-image><i class="fa fa-trash"></i> Delete image</button>
-            <small>Clears the remote URL or PC upload. Save changes to remove the current banner permanently.</small>
+        <div class="banner-image-actions">
+            <button type="submit" name="upload_banner" value="1" class="btn btn-primary" data-upload-banner-to-r2><i class="fa fa-cloud-upload"></i> Upload to R2</button>
+            <button type="button" class="btn btn-danger" data-clear-banner-image disabled><i class="fa fa-trash"></i> Delete image</button>
         </div>
+        <small class="banner-image-actions__hint">Select a file or remote URL, then upload it to the configured Cloudflare R2 storage.</small>
 
     </div>
 </div>
