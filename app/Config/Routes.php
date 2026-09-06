@@ -68,6 +68,7 @@ $routes->post('/admin/ads/zode-settings/save', 'Admin/Ads::save_zode_settings');
 $routes->get('/admin/dashboard/live-traffic', 'Admin/Dashboard::live_traffic');
 $routes->get('/admin/dashboard/revenue-today', 'Admin/Dashboard::revenue_today');
 $routes->post('/traffic/embed', 'Traffic::embed');
+$routes->get('/traffic/popup-ad', 'Traffic::popup_ad');
 $routes->match(['get', 'post'], '/admin/pages', 'Admin/PagesDisabled::index');
 $routes->match(['get', 'post'], '/admin/pages/(:any)', 'Admin/PagesDisabled::index');
 

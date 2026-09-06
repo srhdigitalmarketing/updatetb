@@ -300,7 +300,6 @@ if(! function_exists('display_managed_popup_ads'))
 
             $config[] = [
                 'id' => (int) ($unit['id'] ?? 0),
-                'weight' => max(1, min(100, (int) ($unit['weight'] ?? 1))),
                 'code' => $code,
             ];
         }
@@ -311,20 +310,24 @@ if(! function_exists('display_managed_popup_ads'))
 
         $encodedConfig = base64_encode(json_encode($config));
 
+        $selectionUrl = json_encode(site_url('/traffic/popup-ad'));
+
         return '<script>(function(){'
             . 'var encoded="' . $encodedConfig . '";var units=[];'
             . 'try{units=JSON.parse(atob(encoded));}catch(e){return;}'
             . 'if(!units.length){return;}'
             . 'var today=(new Date()).toISOString().slice(0,10),key="streamapi:embed-popup:"+today;'
-            . 'try{if(localStorage.getItem(key)){return;}}catch(e){}'
-            . 'var total=units.reduce(function(sum,unit){return sum+Math.max(1,parseInt(unit.weight,10)||1);},0),pick=Math.random()*total,selected=units[0];'
-            . 'for(var i=0;i<units.length;i++){pick-=Math.max(1,parseInt(units[i].weight,10)||1);if(pick<0){selected=units[i];break;}}'
-            . 'try{localStorage.setItem(key,String(selected.id||"selected"));}catch(e){}'
+            . 'var byId=function(id){for(var i=0;i<units.length;i++){if(String(units[i].id)===String(id)){return units[i];}}return null;};'
+            . 'var run=function(selected){if(!selected){return;}try{localStorage.setItem(key,String(selected.id||"selected"));}catch(e){}'
             . 'var holder=document.createElement("div");holder.style.display="none";holder.innerHTML=selected.code;'
             . 'var scripts=holder.querySelectorAll("script");Array.prototype.forEach.call(scripts,function(source){var script=document.createElement("script");'
             . 'Array.prototype.forEach.call(source.attributes,function(attribute){script.setAttribute(attribute.name,attribute.value);});'
             . 'if(source.src){script.src=source.src;}else{script.text=source.text||source.textContent||"";}source.parentNode.removeChild(source);document.head.appendChild(script);});'
-            . 'while(holder.firstChild){document.body.appendChild(holder.firstChild);}'
+            . 'while(holder.firstChild){document.body.appendChild(holder.firstChild);}};'
+            . 'var saved=null;try{saved=localStorage.getItem(key);}catch(e){}if(saved&&byId(saved)){run(byId(saved));return;}'
+            . 'var fallback=function(){run(units[Math.floor(Math.random()*units.length)]);};'
+            . 'if(!window.fetch){fallback();return;}fetch(' . $selectionUrl . ',{credentials:"same-origin"})'
+            . '.then(function(response){return response.ok?response.json():null;}).then(function(data){var selected=data&&byId(data.id);selected?run(selected):fallback();}).catch(fallback);'
             . '})();</script>';
     }
 }

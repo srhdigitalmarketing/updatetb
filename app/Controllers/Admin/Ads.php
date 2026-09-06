@@ -243,7 +243,9 @@ class Ads extends BaseController
                     'name' => $name !== '' ? substr($name, 0, 100) : ucfirst($provider),
                     'ad_code' => $code,
                     'zone_id' => $zoneId,
-                    'weight' => max(1, min(100, (int) ($unitData['weight'] ?? 1))),
+                    // Retained only for backward-compatible database rows.
+                    // Popup selection uses eCPM and current traffic, never weight.
+                    'weight' => 1,
                     'status' => ($unitData['status'] ?? 'paused') === 'active' ? 'active' : 'paused',
                 ];
 

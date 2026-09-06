@@ -1767,7 +1767,7 @@ body,
 .popup-ad-unit__fields {
   display: grid;
   gap: 14px;
-  grid-template-columns: 1.1fr 2fr .75fr .9fr;
+  grid-template-columns: 1.1fr 2fr .9fr;
 }
 
 .popup-ad-unit label {

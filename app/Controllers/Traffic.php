@@ -2,10 +2,22 @@
 
 namespace App\Controllers;
 
+use App\Libraries\PopupAdSelector;
 use App\Models\LiveTrafficModel;
 
 class Traffic extends BaseController
 {
+    public function popup_ad()
+    {
+        try {
+            $id = (new PopupAdSelector())->selectId();
+            return $this->response->setJSON(['id' => $id]);
+        } catch (\Throwable $exception) {
+            log_message('warning', 'Popup ad selection failed: {message}', ['message' => $exception->getMessage()]);
+            return $this->response->setStatusCode(503)->setJSON(['id' => null]);
+        }
+    }
+
     public function embed()
     {
         $visitorKey = trim((string) $this->request->getPost('visitor_key'));

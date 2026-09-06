@@ -47,11 +47,11 @@ class AdRevenueToday
      * Synchronize every active, configured unit. The supported networks report
      * their API revenue in USD; no currency conversion is performed here.
      */
-    public function synchronize(): array
+    public function synchronize(bool $force = false): array
     {
         $date = $this->today();
         $cached = cache()->get($this->cacheKey($date));
-        if (is_array($cached)) {
+        if (! $force && is_array($cached)) {
             $cached['cached'] = true;
             return $cached;
         }
@@ -77,7 +77,12 @@ class AdRevenueToday
 
             $summary['configured_units']++;
             try {
-                $summary['total'] += $this->fetchUnitRevenue($unit, $date);
+                $metrics = $this->fetchUnitMetrics($unit, $date);
+                $summary['total'] += $metrics['revenue'];
+                $summary['impressions'] += $metrics['impressions'];
+                $summary['unit_metrics'][(string) $unit['id']] = $metrics + [
+                    'provider' => (string) $unit['provider'],
+                ];
                 $summary['synchronized_units']++;
             } catch (\Throwable $exception) {
                 // No token or response body may reach the log.
@@ -108,6 +113,7 @@ class AdRevenueToday
         $summary['display_total'] = $this->formatTotal($summary['total']);
         $summary['updated_at'] = date('c');
         cache()->save($this->cacheKey($date), $summary, self::CACHE_TTL);
+        cache()->save('ad-revenue-latest-' . $date, $summary, 86400);
 
         return $summary;
     }
@@ -117,9 +123,18 @@ class AdRevenueToday
         $timezone = new DateTimeZone(config('App')->appTimezone ?: 'UTC');
         $date = (new DateTimeImmutable('now', $timezone))->format('Y-m-d');
         cache()->delete('ad-revenue-today-' . $date);
+        cache()->delete('ad-revenue-latest-' . $date);
     }
 
-    private function fetchUnitRevenue(array $unit, string $date): float
+    /** Return the latest same-day value even after the short dashboard cache expires. */
+    public function latestSummary(): array
+    {
+        $date = $this->today();
+        $latest = cache()->get('ad-revenue-latest-' . $date);
+        return is_array($latest) ? $latest : $this->cachedSummary();
+    }
+
+    private function fetchUnitMetrics(array $unit, string $date): array
     {
         switch (strtolower((string) $unit['provider'])) {
             case 'clickadu':
@@ -133,7 +148,7 @@ class AdRevenueToday
         }
     }
 
-    private function clickaduRevenue(array $unit, string $date): float
+    private function clickaduRevenue(array $unit, string $date): array
     {
         $payload = $this->requestJson('https://v2.api.clickadu.com/partner/stats', [
             'token' => (string) $unit['api_token'],
@@ -149,17 +164,17 @@ class AdRevenueToday
             throw new RuntimeException('ClickAdu returned no total for this zone.');
         }
 
-        return $this->amountFromRecord($payload['total'], ['money']);
+        return $this->metricsFromRecord($payload['total'], ['money']);
     }
 
-    private function clickadillaRevenue(array $unit, string $date): float
+    private function clickadillaRevenue(array $unit, string $date): array
     {
         $payload = $this->requestJson(
             'https://publishers.clickadilla.com/backend/api/public/stats',
             [
                 'date1' => $date,
                 'date2' => $date,
-                'fields' => 'date,money',
+                'fields' => 'date,money,impressions',
                 'filters' => 'spot=' . (string) $unit['zone_id'],
                 'orderBy' => '-date',
                 'limit' => 50,
@@ -168,10 +183,10 @@ class AdRevenueToday
             ['X-AUTH-TOKEN' => (string) $unit['api_token']]
         );
 
-        return $this->amountFromPayload($payload, ['money']);
+        return $this->metricsFromPayload($payload, ['money']);
     }
 
-    private function adsterraRevenue(array $unit, string $date): float
+    private function adsterraRevenue(array $unit, string $date): array
     {
         $identifiers = preg_split('/\s*[:|,]\s*/', (string) $unit['zone_id']);
         if (! is_array($identifiers) || count($identifiers) !== 2 || $identifiers[0] === '' || $identifiers[1] === '') {
@@ -190,7 +205,7 @@ class AdRevenueToday
             ['Accept' => 'application/json', 'X-API-Key' => (string) $unit['api_token']]
         );
 
-        return $this->amountFromPayload($payload, ['revenue', 'money']);
+        return $this->metricsFromPayload($payload, ['revenue', 'money']);
     }
 
     private function requestJson(string $url, array $query, array $headers = []): array
@@ -216,41 +231,44 @@ class AdRevenueToday
         return $payload;
     }
 
-    private function amountFromPayload(array $payload, array $fields): float
+    private function metricsFromPayload(array $payload, array $fields): array
     {
         foreach (['total', 'summary'] as $key) {
             if (isset($payload[$key]) && is_array($payload[$key])) {
-                return $this->amountFromRecord($payload[$key], $fields);
+                return $this->metricsFromRecord($payload[$key], $fields);
             }
         }
         foreach (['data', 'stats', 'result', 'rows'] as $key) {
             if (isset($payload[$key]) && is_array($payload[$key])) {
                 return $this->isList($payload[$key])
-                    ? $this->amountFromRecords($payload[$key], $fields)
-                    : $this->amountFromPayload($payload[$key], $fields);
+                    ? $this->metricsFromRecords($payload[$key], $fields)
+                    : $this->metricsFromPayload($payload[$key], $fields);
             }
         }
         if ($this->isList($payload)) {
-            return $this->amountFromRecords($payload, $fields);
+            return $this->metricsFromRecords($payload, $fields);
         }
 
-        return $this->amountFromRecord($payload, $fields);
+        return $this->metricsFromRecord($payload, $fields);
     }
 
-    private function amountFromRecords(array $records, array $fields): float
+    private function metricsFromRecords(array $records, array $fields): array
     {
         if ($records === []) {
-            return 0.0;
+            return ['revenue' => 0.0, 'impressions' => 0, 'ecpm' => 0.0];
         }
 
-        $total = 0.0;
+        $revenue = 0.0;
+        $impressions = 0;
         $found = false;
         foreach ($records as $record) {
             if (! is_array($record)) {
                 continue;
             }
             try {
-                $total += $this->amountFromRecord($record, $fields);
+                $metrics = $this->metricsFromRecord($record, $fields);
+                $revenue += $metrics['revenue'];
+                $impressions += $metrics['impressions'];
                 $found = true;
             } catch (RuntimeException $exception) {
                 continue;
@@ -260,28 +278,59 @@ class AdRevenueToday
             throw new RuntimeException('Publisher API returned no revenue field.');
         }
 
-        return $total;
+        return [
+            'revenue' => $revenue,
+            'impressions' => $impressions,
+            'ecpm' => $impressions > 0 ? ($revenue / $impressions) * 1000 : 0.0,
+        ];
     }
 
-    private function amountFromRecord(array $record, array $fields): float
+    private function metricsFromRecord(array $record, array $fields): array
     {
+        $revenue = null;
         foreach ($fields as $field) {
             if (! array_key_exists($field, $record)) {
                 continue;
             }
             $value = $record[$field];
             if (is_numeric($value)) {
-                return (float) $value;
+                $revenue = (float) $value;
+                break;
             }
             if (is_string($value)) {
                 $normalized = str_replace(',', '', trim($value));
                 if (is_numeric($normalized)) {
-                    return (float) $normalized;
+                    $revenue = (float) $normalized;
+                    break;
                 }
             }
         }
 
-        throw new RuntimeException('Publisher API returned no usable revenue value.');
+        if ($revenue === null) {
+            throw new RuntimeException('Publisher API returned no usable revenue value.');
+        }
+
+        $impressions = $this->integerFromRecord($record, ['impressions', 'imps']);
+        return [
+            'revenue' => $revenue,
+            'impressions' => $impressions,
+            'ecpm' => $impressions > 0 ? ($revenue / $impressions) * 1000 : 0.0,
+        ];
+    }
+
+    private function integerFromRecord(array $record, array $fields): int
+    {
+        foreach ($fields as $field) {
+            if (! array_key_exists($field, $record)) {
+                continue;
+            }
+            $value = is_string($record[$field]) ? str_replace(',', '', trim($record[$field])) : $record[$field];
+            if (is_numeric($value)) {
+                return max(0, (int) $value);
+            }
+        }
+
+        return 0;
     }
 
     private function configuredUnitCount(): int
@@ -315,6 +364,8 @@ class AdRevenueToday
             'currency' => 'USD',
             'total' => 0.0,
             'display_total' => $this->formatTotal(0),
+            'impressions' => 0,
+            'unit_metrics' => [],
             'configured_units' => 0,
             'synchronized_units' => 0,
             'failed_units' => 0,

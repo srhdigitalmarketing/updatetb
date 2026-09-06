@@ -33,7 +33,7 @@ $providerOptions = [
         <div>
             <span class="popup-ads-intro__eyebrow">Embed page monetization</span>
             <h4>Popup Ad Networks</h4>
-            <p>Add each network separately. Only one active network script is selected for a visitor, based on its rotation weight.</p>
+            <p>Active networks are selected automatically from their eCPM and current traffic; rotation weight is not used. Schedule <code>php spark revenue:sync</code> every 10 minutes for current optimization data.</p>
         </div>
         <div class="popup-ads-intro__limit">
             <i class="fa fa-shield"></i>
@@ -80,17 +80,6 @@ $providerOptions = [
                             'value' => $unit['name'],
                             'maxlength' => 100,
                             'placeholder' => 'Example: Adsterra Popunder',
-                        ]) ?>
-                    </div>
-                    <div class="form-group">
-                        <label>Rotation weight</label>
-                        <?= form_input([
-                            'name' => "popup_units[{$key}][weight]",
-                            'type' => 'number',
-                            'class' => 'form-control',
-                            'value' => $unit['weight'],
-                            'min' => 1,
-                            'max' => 100,
                         ]) ?>
                     </div>
                     <div class="form-group">
@@ -181,10 +170,6 @@ $providerOptions = [
                 <div class="form-group">
                     <label>Display name</label>
                     <input type="text" name="popup_units[__KEY__][name]" class="form-control popup-ad-name" maxlength="100" placeholder="Example: Adsterra Popunder">
-                </div>
-                <div class="form-group">
-                    <label>Rotation weight</label>
-                    <input type="number" name="popup_units[__KEY__][weight]" class="form-control" value="1" min="1" max="100">
                 </div>
                 <div class="form-group">
                     <label>Status</label>
