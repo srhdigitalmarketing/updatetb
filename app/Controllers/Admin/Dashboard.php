@@ -4,8 +4,8 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Libraries\Analytics;
+use App\Models\LiveTrafficModel;
 use App\Models\MovieModel;
-use App\Models\SettingsModel;
 
 
 class Dashboard extends BaseController
@@ -24,8 +24,36 @@ class Dashboard extends BaseController
                                 ->orderBy('views', 'DESC')
                                 ->findAll(10);
 
-        $data = compact('title', 'anytc', 'topMovies');
+        $liveTraffic = $this->liveTrafficSummary();
+        $zodeConfigured = ! empty(get_config('zode_id')) && ! empty(get_config('zode_api_token'));
+
+        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'zodeConfigured');
 
         return view('admin/dashboard/index', $data);
+    }
+
+    public function live_traffic()
+    {
+        return $this->response->setJSON($this->liveTrafficSummary());
+    }
+
+    private function liveTrafficSummary(): array
+    {
+        try {
+            if (! db_connect()->tableExists('live_traffic')) {
+                return ['active_now' => 0, 'tracking_ready' => false];
+            }
+
+            return [
+                'active_now' => (new LiveTrafficModel())->activeEmbedVisitors(),
+                'tracking_ready' => true,
+            ];
+        } catch (\Throwable $exception) {
+            log_message('error', 'Live traffic summary could not be loaded: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return ['active_now' => 0, 'tracking_ready' => false];
+        }
     }
 }

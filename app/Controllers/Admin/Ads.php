@@ -68,7 +68,10 @@ class Ads extends BaseController
             }
         }
 
-        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable', 'popupAdUnitsLoadError');
+        $zodeId = (string) (get_config('zode_id') ?? '');
+        $zodeApiTokenConfigured = ! empty(get_config('zode_api_token'));
+
+        $data = compact('title', 'popAds', 'popupAdUnits', 'popupAdUnitsUnavailable', 'popupAdUnitsLoadError', 'zodeId', 'zodeApiTokenConfigured');
 
         return view('admin/ads/embed', $data);
     }
@@ -246,6 +249,54 @@ class Ads extends BaseController
 
         return redirect()->back()
             ->with('success', 'Popup ad units updated successfully.');
+    }
+
+    public function save_zode_settings()
+    {
+        $zodeId = trim((string) $this->request->getPost('zode_id'));
+        $zodeApiToken = trim((string) $this->request->getPost('zode_api_token'));
+
+        if (mb_strlen($zodeId) > 100 || mb_strlen($zodeApiToken) > 255) {
+            return redirect()->back()
+                ->with('errors', ['Zode ID or API token is too long.'])
+                ->withInput();
+        }
+
+        try {
+            $settings = db_connect()->table('settings');
+            $this->saveZodeSetting($settings, 'zode_id', $zodeId);
+
+            if ($zodeApiToken !== '') {
+                $this->saveZodeSetting($settings, 'zode_api_token', $zodeApiToken);
+            }
+        } catch (\Throwable $exception) {
+            log_message('error', 'Zode settings could not be saved: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('errors', ['Zode settings could not be saved. Run the latest database update first.'])
+                ->withInput();
+        }
+
+        return redirect()->back()
+            ->with('success', 'Zode connection settings updated successfully.');
+    }
+
+    private function saveZodeSetting($settings, string $name, string $value): void
+    {
+        if ($settings->where('name', $name)->countAllResults() === 0) {
+            db_connect()->table('settings')->insert([
+                'name' => $name,
+                'value' => $value,
+                'data_type' => 'string',
+            ]);
+            return;
+        }
+
+        db_connect()->table('settings')
+            ->where('name', $name)
+            ->update(['value' => $value]);
     }
 
 

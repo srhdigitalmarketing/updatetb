@@ -12,6 +12,53 @@ $providerOptions = [
 ];
 ?>
 
+<?= form_open('/admin/ads/zode-settings/save', ['method' => 'post', 'class' => 'zode-settings-form']) ?>
+<section class="zode-settings-card">
+    <div class="zode-settings-card__heading">
+        <div>
+            <span class="popup-ads-intro__eyebrow">Revenue integration</span>
+            <h4>Zode Analytics</h4>
+            <p>Save the credentials that will be used to sync today's ad revenue to the dashboard.</p>
+        </div>
+        <span class="zode-settings-card__state <?= $zodeApiTokenConfigured ? 'is-configured' : '' ?>">
+            <i class="fa fa-<?= $zodeApiTokenConfigured ? 'check-circle' : 'plug' ?>"></i>
+            <?= $zodeApiTokenConfigured ? 'Credentials saved' : 'Not connected' ?>
+        </span>
+    </div>
+    <div class="zode-settings-card__fields">
+        <div class="form-group">
+            <label for="zode-id">Zode ID</label>
+            <?= form_input([
+                'id' => 'zode-id',
+                'name' => 'zode_id',
+                'class' => 'form-control',
+                'value' => $zodeId,
+                'maxlength' => 100,
+                'placeholder' => 'Enter your Zode ID',
+                'autocomplete' => 'off',
+            ]) ?>
+        </div>
+        <div class="form-group">
+            <label for="zode-api-token">API token</label>
+            <?= form_input([
+                'id' => 'zode-api-token',
+                'name' => 'zode_api_token',
+                'type' => 'password',
+                'class' => 'form-control',
+                'maxlength' => 255,
+                'placeholder' => $zodeApiTokenConfigured ? 'Saved — leave blank to keep it' : 'Paste your API token',
+                'autocomplete' => 'new-password',
+            ]) ?>
+            <small>Your token is never shown again. Leave it blank to keep the saved token.</small>
+        </div>
+    </div>
+    <div class="zode-settings-card__footer">
+        <span><i class="fa fa-lock"></i> Used only for the future Zode revenue sync.</span>
+        <?= form_button(['type' => 'submit', 'class' => 'btn btn-primary'], 'Save Zode settings') ?>
+    </div>
+</section>
+<?= form_close() ?>
+
 <?php if ($popupAdUnitsUnavailable): ?>
     <div class="alert alert-warning">
         The Popup Ads table is not visible in this site's active database. Verify <code>php spark migrate</code> was run in the same site directory and with the same database configuration.

@@ -223,6 +223,46 @@
 <script src="<?= theme_assets('js/custom.min.js?v=1.2') ?>"></script>
 <script src="<?= theme_assets('js/player.js?v=20260906') ?>"></script>
 
+<?php if (! empty($links)): ?>
+<script>
+(function () {
+    if (! window.fetch || ! window.localStorage) return;
+
+    var storageKey = 'streamapi:embed-visitor';
+    var visitorKey;
+    try {
+        visitorKey = localStorage.getItem(storageKey);
+        if (! visitorKey) {
+            visitorKey = (window.crypto && window.crypto.randomUUID)
+                ? window.crypto.randomUUID().replace(/-/g, '')
+                : String(Date.now()) + Math.random().toString(36).slice(2);
+            localStorage.setItem(storageKey, visitorKey);
+        }
+    } catch (error) {
+        return;
+    }
+
+    function pingLiveTraffic() {
+        if (document.visibilityState && document.visibilityState !== 'visible') return;
+
+        fetch('<?= site_url('/traffic/embed') ?>', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+            body: 'visitor_key=' + encodeURIComponent(visitorKey),
+            credentials: 'same-origin',
+            keepalive: true
+        }).catch(function () {});
+    }
+
+    pingLiveTraffic();
+    window.setInterval(pingLiveTraffic, 60000);
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') pingLiveTraffic();
+    });
+})();
+</script>
+<?php endif; ?>
+
 <!--footer custom codes-->
 <?= footer_custom_codes () ?>
 

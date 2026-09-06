@@ -50,4 +50,28 @@
 
 <?= $this->include('admin/dashboard/charts_js') ?>
 
+<script>
+(function () {
+    var endpoint = <?= json_encode(admin_url('/dashboard/live-traffic')) ?>;
+    var count = document.querySelector('.js-active-now');
+    var caption = document.querySelector('.js-live-traffic-caption');
+    if (! count || ! window.fetch) return;
+
+    function refreshLiveTraffic() {
+        fetch(endpoint, {credentials: 'same-origin'})
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (data) {
+                if (! data) return;
+                count.textContent = Number(data.active_now || 0).toLocaleString();
+                if (caption && data.tracking_ready) {
+                    caption.textContent = 'Visitors using the embed player in the last 3 minutes.';
+                }
+            })
+            .catch(function () {});
+    }
+
+    window.setInterval(refreshLiveTraffic, 30000);
+})();
+</script>
+
 <?php $this->endSection() ?>

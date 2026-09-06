@@ -576,6 +576,71 @@ body,
 .metric-requests .metric-card { background: linear-gradient(120deg, #f1edff, #fbfaff); }
 .metric-reported .metric-card { background: linear-gradient(120deg, #ffebea, #fff9f8); }
 .metric-reported .metric-card .count { color: #d92d20; }
+.metric-revenue .metric-card { background: linear-gradient(120deg, #eef3ff, #fbfcff); }
+.metric-revenue .metric-card .icon { background: #e8eeff; color: #516fe8; }
+.metric-card--revenue p {
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.45;
+  margin: 5px 0 8px;
+}
+.metric-card--revenue a {
+  color: #3569ef;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dashboard-live-traffic { grid-column: span 2; }
+.live-traffic-card {
+  background: linear-gradient(135deg, #152b51 0%, #1d4d83 100%);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(28, 62, 108, .2);
+  color: #fff;
+  min-height: 144px;
+  overflow: hidden;
+  padding: 19px 22px;
+  position: relative;
+}
+.live-traffic-card::after {
+  background: rgba(255, 255, 255, .08);
+  border-radius: 50%;
+  content: '';
+  height: 160px;
+  position: absolute;
+  right: -52px;
+  top: -70px;
+  width: 160px;
+}
+.live-traffic-card__header,
+.live-traffic-card__footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.live-traffic-card__eyebrow {
+  color: #a9cef9;
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+.live-traffic-card h3 { color: #fff; font-size: 13px; font-weight: 700; margin: 4px 0 0; }
+.live-traffic-card__status {
+  background: rgba(37, 217, 137, .16);
+  border: 1px solid rgba(102, 239, 175, .35);
+  border-radius: 99px;
+  color: #a9f6cc;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 8px;
+}
+.live-traffic-card__status .fa { font-size: 7px; margin-right: 3px; }
+.live-traffic-card__status.is-pending { background: rgba(254, 232, 164, .12); border-color: rgba(254, 232, 164, .3); color: #fee8a4; }
+.live-traffic-card__count { font-size: 42px; font-weight: 800; letter-spacing: -.05em; line-height: 1; margin-top: 13px; position: relative; z-index: 1; }
+.live-traffic-card__caption { color: #c5daf0; font-size: 11px; margin: 6px 0 11px; position: relative; z-index: 1; }
+.live-traffic-card__footer { border-top: 1px solid rgba(255, 255, 255, .14); color: #a9cef9; font-size: 10px; padding-top: 9px; }
 
 .dashboard-charts-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -768,6 +833,8 @@ body,
 .metric-links .metric-card .icon { background: #eafaff; color: #0d94c7; }
 .metric-requests .metric-card .icon { background: #f2edff; color: #805ad5; }
 .metric-reported .metric-card .icon { background: #ffeded; color: #e23a3a; }
+.metric-revenue .metric-card { background: linear-gradient(120deg, #eef3ff, #fbfcff) !important; }
+.metric-revenue .metric-card .icon { background: #e8eeff; color: #516fe8; }
 
 .metric-card h3 {
   color: #667085;
@@ -1630,19 +1697,43 @@ body,
 
 .popup-legacy-note { font-size: 13px; }
 
+.zode-settings-card {
+  background: linear-gradient(135deg, #f8fbff, #eef4ff);
+  border: 1px solid #dbe6f7;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  padding: 19px 20px;
+}
+.zode-settings-card__heading { align-items: flex-start; display: flex; gap: 16px; justify-content: space-between; }
+.zode-settings-card h4 { color: #182230; font-size: 18px; font-weight: 800; margin: 0 0 5px; }
+.zode-settings-card p { color: #667085; font-size: 13px; margin: 0; }
+.zode-settings-card__state { background: #fff4e5; border: 1px solid #fed7aa; border-radius: 99px; color: #b54708; flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 7px 10px; }
+.zode-settings-card__state.is-configured { background: #ecfdf3; border-color: #abefc6; color: #027a48; }
+.zode-settings-card__fields { display: grid; gap: 15px; grid-template-columns: 1fr 1fr; margin-top: 18px; }
+.zode-settings-card label { color: #344054 !important; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.zode-settings-card .form-control { background: #fff; }
+.zode-settings-card small { color: #667085; display: block; font-size: 11px; margin-top: 5px; }
+.zode-settings-card__footer { align-items: center; border-top: 1px solid #dbe6f7; color: #667085; display: flex; font-size: 11px; justify-content: space-between; margin-top: 3px; padding-top: 15px; }
+.zode-settings-card__footer .fa { color: #3569ef; margin-right: 4px; }
+
 @media (max-width: 991px) {
   .popup-ad-unit__fields { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 767px) {
+  .dashboard-live-traffic { grid-column: auto; }
   .popup-ads-intro,
   .popup-ad-unit__header,
-  .popup-ad-actions {
+  .popup-ad-actions,
+  .zode-settings-card__heading,
+  .zode-settings-card__footer {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .popup-ads-intro__limit { margin: 14px 0 0; }
   .popup-ad-unit__fields { grid-template-columns: 1fr; }
+  .zode-settings-card__fields { grid-template-columns: 1fr; }
+  .zode-settings-card__footer .btn { margin-top: 12px; width: 100%; }
   .popup-ad-actions .btn { width: 100%; }
 }
