@@ -9,7 +9,7 @@
         <div class="dashboard-command-copy">
             <span class="dashboard-eyebrow">VIDEO OPERATIONS</span>
             <h2>Video Command Center</h2>
-            <p>Manage your library, monitor link quality, and act on the metrics that need attention.</p>
+            <p>Manage your library, monitor audience activity, and act on the metrics that need attention.</p>
         </div>
         <div class="dashboard-command-actions">
             <a class="dashboard-primary-action" href="<?= admin_url('/movies/new') ?>">
@@ -25,10 +25,8 @@
         <?= $this->include('admin/dashboard/x_panel/top_tiles') ?>
     </div>
 
-    <div class="dashboard-charts-grid">
-    <div class="dashboard-chart-cell dashboard-chart-cell--wide">
-        <?= $this->include('admin/dashboard/x_panel/charts/links_completion') ?>
-    </div>
+    <div class="dashboard-visitor-grid">
+        <?= $this->include('admin/dashboard/x_panel/charts/visitor_statistics') ?>
     </div>
 
     <div class="dashboard-tables-grid">
