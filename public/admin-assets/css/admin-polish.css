@@ -2704,3 +2704,18 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
   .admin-topbar__actions > :nth-child(2),
   .admin-topbar__actions > :nth-child(3) { display: none; }
 }
+
+/* The header follows the same centered, transparent canvas as the admin content. */
+.main_container .top_nav { background: transparent; }
+.top_nav .admin-topbar {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  margin: 0 auto 10px;
+  max-width: 1360px;
+  width: 100%;
+}
+
+@media (max-width: 1439.98px) {
+  .top_nav .admin-topbar { max-width: none; }
+}
