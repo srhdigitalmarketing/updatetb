@@ -2783,3 +2783,25 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 }
 .nav-sm .nav.child_menu > li { padding: 0 !important; }
 .nav-sm .nav.child_menu > li > a { padding: 8px 10px !important; }
+
+/* Lightweight footer card, aligned with the centered admin workspace. */
+footer.admin-footer {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #edf0f5;
+  border-radius: 12px;
+  color: #94a3b8;
+  display: flex;
+  font-size: 12px;
+  justify-content: space-between;
+  margin: 18px auto 10px;
+  max-width: 1360px;
+  padding: 18px 24px;
+}
+.admin-footer__copyright { color: #8c9ab3; }
+.admin-footer__credit { color: #9aa6bd; }
+.admin-footer__credit .fa-heart { color: #fb7185; margin: 0 3px; }
+
+@media (max-width: 767.98px) {
+  footer.admin-footer { align-items: flex-start; flex-direction: column; gap: 6px; margin-top: 12px; padding: 16px 18px; }
+}

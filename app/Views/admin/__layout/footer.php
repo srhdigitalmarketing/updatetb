@@ -1,13 +1,7 @@
 <!-- footer content -->
-<footer>
-
-    <div class="float-start">
-    Powered By <a href="https://codenine.biz.id" target="_blank">Codenine</a>
-    </div>
-    <div class="float-end">
-    VideoHub v<?= get_config('version') ?>
-    </div>
-    <div class="clearfix"></div>
+<footer class="admin-footer">
+    <span class="admin-footer__copyright">© <?= date('Y') ?> Bangkong AI</span>
+    <span class="admin-footer__credit">Crafted with <i class="fa fa-heart" aria-hidden="true"></i> by Bangkong AI</span>
 </footer>
 <!-- /footer content -->
 </div>
