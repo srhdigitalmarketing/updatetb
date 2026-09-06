@@ -2472,6 +2472,12 @@ body,
 .right_col .btn-default:focus { background: #f8fafc; border-color: #c8d1df; color: #334155; }
 .right_col .btn-success { background: #16a34a; border-color: #16a34a; }
 .right_col .btn-danger { background: #e5484d; border-color: #e5484d; }
+.right_col .btn-danger,
+.right_col .btn-danger:visited,
+.right_col .btn-danger:hover,
+.right_col .btn-danger:focus {
+  color: #fff !important;
+}
 
 .right_col .form-group { margin-bottom: 19px; }
 .right_col .control-label { color: #475569; font-size: 12px; font-weight: 700; }
@@ -2730,6 +2736,19 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
     height: clamp(28px, 2vw, 32px);
     width: clamp(28px, 2vw, 32px);
   }
+}
+
+/* The legacy shell can retain desktop sizing during its compact-menu animation.
+   Pin every compact-state measurement to the icon rail so it cannot leave a
+   desktop-width blank strip beside the navigation. */
+.nav-sm .container.body .col-md-3.left_col,
+.nav-sm .navbar.nav_title {
+  width: 70px !important;
+}
+.nav-sm .container.body .right_col,
+.nav-sm .main_container .top_nav {
+  margin-left: 70px !important;
+  width: calc(100% - 70px);
 }
 
 /* The compact sidebar is icon-only: labels must not overflow into the workspace. */
