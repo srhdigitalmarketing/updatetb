@@ -56,15 +56,47 @@ class Servers extends BaseSettings
         if($this->request->getMethod() == 'post'){
 
             if($this->validate([
-                'servers.*' => 'permit_empty|alpha_numeric_punct',
-                'default_server' => 'permit_empty|alpha_numeric_punct'
+                'default_server' => 'permit_empty|max_length[120]'
             ])){
 
-                $servers = $this->request->getPost('renamed_servers');
-                $servers = array_map('trim', $servers);
+                $submittedServers = $this->request->getPost('renamed_servers');
+                $servers = [];
 
-                $default_server = $this->request->getPost('default_server');
-                $servers = is_array($servers) ? json_encode($servers) : NULL;
+                if (is_array($submittedServers)) {
+                    foreach ($submittedServers as $host => $label) {
+                        $host = trim((string) $host);
+                        if ($host === '') {
+                            continue;
+                        }
+
+                        // A server record is only a display-name mapping. Empty values
+                        // deliberately keep the original host visible to visitors.
+                        $servers[$host] = mb_substr(trim(strip_tags((string) $label)), 0, 80);
+                    }
+                }
+
+                $default_server = trim((string) $this->request->getPost('default_server'));
+                $currentServers = (array) get_config('renamed_servers');
+
+                // Keep the default selection attached to the same host when its
+                // display name is edited or removed in this submission.
+                foreach ($currentServers as $host => $label) {
+                    $currentName = $label !== '' ? $label : $host;
+                    if ($default_server === $currentName && array_key_exists($host, $servers)) {
+                        $default_server = $servers[$host] !== '' ? $servers[$host] : $host;
+                        break;
+                    }
+                }
+
+                $serverNames = array_map(static function ($label, $host) {
+                    return $label !== '' ? $label : $host;
+                }, $servers, array_keys($servers));
+
+                if ($default_server !== '' && ! in_array($default_server, $serverNames, true)) {
+                    $default_server = '';
+                }
+
+                $servers = json_encode($servers);
 
                 $data = [
                     'renamed_servers' => $servers,

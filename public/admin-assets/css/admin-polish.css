@@ -2143,6 +2143,31 @@ body,
 .general-report-toggle small { color: #667085; font-size: 10px; font-weight: 700; margin-left: 3px; }
 .general-report-actions { margin-top: 16px; }
 
+/* Server directory: compact table management instead of long form rows. */
+.server-settings-panel .x_content { padding: 22px; }
+.server-settings-intro { color: #667085; font-size: 12px; line-height: 1.55; margin: 0 0 18px; }
+.server-settings-default { align-items: center; background: #f7faff; border: 1px solid #dbe7fb; border-radius: 10px; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) minmax(260px, .7fr); margin-bottom: 20px; padding: 17px 18px; }
+.server-settings-eyebrow { color: #3569ef; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.server-settings-default h3 { color: #1d2939; font-size: 14px; font-weight: 800; margin: 3px 0 4px; }
+.server-settings-default p { color: #667085; font-size: 12px; margin: 0; }
+.server-settings-default__field .form-control { background: #fff; height: 40px; }
+.server-table-wrap { border: 1px solid #e3eaf4; border-radius: 10px; max-height: 590px; overflow: auto; }
+.server-settings-table { margin: 0; }
+.server-settings-table thead th { background: #f8faff; border-bottom: 1px solid #e3eaf4; color: #667085; font-size: 10px; font-weight: 800; letter-spacing: .06em; padding: 13px 15px; position: sticky; text-transform: uppercase; top: 0; z-index: 1; }
+.server-settings-table tbody td { border-color: #edf1f5; padding: 10px 15px; vertical-align: middle; }
+.server-settings-table tbody tr:hover { background: #fafcff; }
+.server-settings-table strong { color: #344054; font-size: 12px; font-weight: 800; }
+.server-alias-input { background: #f8fafc; border-color: #e1e7ef; box-shadow: none !important; color: #475467; font-size: 12px; height: 35px; }
+.server-alias-input[readonly] { cursor: default; }
+.server-settings-table tr.is-editing .server-alias-input { background: #fff; border-color: #7ea1f6; }
+.server-settings-table tr.is-cleared .server-alias-input { background: #fff8f8; border-color: #f4b6b6; }
+.server-default-badge { background: #ecfdf3; border-radius: 99px; color: #027a48; display: inline-block; font-size: 9px; font-weight: 800; margin-left: 7px; padding: 3px 6px; text-transform: uppercase; }
+.server-default-badge .fa { font-size: 8px; margin-right: 2px; }
+.server-row-actions { white-space: nowrap; }
+.server-row-actions .btn { font-size: 11px; margin-left: 5px; padding: 5px 8px; }
+.server-row-actions .fa { margin-right: 3px; }
+.server-settings-actions { margin-top: 17px; }
+
 @media (max-width: 767px) {
   .host-api-guide,
   .host-api-overview,
@@ -2162,4 +2187,6 @@ body,
   .host-search-results__heading { align-items: flex-start; flex-direction: column; gap: 3px; }
   .general-report-card { align-items: flex-start; grid-template-columns: auto minmax(0, 1fr); }
   .general-report-toggle { grid-column: 1 / -1; justify-content: center; width: 100%; }
+  .server-settings-default { grid-template-columns: 1fr; }
+  .server-table-wrap { max-height: 500px; }
 }
