@@ -2802,6 +2802,74 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 }
 .video-server-label .fa { font-size: .625rem; }
 
+/* Modern, compact DataTables pagination for every administration table. */
+.right_col .dataTables_wrapper .dataTables_paginate {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button {
+  align-items: center;
+  background: #fff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 9px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .02);
+  color: #475569 !important;
+  display: inline-flex;
+  font-size: .8125rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0 !important;
+  min-height: 42px;
+  min-width: 42px;
+  padding: .5rem .7rem !important;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, color .16s ease, transform .16s ease;
+}
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.next { min-width: 78px; }
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 5px 12px rgba(37, 99, 235, .10);
+  color: #2563eb !important;
+  transform: translateY(-1px);
+}
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: linear-gradient(135deg, #4f46e5, #2563eb) !important;
+  border-color: #4f46e5 !important;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, .22);
+  color: #fff !important;
+}
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis,
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none;
+  color: #94a3b8 !important;
+  min-width: 24px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  transform: none;
+}
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.right_col .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+  background: #f8fafc !important;
+  border-color: #edf1f5 !important;
+  box-shadow: none;
+  color: #cbd5e1 !important;
+}
+.right_col .video-table-footer .dataTables_info { color: #64748b; font-size: .8125rem; font-weight: 600; }
+
+@media (max-width: 575.98px) {
+  .right_col .dataTables_wrapper .dataTables_paginate { gap: 5px; }
+  .right_col .dataTables_wrapper .dataTables_paginate .paginate_button { min-height: 38px; min-width: 38px; padding: .45rem .55rem !important; }
+  .right_col .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+  .right_col .dataTables_wrapper .dataTables_paginate .paginate_button.next { min-width: auto; }
+}
+
 /* Lightweight footer card, aligned with the centered admin workspace. */
 footer.admin-footer {
   align-items: center;
