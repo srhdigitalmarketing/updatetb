@@ -12,13 +12,6 @@
         <?= $this->include('admin/settings/site/form_x_panels/general.php') ?>
         <?= $this->include('admin/settings/site/form_x_panels/page_url.php') ?>
 
-        <div class="text-right mb-3">
-            <?= form_button([
-                'type' => 'submit',
-                'class' => 'btn btn-primary'
-            ], 'update') ?>
-        </div>
-
         <?= form_close() ?>
 
     </div>
