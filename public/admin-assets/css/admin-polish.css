@@ -1003,7 +1003,8 @@ body,
 }
 
 body,
-.nav-md .container.body .right_col {
+.nav-md .container.body .right_col,
+.nav-sm .container.body .right_col {
   background: var(--rizz-canvas);
 }
 
