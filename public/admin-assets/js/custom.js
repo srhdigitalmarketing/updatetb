@@ -12,6 +12,7 @@
         init_discover();
         init_suggestion();
         init_host_api_connection_test();
+        init_stream_poster();
 
         if($('.summernote').length > 0){
             $('.summernote').summernote({
@@ -877,6 +878,70 @@
 
 
         });
+    }
+
+    function init_stream_poster()
+    {
+        let button = $('.stream-poster-fetch');
+        let result = $('.stream-poster-result');
+
+        if(button.length === 0 || result.length === 0){
+            return;
+        }
+
+        button.on('click', function(){
+            let movieId = parseInt(button.attr('data-movie-id'), 10) || 0;
+            if(movieId < 1){
+                return;
+            }
+
+            button.prop('disabled', true);
+            button.find('.fa').removeClass('fa-image').addClass('fa-spinner fa-spin');
+            result.empty();
+
+            $.ajax({
+                url: BASE_URL + '/ajax/stream-poster',
+                type: 'GET',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                data: {movie_id: movieId},
+                dataType: 'JSON',
+                success: function(data){
+                    if(! data.success || ! data.data || ! data.data.poster_url){
+                        renderError(data.error || 'This host did not provide a usable image.');
+                        return;
+                    }
+
+                    let posterUrl = data.data.poster_url;
+                    $('input[name="banner_url"]').val(posterUrl).trigger('change');
+                    $('.banner-wrap').empty().append(
+                        $('<img>', {src: posterUrl, class: 'w-100 mb-2', alt: 'stream host banner preview'})
+                    );
+                    result.empty().append(
+                        $('<div>', {class: 'stream-poster-result__success'}).append(
+                            $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
+                            document.createTextNode(' Image found via ' + (data.data.source || 'the stream host') + '. Save the video to use it as the banner.')
+                        )
+                    );
+                },
+                error: function(){
+                    renderError('Could not reach the stream host. Please try again later.');
+                },
+                complete: function(){
+                    button.prop('disabled', false);
+                    button.find('.fa').removeClass('fa-spinner fa-spin').addClass('fa-image');
+                }
+            });
+        });
+
+        function renderError(message)
+        {
+            result.empty().append(
+                $('<div>', {class: 'stream-poster-result__error'}).append(
+                    $('<i>', {class: 'fa fa-exclamation-circle', 'aria-hidden': 'true'}),
+                    document.createTextNode(' ' + message)
+                )
+            );
+        }
     }
 
     function init_host_api_connection_test()

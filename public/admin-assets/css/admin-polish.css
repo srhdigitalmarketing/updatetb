@@ -2846,6 +2846,11 @@ a.admin-topbar__action:hover { background: var(--bs-primary); color: #fff; }
 .stream-server-badge.is-healthy { background: #dcfce7; color: #15803d; }
 .stream-server-badge.is-broken { background: #fee2e2; color: #b91c1c; }
 .stream-server-badge.is-unchecked { background: #e2e8f0; color: #475569; }
+.banner-host-poster { margin-top: -.35rem; }
+.stream-poster-fetch { border-radius: .5rem; font-weight: 700; }
+.stream-poster-result { font-size: .75rem; margin-top: .5rem; }
+.stream-poster-result__success { color: #15803d; }
+.stream-poster-result__error { color: #b91c1c; }
 
 /* Modern, compact DataTables pagination for every administration table. */
 .right_col .dataTables_wrapper .dataTables_paginate {

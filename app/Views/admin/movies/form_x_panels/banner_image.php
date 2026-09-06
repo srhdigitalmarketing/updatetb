@@ -26,6 +26,15 @@
                 'value' => old('banner_url')
             ]) ?>
         </div>
+        <?php if (! empty($movie->id)): ?>
+            <div class="form-group banner-host-poster">
+                <button type="button" class="btn btn-outline-primary btn-sm stream-poster-fetch" data-movie-id="<?= (int) $movie->id ?>">
+                    <i class="fa fa-image"></i> Use image from stream host
+                </button>
+                <small class="form-text text-muted">Retrieves a thumbnail supplied by the host API or stream-page metadata.</small>
+                <div class="stream-poster-result" aria-live="polite"></div>
+            </div>
+        <?php endif; ?>
         <div class="separator"> or </div>
         <div class="form-group">
             <?= form_label('Select from PC:') ?>
