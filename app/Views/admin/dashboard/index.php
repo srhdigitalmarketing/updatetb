@@ -5,6 +5,29 @@
 
 
 <div class="dashboard-page">
+    <div class="dashboard-rizz-welcome">
+        <div class="dashboard-rizz-welcome__copy">
+            <span class="dashboard-eyebrow">DASHBOARD OVERVIEW</span>
+            <h2>Good <?= date('H') < 12 ? 'morning' : (date('H') < 18 ? 'afternoon' : 'evening') ?>, welcome back.</h2>
+            <p>Keep an eye on your video library, audience activity, and the actions that need attention.</p>
+        </div>
+        <div class="dashboard-rizz-welcome__actions">
+            <span class="dashboard-rizz-date"><i class="fa fa-calendar"></i> <?= date('D, d M') ?></span>
+            <a class="dashboard-primary-action" href="<?= admin_url('/movies/new') ?>">
+                <i class="fa fa-plus"></i> Add Video
+            </a>
+        </div>
+    </div>
+
+    <div class="dashboard-rizz-spotlight">
+        <span class="dashboard-rizz-spotlight__icon"><i class="fa fa-play"></i></span>
+        <div>
+            <span>VIDEO LIBRARY</span>
+            <strong>Manage your streaming catalog from one clear workspace.</strong>
+        </div>
+        <a href="<?= admin_url('/movies') ?>">Open library <i class="fa fa-arrow-right"></i></a>
+    </div>
+
     <div class="dashboard-metrics-grid">
         <?= $this->include('admin/dashboard/x_panel/top_tiles') ?>
     </div>
@@ -21,19 +44,6 @@
             <?= $this->include('admin/dashboard/x_panel/daily_player_analytics') ?>
         </div>
     </div>
-
-    <section class="dashboard-secondary-metrics" aria-labelledby="library-health-title">
-        <div class="dashboard-secondary-metrics__heading">
-            <div>
-                <span class="dashboard-eyebrow">OPERATIONS</span>
-                <h2 id="library-health-title">Library health</h2>
-            </div>
-            <a href="<?= admin_url('/movies') ?>">View library <i class="fa fa-arrow-right"></i></a>
-        </div>
-        <div class="dashboard-secondary-metrics__grid">
-            <?= $this->include('admin/dashboard/x_panel/secondary_tiles') ?>
-        </div>
-    </section>
 </div>
 
 
