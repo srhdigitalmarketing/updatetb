@@ -21,13 +21,6 @@ class Site extends BaseSettings
             $validationRules = [
                 'site_title' => 'permit_empty|alpha_numeric_punct',
                 'site_name' => 'permit_empty|alpha_numeric_space',
-                'footer_content' => 'permit_empty',
-                'library_items_per_page' => 'required|integer|greater_than[0]|less_than[61]',
-                'home_items_per_page' => 'permit_empty|integer|greater_than[-1]|less_than[31]',
-                'items_per_trending_page' => 'permit_empty|integer|greater_than[-1]|less_than[101]',
-                'items_per_recommend_page' => 'permit_empty|integer|greater_than[-1]|less_than[101]',
-                'items_per_new_release_page' => 'permit_empty|integer|greater_than[-1]|less_than[101]',
-                'items_per_imdb_top_page' => 'permit_empty|integer|greater_than[-1]|less_than[101]',
                 'watch_history_limit' => 'permit_empty|integer|greater_than[-1]|less_than[51]',
                 'view_slug' => 'permit_empty|alpha_dash|min_length[1]',
                 'embed_slug' => 'permit_empty|alpha_dash|min_length[1]',
@@ -41,24 +34,12 @@ class Site extends BaseSettings
                 $generalData = $this->request->getPost([
                     'site_title',
                     'site_name',
-                    'site_description',
-                    'site_keywords',
-                    'site_copyright',
-                    'footer_content',
-                    'library_items_per_page',
-                    'home_items_per_page',
-                    'items_per_trending_page',
-                    'items_per_recommend_page',
-                    'items_per_new_release_page',
-                    'items_per_imdb_top_page',
                     'watch_history_limit',
-                    'is_sidebar_disabled',
                     'custom_header_codes',
                     'custom_footer_codes',
                     'ad_block_detector'
                 ]);
 
-                $generalData['is_sidebar_disabled'] =  $generalData['is_sidebar_disabled'] == 1;
                 $generalData['ad_block_detector'] =  $generalData['ad_block_detector'] == 1;
 
 
