@@ -872,9 +872,11 @@
     function init_suggestion()
     {
         let search_thread = null;
+        let host_search_thread = null;
         let term = '';
         let type = 'movie';
         let resultsContent = $("#suggest-results");
+        let hostResultsContent = $("#host-api-results");
 
         $('.title-suggest').on('keyup', function (){
 
@@ -884,7 +886,9 @@
                 type = $this.attr('data-type');
 
                 clearTimeout( search_thread );
+                clearTimeout( host_search_thread );
                 cleanResults();
+                cleanHostResults();
 
                 search_thread = setTimeout(function(){
                     term = $this.val().trim();
@@ -892,6 +896,13 @@
                         load_results();
                     }
                 }, 500);
+
+                host_search_thread = setTimeout(function(){
+                    let hostTerm = $this.val().trim();
+                    if(hostTerm.length >= 3){
+                        loadHostResults(hostTerm);
+                    }
+                }, 650);
 
             }
         });
@@ -911,6 +922,47 @@
                 $("#load-tv-data").click();
             }
 
+        });
+
+        $(document).on('click', '.host-video-result', function () {
+            let item = $(this).data('hostVideo');
+            if(! item){
+                return;
+            }
+
+            $('input[name="title"]').val(item.title);
+
+            if(item.poster_url){
+                let bannerInput = $('input[name="banner_url"]');
+                bannerInput.val(item.poster_url).trigger('change');
+                $('.banner-wrap').empty().append(
+                    $('<img>', {
+                        src: item.poster_url,
+                        class: 'w-100 mb-2',
+                        alt: 'video poster preview'
+                    })
+                );
+            }
+
+            let streamInputs = $('input[name^="st_links"][name$="[url]"]').filter(':not([readonly])');
+            let streamInput = streamInputs.filter(function () {
+                return $.trim($(this).val()) === '';
+            }).first();
+
+            if(streamInput.length === 0){
+                streamInput = streamInputs.first();
+            }
+
+            if(streamInput.length > 0){
+                streamInput.val(item.player_url).trigger('change');
+            }
+
+            hostResultsContent.empty().append(
+                $('<div>', {class: 'host-search-selected'}).append(
+                    $('<i>', {class: 'fa fa-check-circle', 'aria-hidden': 'true'}),
+                    document.createTextNode(' Host video selected. Title, poster URL, and a stream link have been filled. Video ID is unchanged.')
+                )
+            );
         });
 
         function load_results()
@@ -956,6 +1008,75 @@
         function cleanResults()
         {
             resultsContent.html('');
+        }
+
+        function loadHostResults(hostTerm)
+        {
+            $.ajax({
+                url : BASE_URL + '/ajax/host-video-search',
+                type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest'},
+                data: {'title': hostTerm},
+                dataType: 'JSON',
+                success: function(data)
+                {
+                    if(data.success && data.data){
+                        addHostResults(data.data.items || [], data.data.configured_hosts || 0);
+                    }
+                },
+                // Host results are optional. The existing form remains usable if
+                // an external provider is unavailable.
+                error: function () {}
+            });
+        }
+
+        function addHostResults(items, configuredHosts)
+        {
+            cleanHostResults();
+
+            if(configuredHosts < 1){
+                return;
+            }
+
+            let section = $('<section>', {class: 'host-search-results'});
+            section.append($('<div>', {class: 'host-search-results__heading'}).append(
+                $('<span>').text('Video host results'),
+                $('<small>').text('Choose a result to fill the title, poster URL, and stream link.')
+            ));
+
+            if(items.length === 0){
+                section.append($('<p>', {class: 'host-search-results__empty'}).text('No playable files matched this title on your active video hosts.'));
+                hostResultsContent.append(section);
+                return;
+            }
+
+            let list = $('<div>', {class: 'host-search-results__list'});
+            items.forEach(function(item){
+                let card = $('<button>', {type: 'button', class: 'host-video-result'}).data('hostVideo', item);
+                let preview = $('<div>', {class: 'host-video-result__preview'});
+
+                if(item.poster_url){
+                    preview.append($('<img>', {src: item.poster_url, alt: ''}));
+                }else{
+                    preview.append($('<i>', {class: 'fa fa-play-circle', 'aria-hidden': 'true'}));
+                }
+
+                let content = $('<div>', {class: 'host-video-result__content'});
+                content.append($('<strong>').text(item.title));
+                content.append($('<span>', {class: 'host-video-result__source'}).text(item.source + ' · ' + item.provider));
+                content.append($('<span>', {class: 'host-video-result__link'}).text(item.player_url));
+
+                card.append(preview, content, $('<i>', {class: 'fa fa-arrow-right host-video-result__arrow', 'aria-hidden': 'true'}));
+                list.append(card);
+            });
+
+            section.append(list);
+            hostResultsContent.append(section);
+        }
+
+        function cleanHostResults()
+        {
+            hostResultsContent.empty();
         }
 
     }

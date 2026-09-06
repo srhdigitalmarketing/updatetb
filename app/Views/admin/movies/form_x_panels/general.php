@@ -20,7 +20,8 @@
             <span class="form-text">Enter a video title to find suggestions.</span>
         </div>
 
-        <div  id="suggest-results"></div>
+        <div id="suggest-results"></div>
+        <div id="host-api-results" aria-live="polite"></div>
 
         <div class="form-group">
             <?= form_label('Video ID *:') ?>
