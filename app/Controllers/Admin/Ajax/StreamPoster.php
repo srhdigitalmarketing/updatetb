@@ -18,6 +18,7 @@ use Throwable;
  */
 class StreamPoster extends BaseAjax
 {
+    private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
     public function index()
     {
         $movieId = (int) $this->request->getGet('movie_id');
@@ -204,6 +205,10 @@ class StreamPoster extends BaseAjax
     /** @return array<int, string> */
     private function apiRoots(string $baseUrl, string $provider): array
     {
+        if ($provider === 'earnvids') {
+            return [self::EARNVIDS_API_ROOT];
+        }
+
         $baseUrl = rtrim($baseUrl, '/');
         if ($baseUrl === '') {
             return [];

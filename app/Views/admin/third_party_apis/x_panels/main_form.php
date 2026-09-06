@@ -3,9 +3,9 @@
 
 <?php
 $providerOptions = [
+    'earnvids' => 'EarnVids',
     'upnshare' => 'UPNShare',
     'vidhide' => 'Vidhide',
-    'earnvids' => 'EarnVids',
     'xvideosharing' => 'XVideoSharing compatible',
     'custom' => 'Custom host',
 ];
@@ -47,24 +47,20 @@ if (! $isExisting) {
                     'name' => 'provider',
                     'class' => 'form-control',
                     'options' => $providerOptions,
-                    'selected' => old('provider', $tpAPI->provider ?: 'vidhide'),
+                    'selected' => old('provider', $tpAPI->provider ?: 'earnvids'),
                 ]) ?>
             </div>
         </div>
 
-        <div class="form-group">
-            <label class="control-label" for="host-api-base-url">API base URL</label>
-            <?= form_input([
-                'id' => 'host-api-base-url',
-                'type' => 'url',
-                'name' => 'api_base_url',
-                'class' => 'form-control',
-                'value' => old('api_base_url', $tpAPI->api_base_url),
-                'placeholder' => 'Example: https://vidhideapi.com/api',
-                'maxlength' => 255,
-                'required' => 'required',
-            ]) ?>
-            <small>Enter the API root, not a File Info/List endpoint. For EarnVids use <code>https://earnvidsapi.com/api</code>; the connection test uses <code>/file/list</code> automatically.</small>
+        <?= form_input([
+            'id' => 'host-api-base-url',
+            'type' => 'hidden',
+            'name' => 'api_base_url',
+            'value' => old('api_base_url', $tpAPI->api_base_url ?: 'https://earnvidsapi.com/api'),
+        ]) ?>
+        <div class="host-api-fixed-endpoint">
+            <strong>EarnVids data scope</strong>
+            <span>File list and direct playback use the official EarnVids API automatically. Only the API key is required.</span>
         </div>
 
         <div class="form-group">

@@ -10,6 +10,7 @@ use CodeIgniter\Model;
 
 class ThirdPartyApis extends BaseController
 {
+    private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
 
     protected $model;
 
@@ -144,10 +145,17 @@ class ThirdPartyApis extends BaseController
         return $api;
     }
 
-    /** Convert pasted File Info/List endpoint URLs into the API root. */
+    /**
+     * EarnVids has a fixed API root; only its credential is configurable.
+     * Other existing providers retain their stored root for compatibility.
+     */
     private function normaliseApiBaseUrl($url, $provider): string
     {
         $url = rtrim(trim((string) $url), '/');
+
+        if ($provider === 'earnvids') {
+            return self::EARNVIDS_API_ROOT;
+        }
 
         return $provider === 'upnshare'
             ? $url

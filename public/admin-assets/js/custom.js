@@ -959,11 +959,6 @@
             let token = $.trim($('#host-api-token').val());
             let apiId = parseInt($('.host-api-test').attr('data-api-id'), 10) || 0;
 
-            if(apiBaseUrl === ''){
-                renderHostApiTestError('Enter the API base URL before testing the connection.');
-                return;
-            }
-
             if(token === '' && apiId === 0){
                 renderHostApiTestError('Enter the API token before testing the connection.');
                 return;
@@ -1138,6 +1133,19 @@
             if(streamInput.length > 0 && item.player_url){
                 streamInput.val(item.player_url).trigger('change');
                 streamWasFilled = true;
+
+                // Keep the selected provider and file code with the link.
+                // EarnVids direct URLs are requested later for the visitor's
+                // IP address, so an expiring direct URL is never saved here.
+                let fieldName = streamInput.attr('name') || '';
+                let fieldMatch = fieldName.match(/^st_links\[(\d+)\]\[url\]$/);
+                if(fieldMatch && item.api_id && item.file_code){
+                    let streamGroup = streamInput.closest('.st-group');
+                    let key = fieldMatch[1];
+                    streamGroup.find('input[name="st_links[' + key + '][api_id]"], input[name="st_links[' + key + '][upnshare_video_id]"]').remove();
+                    streamGroup.append($('<input>', {type: 'hidden', name: 'st_links[' + key + '][api_id]', value: item.api_id}));
+                    streamGroup.append($('<input>', {type: 'hidden', name: 'st_links[' + key + '][upnshare_video_id]', value: item.file_code}));
+                }
             }
 
             hostResultsContent.empty().append(

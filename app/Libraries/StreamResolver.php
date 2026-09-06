@@ -14,6 +14,7 @@ use Config\UpnShare;
  */
 class StreamResolver
 {
+    private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
     /** @var LinkModel */
     private $links;
     /** @var UpnShare */
@@ -86,6 +87,35 @@ class StreamResolver
             'last_error' => substr($reason, 0, 255),
             'is_broken' => $count >= $this->config->failureThreshold ? 1 : 0,
         ]);
+    }
+
+    /**
+     * EarnVids direct links are generated for the current viewer IP, so they
+     * must be requested only when playback starts and must never be stored.
+     */
+    public function deliveryUrl(Link $link, string $endUserIp): string
+    {
+        if (! filter_var($endUserIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || empty($link->api_id)) {
+            return (string) $link->link;
+        }
+
+        $api = (new ThirdPartyApi())->find((int) $link->api_id);
+        $videoId = trim((string) $link->upnshare_video_id) ?: $this->videoIdFromUrl((string) $link->link);
+        if ($api === null || $api->provider !== 'earnvids' || $api->status !== 'active' || $videoId === '') {
+            return (string) $link->link;
+        }
+
+        $response = $this->providerRequest(self::EARNVIDS_API_ROOT . '/file/direct_link', [
+            'key' => (string) $api->api_token,
+            'file_code' => $videoId,
+            'ip' => $endUserIp,
+        ], (string) $api->api_token);
+
+        if ($response === null || $response['status'] < 200 || $response['status'] >= 300 || ! is_array($response['payload'])) {
+            return (string) $link->link;
+        }
+
+        return $this->directUrlFromPayload($response['payload']) ?: (string) $link->link;
     }
 
     /** Run one explicit availability check, used by the scheduled health job. */
@@ -267,6 +297,10 @@ class StreamResolver
     /** @return array<int, string> */
     private function apiRoots(string $baseUrl, string $provider): array
     {
+        if ($provider === 'earnvids') {
+            return [self::EARNVIDS_API_ROOT];
+        }
+
         $baseUrl = rtrim($baseUrl, '/');
         if ($baseUrl === '') {
             return [];
@@ -292,6 +326,33 @@ class StreamResolver
         }
 
         return array_values(array_unique($roots));
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function directUrlFromPayload(array $payload): ?string
+    {
+        $values = [
+            $payload['result'] ?? null,
+            $payload['data'] ?? null,
+            $payload['direct_link'] ?? null,
+            $payload['link'] ?? null,
+            $payload['url'] ?? null,
+        ];
+
+        foreach ($values as $value) {
+            if (is_string($value) && $this->isSafePublicUrl($value)) {
+                return $value;
+            }
+            if (is_array($value)) {
+                foreach (['direct_link', 'link', 'url', 'file_url'] as $key) {
+                    if (! empty($value[$key]) && is_string($value[$key]) && $this->isSafePublicUrl($value[$key])) {
+                        return $value[$key];
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /** @return array{status: int, payload: array<string, mixed>|null}|null */

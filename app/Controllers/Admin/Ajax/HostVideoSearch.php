@@ -17,6 +17,7 @@ class HostVideoSearch extends BaseAjax
     private const RESULTS_PER_HOST = 6;
     private const MAX_RESULTS = 12;
     private const MAX_UPNSHARE_LOCAL_PAGES = 5;
+    private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
 
     public function index()
     {
@@ -80,6 +81,7 @@ class HostVideoSearch extends BaseAjax
                     }
 
                     $items[] = [
+                        'api_id' => (int) $api->id,
                         'source' => (string) $api->name,
                         'provider' => (string) $api->provider,
                         'title' => trim((string) ($file['title'] ?? $file['file_title'] ?? $file['name'] ?? $title)),
@@ -427,6 +429,10 @@ class HostVideoSearch extends BaseAjax
      */
     private function apiRoots(object $api): array
     {
+        if ((string) $api->provider === 'earnvids') {
+            return [self::EARNVIDS_API_ROOT];
+        }
+
         $base = rtrim((string) $api->api_base_url, '/');
         if ((string) $api->provider !== 'upnshare') {
             $base = preg_replace('#/file/(?:info|list)$#i', '', $base) ?: $base;

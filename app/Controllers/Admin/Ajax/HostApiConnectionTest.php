@@ -14,6 +14,7 @@ use Throwable;
  */
 class HostApiConnectionTest extends BaseAjax
 {
+    private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
     /** @var string|null */
     private $lastFailure = null;
 
@@ -28,6 +29,12 @@ class HostApiConnectionTest extends BaseAjax
             $this->addError('Choose a supported video-host provider before testing the connection.');
 
             return $this->jsonResponse();
+        }
+
+        // EarnVids publishes one fixed API root. The API key is the only
+        // administrator-supplied connection setting.
+        if ($provider === 'earnvids') {
+            $baseUrl = self::EARNVIDS_API_ROOT;
         }
 
         if (mb_strlen($baseUrl) > 255 || $this->getSafeHostConfig($baseUrl) === null) {
@@ -57,7 +64,7 @@ class HostApiConnectionTest extends BaseAjax
                 : $this->testXVideoSharingHost($baseUrl, $token, $provider);
 
             if ($result === null) {
-                $this->addError($this->lastFailure ?: 'The host did not return a valid API response. Check the base URL, token, and provider setting.');
+                $this->addError($this->lastFailure ?: 'The host did not return a valid API response. Check the API key and provider setting.');
 
                 return $this->jsonResponse();
             }

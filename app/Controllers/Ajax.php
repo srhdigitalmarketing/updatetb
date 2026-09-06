@@ -64,7 +64,7 @@ class Ajax extends BaseAjax
                 //update request in the link
                 $linkModel->updateRequests( $link->id );
                 $this->addData([
-                    'link' => $link->link,
+                    'link' => $resolver->deliveryUrl($link, (string) $this->request->getIPAddress()),
                     'id' => encode_id($link->id),
                     'host' => $link->getHost(true),
                 ]);

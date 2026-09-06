@@ -35,7 +35,7 @@
             <tr>
                 <td>
                     <strong><?= esc($api->name) ?></strong>
-                    <small><?= esc($api->api_base_url ?: 'Legacy configuration') ?></small>
+                    <small><?= $api->provider === 'earnvids' ? 'File list and direct playback enabled' : 'Provider connection configured' ?></small>
                 </td>
                 <td><span class="host-api-provider-badge"><?= esc(ucfirst(str_replace('xvideosharing', 'XVideoSharing', $api->provider ?: 'custom'))) ?></span></td>
                 <td><span class="host-api-scope"><i class="fa fa-play-circle"></i> Video</span><span class="host-api-scope"><i class="fa fa-image"></i> Poster</span></td>
