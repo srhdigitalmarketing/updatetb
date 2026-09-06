@@ -1,10 +1,10 @@
 <!-- footer content -->
 <footer>
 
-    <div class="pull-left">
+    <div class="float-start">
     Powered By <a href="https://codenine.biz.id" target="_blank">Codenine</a>
     </div>
-    <div class="pull-right">
+    <div class="float-end">
     VideoHub v<?= get_config('version') ?>
     </div>
     <div class="clearfix"></div>
@@ -18,8 +18,9 @@
 
 <!-- jQuery -->
 <script src="<?= site_url('/admin-assets/vendors/jquery/dist/jquery.min.js') ?>"></script>
-<!-- Bootstrap -->
-<script src="<?= site_url('/admin-assets/vendors/bootstrap/dist/js/bootstrap.bundle.min.js') ?>"></script>
+<!-- Bootstrap 5.3 -->
+<script src="<?= site_url('/admin-assets/vendors/bootstrap5/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= site_url('/admin-assets/js/bootstrap5-compat.js?v=20260906-01') ?>"></script>
 <!-- FastClick -->
 <script src="<?= site_url('/admin-assets/vendors/fastclick/lib/fastclick.js') ?>"></script>
 <!-- NProgress -->

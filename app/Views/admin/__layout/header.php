@@ -9,8 +9,8 @@
 
     <title> <?= esc( $title ?? '' ) ?> - <?= esc( site_name() ) ?> </title>
 
-    <!-- Bootstrap -->
-    <link href="<?= site_url('/admin-assets/vendors/bootstrap/dist/css/bootstrap.min.css') ?>" rel="stylesheet">
+    <!-- Bootstrap 5.3 -->
+    <link href="<?= site_url('/admin-assets/vendors/bootstrap5/css/bootstrap.min.css') ?>" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link href="<?= site_url('/admin-assets/vendors/font-awesome/css/font-awesome.min.css') ?>" rel="stylesheet">
@@ -30,7 +30,8 @@
 
     <!-- Custom Theme Style -->
     <link href="<?= site_url('/admin-assets/css/custom.min.css?v=1.2') ?>" rel="stylesheet">
-    <link href="<?= site_url('/admin-assets/css/admin-polish.css?v=20260906-28') ?>" rel="stylesheet">
+    <link href="<?= site_url('/admin-assets/css/bootstrap5-compat.css?v=20260906-01') ?>" rel="stylesheet">
+    <link href="<?= site_url('/admin-assets/css/admin-polish.css?v=20260906-29') ?>" rel="stylesheet">
 </head>
 
 <body class="nav-md">
