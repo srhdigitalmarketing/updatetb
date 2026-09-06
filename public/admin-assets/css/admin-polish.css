@@ -2805,3 +2805,19 @@ footer.admin-footer {
 @media (max-width: 767.98px) {
   footer.admin-footer { align-items: flex-start; flex-direction: column; gap: 6px; margin-top: 12px; padding: 16px 18px; }
 }
+
+/* Keep the sidebar a continuous, clean surface for the whole viewport. */
+@media (min-width: 992px) {
+  .nav-md .container.body .col-md-3.left_col,
+  .nav-sm .container.body .col-md-3.left_col {
+    background: #fff !important;
+    bottom: 0;
+    height: 100vh;
+    min-height: 100vh !important;
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+  }
+  .nav-md .left_col.scroll-view,
+  .nav-sm .left_col.scroll-view { background: #fff !important; min-height: 100vh; }
+}
