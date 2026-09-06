@@ -375,9 +375,17 @@ class MovieModel extends Model
                 'size_lbl' => $sizeLbl,
             ];
 
-            if ($linkModel->supportsStreamHealthFields()) {
-                $data['host_priority'] = $link['host_priority'] ?? 100;
-                $data['upnshare_video_id'] = $link['upnshare_video_id'] ?? null;
+            if ($type === 'stream' && $linkModel->supportsStreamHealthFields()) {
+                $submittedPriority = trim((string) ($link['host_priority'] ?? ''));
+                if ($submittedPriority === '' && $dlLink !== null && $dlLink->host_priority !== null) {
+                    $priority = (int) $dlLink->host_priority;
+                } else {
+                    $priority = filter_var($submittedPriority, FILTER_VALIDATE_INT);
+                    $priority = $priority !== false && $priority >= 0 && $priority <= 65535 ? $priority : 100;
+                }
+
+                $data['host_priority'] = $priority;
+                $data['upnshare_video_id'] = trim((string) ($link['upnshare_video_id'] ?? '')) ?: null;
             }
 
             $dlLink->fill( $data );

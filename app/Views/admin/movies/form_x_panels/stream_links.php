@@ -45,11 +45,12 @@
                             <?= form_input([
                                 'type' => 'number',
                                 'min' => '0',
+                                'max' => '65535',
                                 'name' => "st_links[{$key}][host_priority]",
                                 'class' => 'form-control stream-priority',
                                 'value' => old("st_links.{$key}.host_priority", $link->host_priority ?? 100)
                             ]) ?>
-                            <small class="form-text text-muted">Higher values are preferred.</small>
+                            <small class="form-text text-muted">Higher values are tried first; the next link is used automatically if playback fails.</small>
                         </div>
                         <div class="col-md-8">
                             <?= form_label('UPNShare video ID (optional)', '') ?>
@@ -95,11 +96,12 @@
                             <?= form_input([
                                 'type' => 'number',
                                 'min' => '0',
+                                'max' => '65535',
                                 'name' => "st_links[{$i}][host_priority]",
                                 'class' => 'form-control stream-priority',
                                 'value' => old("st_links.{$i}.host_priority", 100)
                             ]) ?>
-                            <small class="form-text text-muted">Higher values are preferred.</small>
+                            <small class="form-text text-muted">Higher values are tried first; the next link is used automatically if playback fails.</small>
                         </div>
                         <div class="col-md-8">
                             <?= form_label('UPNShare video ID (optional)', '') ?>

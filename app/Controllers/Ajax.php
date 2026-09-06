@@ -53,6 +53,9 @@ class Ajax extends BaseAjax
             $linkModel = new LinkModel();
             $excluded = $this->request->getGet('exclude');
             $excluded = is_array($excluded) ? $excluded : [];
+            $excluded = array_values(array_filter(array_map(static function ($encodedId) {
+                return decode_id($encodedId);
+            }, $excluded)));
             $resolver = new StreamResolver($linkModel);
             $link = $resolver->resolve($movieId, $linkId, $excluded);
 
