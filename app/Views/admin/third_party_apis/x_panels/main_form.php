@@ -54,7 +54,7 @@ $isExisting = ! empty($tpAPI->id);
             <div class="form-group">
                 <label class="control-label" for="r2-public-url">Public bucket URL</label>
                 <?= form_input(['id' => 'r2-public-url', 'name' => 'r2_public_url', 'type' => 'url', 'class' => 'form-control', 'value' => old('r2_public_url', $tpAPI->r2_public_url), 'placeholder' => 'https://media.example.com', 'maxlength' => 255, 'required' => 'required']) ?>
-                <small>URL publik tanpa nama file. Contoh: <code>https://media.example.com</code>. Bucket harus mengizinkan URL ini dibaca publik.</small>
+                <small>URL publik tanpa nama file. Contoh: <code>https://media.example.com</code>. Aktifkan <em>Public Development URL</em> pada bucket untuk memakai <code>r2.dev</code>, atau gunakan custom domain publik.</small>
             </div>
         </section>
 

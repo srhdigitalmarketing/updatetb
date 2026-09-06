@@ -327,7 +327,7 @@ class Movies extends BaseController
                     $movie->banner = $r2->uploadBanner($bannerFile);
                 } catch (\Throwable $exception) {
                     log_message('error', 'Cloudflare R2 banner upload failed: {message}', ['message' => $exception->getMessage()]);
-                    $this->mediaWarnings[] = 'Banner could not be uploaded to Cloudflare R2. Please verify the R2 API Access settings and try again.';
+                    $this->mediaWarnings[] = 'Banner could not be published from Cloudflare R2. Enable the bucket public URL or configure a public custom domain, then try again.';
                     return;
                 }
             } else {

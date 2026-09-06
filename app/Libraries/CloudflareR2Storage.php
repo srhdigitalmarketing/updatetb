@@ -58,7 +58,10 @@ class CloudflareR2Storage
 
         $this->signedRequest('PUT', $key, $file->getPathname(), $mime);
 
-        return rtrim((string) $this->config->r2_public_url, '/') . '/' . $key;
+        $publicUrl = rtrim((string) $this->config->r2_public_url, '/') . '/' . $key;
+        $this->verifyPublicImage($publicUrl);
+
+        return $publicUrl;
     }
 
     public function isManagedUrl(string $url): bool
@@ -159,5 +162,27 @@ class CloudflareR2Storage
         $serviceKey = hash_hmac('sha256', self::SERVICE, $regionKey, true);
 
         return hash_hmac('sha256', 'aws4_request', $serviceKey, true);
+    }
+
+    private function verifyPublicImage(string $url): void
+    {
+        $curl = curl_init($url);
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_RANGE => '0-0',
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 20,
+        ]);
+        $response = curl_exec($curl);
+        $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $contentType = (string) curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+        $error = curl_error($curl);
+        curl_close($curl);
+
+        if ($response === false || $status < 200 || $status >= 300 || stripos($contentType, 'image/') !== 0) {
+            $detail = $error !== '' ? $error : 'HTTP ' . $status;
+            throw new RuntimeException('Cloudflare R2 public URL is not serving the uploaded image (' . $detail . '). Enable the bucket public development URL or configure a public custom domain.');
+        }
     }
 }
