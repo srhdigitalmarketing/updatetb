@@ -47,6 +47,7 @@
                                 <th>Host</th>
                                 <th>Display name</th>
                                 <th>Host priority</th>
+                                <th>Total links</th>
                                 <th class="text-right">Actions</th>
                             </tr>
                         </thead>
@@ -56,7 +57,6 @@
                         <tr data-server-row data-server-host="<?= esc($key, 'attr') ?>" data-server-links="<?= (int) ($serverLinkCounts[$key] ?? 0) ?>">
                             <td>
                                 <strong><?= esc($key) ?></strong>
-                                <span class="server-link-count"><?= number_format($serverLinkCounts[$key] ?? 0) ?> link<?= ($serverLinkCounts[$key] ?? 0) === 1 ? '' : 's' ?></span>
                                 <?php if (get_config('default_server') === $serverName): ?>
                                     <span class="server-default-badge"><i class="fa fa-star"></i> Default</span>
                                 <?php endif; ?>
@@ -89,15 +89,9 @@
                                 }
                                 ?>
                                 <?= form_input($priorityAttributes) ?>
-                                <span class="server-priority-help">
-                                    <?php if (! $streamHealthAvailable): ?>
-                                        Run migration to enable
-                                    <?php elseif (! empty($serverStreamLinkCounts[$key])): ?>
-                                        Applies to <?= number_format($serverStreamLinkCounts[$key]) ?> stream link<?= $serverStreamLinkCounts[$key] === 1 ? '' : 's' ?>
-                                    <?php else: ?>
-                                        No stream links
-                                    <?php endif; ?>
-                                </span>
+                            </td>
+                            <td class="server-total-links">
+                                <?= number_format($serverLinkCounts[$key] ?? 0) ?>
                             </td>
                             <td class="text-right server-row-actions">
                                 <button class="btn btn-sm btn-outline-primary" type="button" data-server-edit><i class="fa fa-pencil"></i> Edit</button>
