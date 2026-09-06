@@ -64,18 +64,5 @@
         </div>
         <!-- /sidebar menu -->
 
-        <div class="sidebar-footer hidden-small">
-            <a href="<?= admin_url('/settings/general') ?>"  data-toggle="tooltip" data-placement="top" title="" data-original-title="Settings">
-                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-            </a>
-            <a href="<?= admin_url('/movies/new') ?>" data-toggle="tooltip" data-placement="top" title="Add Video" data-original-title="Add Video">
-                <span class="glyphicon glyphicon-film" aria-hidden="true"></span>
-            </a>
-            <a data-toggle="tooltip" data-placement="top" title="" href="<?= admin_url('/logout') ?>" data-original-title="Logout">
-                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
-            </a>
-        </div>
-
-
     </div>
 </div>
