@@ -2503,3 +2503,40 @@ body,
 .right_col .nav-tabs > li.active > a,
 .right_col .nav-tabs > li.active > a:hover,
 .right_col .nav-tabs > li.active > a:focus { border: 0; border-bottom: 2px solid #4f46e5; color: #4f46e5; }
+
+/* Compact Bootstrap 5 dashboard hierarchy. Existing data sources and controls are retained. */
+.dashboard-page { margin: 0 auto; max-width: 1420px; }
+.dashboard-metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 16px; }
+.dashboard-metrics-grid .metric-card,
+.dashboard-metrics-grid .live-traffic-card { min-height: 154px; }
+.dashboard-visitor-grid { margin: 0 0 16px; }
+.dashboard-visitor-panel { min-height: 350px; }
+.dashboard-visitor-panel--latest .dashboard-visitor-chart { min-height: 235px; }
+.dashboard-visitor-panel--platform .dashboard-platform-chart { min-height: 215px; }
+.dashboard-tables-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.dashboard-secondary-metrics {
+  background: #fff;
+  border: 1px solid #e7ebf2;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, .035);
+  margin-top: 16px;
+  padding: 18px;
+}
+.dashboard-secondary-metrics__heading { align-items: center; display: flex; justify-content: space-between; margin-bottom: 14px; }
+.dashboard-secondary-metrics__heading h2 { color: #243044; font-size: 16px; font-weight: 800; margin: 3px 0 0; }
+.dashboard-secondary-metrics__heading a { color: #4f46e5; font-size: 12px; font-weight: 700; }
+.dashboard-secondary-metrics__grid { display: grid; gap: 14px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.dashboard-secondary-metrics__grid .metric-card { margin: 0; min-height: 122px; }
+.dashboard-secondary-metrics__grid .metric-card .count { font-size: 22px; }
+.dashboard-secondary-metrics__grid .metric-card h3 { font-size: 12px; }
+
+@media (max-width: 1199px) {
+  .dashboard-secondary-metrics__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dashboard-visitor-panel { min-height: auto; }
+}
+@media (max-width: 767px) {
+  .dashboard-secondary-metrics__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-tables-grid { grid-template-columns: 1fr; }
+  .dashboard-secondary-metrics__heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
