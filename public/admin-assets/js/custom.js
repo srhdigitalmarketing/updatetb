@@ -1066,7 +1066,7 @@
         } );
 
         $('#links-list-datatable').DataTable( {
-            dom: '<"datatable-top-btn-list"B><"float-left"l><"float-right"f>rtip',
+            dom: '<"link-table-toolbar"<"link-table-toolbar__left"lB><"link-table-toolbar__right"f>>rt<"link-table-footer"<"link-table-footer__info"i><"link-table-footer__pagination"p>>',
             buttons: [
                 {
                     extend: 'collection',
@@ -1104,11 +1104,36 @@
                 },
             ],
             responsive: true,
-            stateSave: true,
-            order: [],
+            stateSave: false,
+            order: [[5, 'desc']],
             pageLength: 25,
-            autoWidth: false
+            autoWidth: false,
+            columnDefs: [{ targets: 6, orderable: false }],
+            language: {
+                search: '',
+                searchPlaceholder: 'Search links...',
+                lengthMenu: 'Show _MENU_ per page',
+                info: 'Showing _START_–_END_ of _TOTAL_ links',
+                infoEmpty: 'No links found'
+            }
         } );
+
+        $('#reported-links-datatable').DataTable({
+            dom: '<"link-table-toolbar"<"link-table-toolbar__left"l><"link-table-toolbar__right"f>>rt<"link-table-footer"<"link-table-footer__info"i><"link-table-footer__pagination"p>>',
+            responsive: true,
+            stateSave: false,
+            order: [[4, 'desc']],
+            pageLength: 25,
+            autoWidth: false,
+            columnDefs: [{ targets: 6, orderable: false }],
+            language: {
+                search: '',
+                searchPlaceholder: 'Search reported links...',
+                lengthMenu: 'Show _MENU_ per page',
+                info: 'Showing _START_–_END_ of _TOTAL_ reported links',
+                infoEmpty: 'No reported links found'
+            }
+        });
 
         $('#series-list-datatable').DataTable( {
             dom: '<"datatable-top-btn-list"B><"float-left"l><"float-right"f>rtip',
