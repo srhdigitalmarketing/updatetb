@@ -5,6 +5,7 @@
 $providerOptions = [
     'upnshare' => 'UPNShare',
     'vidhide' => 'Vidhide',
+    'earnvids' => 'EarnVids',
     'xvideosharing' => 'XVideoSharing compatible',
     'custom' => 'Custom host',
 ];

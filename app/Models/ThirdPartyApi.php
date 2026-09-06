@@ -19,7 +19,7 @@ class ThirdPartyApi extends Model
     // Validation
     protected $validationRules      = [
         'name' => 'required|max_length[128]',
-        'provider' => 'required|in_list[upnshare,vidhide,xvideosharing,custom]',
+        'provider' => 'required|in_list[upnshare,vidhide,earnvids,xvideosharing,custom]',
         'api_base_url' => 'required|valid_url|max_length[255]',
         'api_token' => 'permit_empty|max_length[255]',
         'status' => 'permit_empty|in_list[active,paused]'

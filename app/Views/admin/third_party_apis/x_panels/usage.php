@@ -11,5 +11,6 @@
     <div class="host-api-guide__docs">
         <a href="https://upnshare.com/api-document/index.html" target="_blank" rel="noopener noreferrer">UPNShare docs <i class="fa fa-external-link"></i></a>
         <a href="https://vidhide.com/api.html" target="_blank" rel="noopener noreferrer">Vidhide docs <i class="fa fa-external-link"></i></a>
+        <a href="https://earnvids.com/api.html" target="_blank" rel="noopener noreferrer">EarnVids docs <i class="fa fa-external-link"></i></a>
     </div>
 </section>

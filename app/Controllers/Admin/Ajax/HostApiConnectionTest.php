@@ -24,7 +24,7 @@ class HostApiConnectionTest extends BaseAjax
         $token = trim((string) $this->request->getPost('api_token'));
         $apiId = (int) $this->request->getPost('api_id');
 
-        if (! in_array($provider, ['upnshare', 'vidhide', 'xvideosharing', 'custom'], true)) {
+        if (! in_array($provider, ['upnshare', 'vidhide', 'earnvids', 'xvideosharing', 'custom'], true)) {
             $this->addError('Choose a supported video-host provider before testing the connection.');
 
             return $this->jsonResponse();

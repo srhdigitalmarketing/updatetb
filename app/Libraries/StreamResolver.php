@@ -234,12 +234,31 @@ class StreamResolver
             if (is_array($record) && isset($record['video']) && is_array($record['video'])) {
                 $record = $record['video'];
             }
+            if (is_array($record) && array_keys($record) === range(0, count($record) - 1)) {
+                $record = $record[0] ?? [];
+            }
+
+            if (! is_array($record) || $record === []) {
+                continue;
+            }
+
+            // EarnVids/VidHide File Info returns a per-file status and
+            // canplay flag. A successful HTTP response alone is not enough:
+            // deleted, disabled, or still-encoding files must not be marked
+            // healthy or used as a banner source.
+            if (isset($record['status']) && is_numeric($record['status']) && (int) $record['status'] >= 400) {
+                return false;
+            }
+            if (array_key_exists('canplay', $record)) {
+                $canPlay = filter_var($record['canplay'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if ($canPlay === false) {
+                    return false;
+                }
+            }
 
             // A successful API response with a returned record confirms that
             // the provider still has this file. Ambiguous responses use HTTP.
-            if (is_array($record) && $record !== []) {
-                return true;
-            }
+            return true;
         }
 
         return null;

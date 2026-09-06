@@ -12,7 +12,7 @@
     </section>
     <section class="host-api-overview__docs">
         <h5>Supported platform</h5>
-        <p>UPNShare, Vidhide, and compatible XVideoSharing hosts.</p>
+        <p>UPNShare, Vidhide, EarnVids, and compatible XVideoSharing hosts.</p>
         <a href="https://vidhide.com/api.html" target="_blank" rel="noopener noreferrer">Read provider documentation <i class="fa fa-external-link"></i></a>
     </section>
 </div>
