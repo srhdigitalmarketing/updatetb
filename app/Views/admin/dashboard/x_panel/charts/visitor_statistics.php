@@ -1,8 +1,8 @@
 <section class="dashboard-visitor-panel dashboard-visitor-panel--latest" aria-labelledby="latest-statistics-title">
     <header class="dashboard-visitor-panel__header">
         <div>
-            <span class="dashboard-eyebrow">AUDIENCE</span>
-            <h2 id="latest-statistics-title">Latest statistics</h2>
+            <span class="dashboard-eyebrow">AUDIENCE OVERVIEW</span>
+            <h2 id="latest-statistics-title">Audience latest statistic</h2>
             <p>Pengunjung unik dari embed player dalam 30 hari terakhir.</p>
         </div>
         <span class="dashboard-period-chip"><i class="fa fa-calendar"></i> 30 hari</span>

@@ -1184,6 +1184,40 @@ body,
   .dashboard-rizz-spotlight > a { padding-top: 5px; }
 }
 
+/* Rizz overview mapping: Sessions -> Live Traffic, Avg. Sessions -> Videos. */
+.dashboard-metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dashboard-live-traffic { grid-column: auto; }
+
+.live-traffic-card {
+  background: #fff;
+  border: 1px solid var(--rizz-line);
+  box-shadow: 0 7px 20px rgba(15, 23, 42, .035);
+  color: var(--rizz-ink);
+  min-height: 133px;
+  padding: 19px;
+}
+
+.live-traffic-card::after { display: none; }
+.live-traffic-card__eyebrow { color: #818cf8; font-size: 9px; }
+.live-traffic-card h3 { color: var(--rizz-ink); font-size: 13px; margin-top: 4px; }
+.live-traffic-card__status { background: #ecfdf3; border-color: #abefc6; color: #027a48; }
+.live-traffic-card__status.is-pending { background: #fff8e8; border-color: #f5dfa2; color: #9b7008; }
+.live-traffic-card__count { color: var(--rizz-ink); font-size: 27px; margin-top: 12px; }
+.live-traffic-card__caption { color: var(--rizz-copy); font-size: 11px; margin: 5px 0 9px; }
+.live-traffic-card__footer { border-top-color: #edf0f6; color: #94a3b8; font-size: 10px; padding-top: 8px; }
+.metric-card__context { color: var(--rizz-copy); font-size: 11px; margin: 5px 0 0; }
+
+.dashboard-visitor-panel--latest .dashboard-eyebrow { color: var(--rizz-primary); }
+.dashboard-visitor-panel--latest h2 { font-size: 17px; }
+
+@media (max-width: 991px) and (min-width: 768px) {
+  .dashboard-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .dashboard-metrics-grid { grid-template-columns: 1fr; }
+}
+
 /* Sidebar navigation refinements */
 .nav_title {
   align-items: center;

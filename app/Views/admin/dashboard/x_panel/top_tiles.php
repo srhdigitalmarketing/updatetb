@@ -2,8 +2,8 @@
     <div class="live-traffic-card">
         <div class="live-traffic-card__header">
             <div>
-                <span class="live-traffic-card__eyebrow">LIVE TRAFFIC</span>
-                <h3>Active now</h3>
+                <span class="live-traffic-card__eyebrow">LIVE ACTIVITY</span>
+                <h3>Live Traffic</h3>
             </div>
             <span class="live-traffic-card__status <?= $liveTraffic['tracking_ready'] ? '' : 'is-pending' ?>">
                 <i class="fa fa-circle"></i> <?= $liveTraffic['tracking_ready'] ? 'Live' : 'Setup required' ?>
@@ -11,7 +11,7 @@
         </div>
         <div class="live-traffic-card__count js-active-now"><?= number_format($liveTraffic['active_now']) ?></div>
         <p class="live-traffic-card__caption js-live-traffic-caption">
-            <?= $liveTraffic['tracking_ready'] ? 'Visitors using the embed player in the last 3 minutes.' : 'Import the latest database update to start tracking.' ?>
+            <?= $liveTraffic['tracking_ready'] ? 'Visitors active in the last 3 minutes.' : 'Import the latest database update to start tracking.' ?>
         </p>
         <div class="live-traffic-card__footer"><i class="fa fa-refresh"></i> Updates every 30 seconds</div>
     </div>
@@ -24,6 +24,7 @@
             <?= number_format( $anytc->movies->total ) ?>
         </div>
         <h3>Videos</h3>
+        <p class="metric-card__context">Total videos in your library</p>
     </div>
 </div>
 <div class="dashboard-metric metric-revenue">
