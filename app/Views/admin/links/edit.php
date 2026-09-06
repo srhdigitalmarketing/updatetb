@@ -139,12 +139,12 @@
                             </div>
                             <div class="col-md-8">
                                 <div class="form-group">
-                                    <?= form_label('UPNShare video ID (optional)') ?>
+                                    <?= form_label('Provider video ID (optional)') ?>
                                     <?= form_input([
                                         'name' => 'upnshare_video_id',
                                         'class' => 'form-control',
                                         'value' => old('upnshare_video_id', $link->upnshare_video_id ?? ''),
-                                        'placeholder' => 'Used for API availability checks'
+                                        'placeholder' => 'Used for API availability checks (UPNShare/VidHide)'
                                     ]) ?>
                                 </div>
                             </div>

@@ -14,16 +14,20 @@ class UpnShareClient
         $this->config = $config ?: config('UpnShare');
     }
 
-    /**
-     * Confirms that a UPNShare video is still available. The documented API
-     * authenticates with an `api-token` request header.
-     */
-    public function videoIsAvailable(string $videoId): bool
+    public function isConfigured(): bool
     {
-        if (empty($this->config->apiToken) || empty($videoId)) {
-            // A normal host probe remains available when the optional API token
-            // is not configured yet.
-            return true;
+        return ! empty($this->config->baseUrl) && ! empty($this->config->apiToken);
+    }
+
+    /**
+     * Confirms whether a UPNShare video is still available. Returns false only
+     * when the provider explicitly confirms deletion. Null means the caller
+     * should use its normal HTTP availability fallback.
+     */
+    public function videoIsAvailable(string $videoId): ?bool
+    {
+        if (! $this->isConfigured() || empty($videoId)) {
+            return null;
         }
 
         try {
@@ -33,15 +37,25 @@ class UpnShareClient
                 'headers' => ['api-token' => $this->config->apiToken],
             ])->get($this->config->baseUrl . '/api/v1/video/manage/' . rawurlencode($videoId));
 
-            if ($response->getStatusCode() !== 200) {
+            $status = $response->getStatusCode();
+            if ($status === 404 || $status === 410) {
                 return false;
             }
 
+            if ($status !== 200) {
+                return null;
+            }
+
             $payload = json_decode($response->getBody(), true);
-            return is_array($payload) && ! empty($payload['id']);
+            $record = is_array($payload) ? ($payload['data'] ?? $payload['result'] ?? $payload) : null;
+            if (is_array($record) && isset($record['video']) && is_array($record['video'])) {
+                $record = $record['video'];
+            }
+
+            return is_array($record) && $record !== [] ? true : null;
         } catch (\Throwable $exception) {
             log_message('warning', 'UPNShare health check failed: {message}', ['message' => $exception->getMessage()]);
-            return false;
+            return null;
         }
     }
 }

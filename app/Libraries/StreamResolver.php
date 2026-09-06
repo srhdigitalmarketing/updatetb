@@ -4,6 +4,7 @@ namespace App\Libraries;
 
 use App\Entities\Link;
 use App\Models\LinkModel;
+use App\Models\ThirdPartyApi;
 use Config\UpnShare;
 
 /**
@@ -87,6 +88,21 @@ class StreamResolver
         ]);
     }
 
+    /** Run one explicit availability check, used by the scheduled health job. */
+    public function check(Link $link): bool
+    {
+        if (! $this->links->supportsStreamHealthFields() || $link->type !== 'stream') {
+            return false;
+        }
+
+        if (! $this->isHealthy($link)) {
+            return false;
+        }
+
+        $this->recordSuccess($link, false);
+        return true;
+    }
+
     private function isHealthy(Link $link): bool
     {
         $lastCheck = $link->last_checked_at ? strtotime($link->last_checked_at) : 0;
@@ -94,10 +110,12 @@ class StreamResolver
             return ! (bool) $link->is_broken && empty($link->last_error);
         }
 
-        $healthy = $this->isSafePublicUrl($link->link) && $this->probeHost($link->link);
-        if ($healthy && ! empty($link->upnshare_video_id)) {
-            $healthy = $this->upnShare->videoIsAvailable($link->upnshare_video_id);
-        }
+        // A provider API is authoritative for deletions. HTTP probing remains
+        // the safe fallback for links without a configured API/video identifier.
+        $apiAvailability = $this->providerAvailability($link);
+        $healthy = $apiAvailability !== null
+            ? $apiAvailability
+            : $this->isSafePublicUrl($link->link) && $this->probeHost($link->link);
 
         if (! $healthy) {
             $this->recordPlayerFailure((int) $link->id, 'Host health check failed');
@@ -111,21 +129,150 @@ class StreamResolver
         return $healthy;
     }
 
-    private function recordSuccess(Link $link): void
+    /**
+     * Returns true/false only when an API can make an authoritative decision.
+     * Returning null deliberately falls back to a lightweight HTTP probe.
+     */
+    private function providerAvailability(Link $link): ?bool
+    {
+        $videoId = trim((string) $link->upnshare_video_id);
+        if ($videoId === '') {
+            return null;
+        }
+
+        if (! empty($link->api_id)) {
+            $api = (new ThirdPartyApi())->find((int) $link->api_id);
+            if ($api !== null && $api->status === 'active' && trim((string) $api->api_token) !== '') {
+                return $this->checkConfiguredProvider($api, $videoId);
+            }
+        }
+
+        if ($this->upnShare->isConfigured()) {
+            return $this->upnShare->videoIsAvailable($videoId);
+        }
+
+        return null;
+    }
+
+    private function checkConfiguredProvider(object $api, string $videoId): ?bool
+    {
+        $provider = (string) $api->provider;
+        $roots = $this->apiRoots((string) $api->api_base_url, $provider);
+
+        foreach ($roots as $root) {
+            $response = $provider === 'upnshare'
+                ? $this->providerRequest($root . '/video/manage/' . rawurlencode($videoId), [], (string) $api->api_token)
+                : $this->providerRequest($root . '/file/info', [
+                    'key' => (string) $api->api_token,
+                    'file_code' => $videoId,
+                ], (string) $api->api_token);
+
+            if ($response === null) {
+                continue;
+            }
+
+            if ($response['status'] === 404 || $response['status'] === 410) {
+                return false;
+            }
+
+            if ($response['status'] < 200 || $response['status'] >= 300) {
+                continue;
+            }
+
+            $payload = $response['payload'];
+            if (is_array($payload) && isset($payload['status']) && (int) $payload['status'] >= 400) {
+                return false;
+            }
+
+            $record = is_array($payload) ? ($payload['data'] ?? $payload['result'] ?? $payload) : null;
+            if (is_array($record) && isset($record['video']) && is_array($record['video'])) {
+                $record = $record['video'];
+            }
+
+            // A successful API response with a returned record confirms that
+            // the provider still has this file. Ambiguous responses use HTTP.
+            if (is_array($record) && $record !== []) {
+                return true;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<int, string> */
+    private function apiRoots(string $baseUrl, string $provider): array
+    {
+        $baseUrl = rtrim($baseUrl, '/');
+        if ($baseUrl === '') {
+            return [];
+        }
+
+        $roots = [$baseUrl];
+        if ($provider === 'upnshare') {
+            $parts = parse_url($baseUrl);
+            $origin = ! empty($parts['scheme']) && ! empty($parts['host'])
+                ? $parts['scheme'] . '://' . $parts['host'] . (! empty($parts['port']) ? ':' . $parts['port'] : '')
+                : $baseUrl;
+            if (! preg_match('#/api/v1$#i', $baseUrl)) {
+                $roots[] = rtrim($origin, '/') . '/api/v1';
+            }
+        } elseif (! preg_match('#/api(?:/v1)?$#i', $baseUrl)) {
+            array_unshift($roots, $baseUrl . '/api');
+        }
+
+        return array_values(array_unique($roots));
+    }
+
+    /** @return array{status: int, payload: array<string, mixed>|null}|null */
+    private function providerRequest(string $url, array $query, string $token): ?array
+    {
+        if (! $this->isSafePublicUrl($url)) {
+            return null;
+        }
+
+        try {
+            $response = service('curlrequest', [
+                'timeout' => $this->config->requestTimeoutSeconds,
+                'http_errors' => false,
+                'allow_redirects' => false,
+            ])->get($url, [
+                'query' => $query,
+                'headers' => ['Accept' => 'application/json', 'api-token' => $token],
+            ]);
+
+            $payload = json_decode((string) $response->getBody(), true);
+            return [
+                'status' => $response->getStatusCode(),
+                'payload' => is_array($payload) ? $payload : null,
+            ];
+        } catch (\Throwable $exception) {
+            log_message('warning', 'Provider availability check failed: {message}', ['message' => $exception->getMessage()]);
+            return null;
+        }
+    }
+
+    private function recordSuccess(Link $link, bool $markServed = true): void
     {
         if (! $this->links->supportsStreamHealthFields()) {
             return;
         }
 
         $now = date('Y-m-d H:i:s');
-        $this->links->protect(false)->update($link->id, [
+        $data = [
             'failure_count' => 0,
             'is_broken' => 0,
             'last_checked_at' => $now,
             'last_success_at' => $now,
-            'last_served_at' => $now,
             'last_error' => null,
-        ]);
+        ];
+
+        // Scheduled checks must not affect the round-robin order used for
+        // real viewers. Only a selected playback link is considered served.
+        if ($markServed) {
+            $data['last_served_at'] = $now;
+        }
+
+        $this->links->protect(false)->update($link->id, $data);
     }
 
     private function probeHost(string $url): bool

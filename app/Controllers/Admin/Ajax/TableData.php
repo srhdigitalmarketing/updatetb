@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin\Ajax;
 
 use App\Controllers\BaseController;
+use App\Models\LinkModel;
 use CodeIgniter\Database\BaseBuilder;
 
 /**
@@ -59,7 +60,7 @@ class TableData extends BaseController
      * duplicate video rows when a video has more than one stream link.
      *
      * @param array<int, mixed> $movieIds
-     * @return array<int, array<int, string>>
+     * @return array<int, array<int, array{name: string, status: string}>>
      */
     private function videoServersByMovie(array $movieIds): array
     {
@@ -74,9 +75,12 @@ class TableData extends BaseController
             $configuredNames[$host] = trim((string) $displayName);
         }
 
+        $healthAvailable = (new LinkModel())->supportsStreamHealthFields();
         $servers = [];
         $links = db_connect()->table('links')
-            ->select('movie_id, link')
+            ->select($healthAvailable
+                ? 'movie_id, link, is_broken, last_checked_at, last_success_at, last_error'
+                : 'movie_id, link')
             ->whereIn('movie_id', $movieIds)
             ->where('type', 'stream')
             ->orderBy('id', 'ASC')
@@ -93,7 +97,13 @@ class TableData extends BaseController
 
             $displayName = $configuredNames[$host] ?? '';
             $displayName = $displayName !== '' ? $displayName : $host;
-            $servers[$movieId][$displayName] = $displayName;
+            $status = $this->streamLinkStatus($link, $healthAvailable);
+
+            if (! isset($servers[$movieId][$displayName])) {
+                $servers[$movieId][$displayName] = ['name' => $displayName, 'status' => $status];
+            } elseif ($this->statusWeight($status) > $this->statusWeight($servers[$movieId][$displayName]['status'])) {
+                $servers[$movieId][$displayName]['status'] = $status;
+            }
         }
 
         foreach ($servers as $movieId => $names) {
@@ -103,18 +113,45 @@ class TableData extends BaseController
         return $servers;
     }
 
-    /** @param array<int, string> $servers */
+    /** @param array<int, array{name: string, status: string}> $servers */
     private function videoServerLabels(array $servers): string
     {
         if ($servers === []) {
             return '<span class="video-server-list video-server-list--empty">No stream link</span>';
         }
 
-        $labels = array_map(static function (string $server): string {
-            return '<span class="video-server-label"><i class="fa fa-server"></i> ' . esc($server) . '</span>';
+        $labels = array_map(static function (array $server): string {
+            $status = $server['status'];
+            $meta = [
+                'healthy' => ['class' => 'is-healthy', 'icon' => 'fa-check-circle', 'label' => 'Available'],
+                'broken' => ['class' => 'is-broken', 'icon' => 'fa-times-circle', 'label' => 'Unavailable'],
+                'unchecked' => ['class' => 'is-unchecked', 'icon' => 'fa-clock-o', 'label' => 'Not checked'],
+            ][$status] ?? ['class' => 'is-unchecked', 'icon' => 'fa-clock-o', 'label' => 'Not checked'];
+
+            return '<span class="video-server-label ' . $meta['class'] . '" title="' . esc($meta['label']) . '">'
+                . '<i class="fa ' . $meta['icon'] . '"></i> ' . esc($server['name']) . '</span>';
         }, $servers);
 
         return '<div class="video-server-list">' . implode('', $labels) . '</div>';
+    }
+
+    /** @param array<string, mixed> $link */
+    private function streamLinkStatus(array $link, bool $healthAvailable): string
+    {
+        if (! $healthAvailable || empty($link['last_checked_at'])) {
+            return 'unchecked';
+        }
+
+        if ((int) ($link['is_broken'] ?? 0) === 1 || trim((string) ($link['last_error'] ?? '')) !== '') {
+            return 'broken';
+        }
+
+        return ! empty($link['last_success_at']) ? 'healthy' : 'unchecked';
+    }
+
+    private function statusWeight(string $status): int
+    {
+        return ['broken' => 0, 'unchecked' => 1, 'healthy' => 2][$status] ?? 1;
     }
 
     public function links()

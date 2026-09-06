@@ -53,13 +53,13 @@
                             <small class="form-text text-muted">Higher values are tried first; the next link is used automatically if playback fails.</small>
                         </div>
                         <div class="col-md-8">
-                            <?= form_label('UPNShare video ID (optional)', '') ?>
+                            <?= form_label('Provider video ID (optional)', '') ?>
                             <?= form_input([
                                 'type' => 'text',
                                 'name' => "st_links[{$key}][upnshare_video_id]",
                                 'class' => 'form-control upnshare-video-id',
                                 'value' => old("st_links.{$key}.upnshare_video_id", $link->upnshare_video_id ?? ''),
-                                'placeholder' => 'Used for API availability checks'
+                                'placeholder' => 'Used for API availability checks (UPNShare/VidHide)'
                             ]) ?>
                         </div>
                     </div>
@@ -104,13 +104,13 @@
                             <small class="form-text text-muted">Higher values are tried first; the next link is used automatically if playback fails.</small>
                         </div>
                         <div class="col-md-8">
-                            <?= form_label('UPNShare video ID (optional)', '') ?>
+                            <?= form_label('Provider video ID (optional)', '') ?>
                             <?= form_input([
                                 'type' => 'text',
                                 'name' => "st_links[{$i}][upnshare_video_id]",
                                 'class' => 'form-control upnshare-video-id',
                                 'value' => old("st_links.{$i}.upnshare_video_id"),
-                                'placeholder' => 'Used for API availability checks'
+                                'placeholder' => 'Used for API availability checks (UPNShare/VidHide)'
                             ]) ?>
                         </div>
                     </div>
