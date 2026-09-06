@@ -12,14 +12,16 @@
         <div class="right_col" role="main">
             <div class="">
 
-                <div class="page-title">
-                    <div class="title_left">
-                        <h3> <?= $title ?? 'Unknown Page' ?> </h3>
+                <?php if (empty($hidePageTitle)): ?>
+                    <div class="page-title">
+                        <div class="title_left">
+                            <h3> <?= $title ?? 'Unknown Page' ?> </h3>
+                        </div>
+                        <div class="title_right text-right">
+                            <?= $topBtnGroup ?? '' ?>
+                        </div>
                     </div>
-                    <div class="title_right text-right">
-                        <?= $topBtnGroup ?? '' ?>
-                    </div>
-                </div>
+                <?php endif; ?>
 
                 <div class="clearfix"></div>
 

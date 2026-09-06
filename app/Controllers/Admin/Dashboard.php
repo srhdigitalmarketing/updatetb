@@ -14,6 +14,7 @@ class Dashboard extends BaseController
     public function index()
     {
         $title = 'Dashboard';
+        $hidePageTitle = true;
 
         $analytics = new Analytics();
         $anytc = $analytics->init()
@@ -30,7 +31,7 @@ class Dashboard extends BaseController
         $dailyPlayerAnalytics = $this->dailyPlayerAnalytics();
         $revenueSummary = (new AdRevenueToday())->cachedSummary();
 
-        $data = compact('title', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'dailyPlayerAnalytics', 'revenueSummary');
+        $data = compact('title', 'hidePageTitle', 'anytc', 'topMovies', 'liveTraffic', 'visitorStats', 'dailyPlayerAnalytics', 'revenueSummary');
 
         return view('admin/dashboard/index', $data);
     }

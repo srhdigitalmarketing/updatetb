@@ -5,20 +5,27 @@
 
 
 <div class="dashboard-page">
-    <div class="dashboard-command-bar">
-        <div class="dashboard-command-copy">
-            <span class="dashboard-eyebrow">VIDEO OPERATIONS</span>
-            <h2>Video Command Center</h2>
-            <p>Manage your library, monitor audience activity, and act on the metrics that need attention.</p>
+    <div class="dashboard-rizz-welcome">
+        <div class="dashboard-rizz-welcome__copy">
+            <span class="dashboard-eyebrow">DASHBOARD OVERVIEW</span>
+            <h2>Good <?= date('H') < 12 ? 'morning' : (date('H') < 18 ? 'afternoon' : 'evening') ?>, welcome back.</h2>
+            <p>Keep an eye on your video library, audience activity, and the actions that need attention.</p>
         </div>
-        <div class="dashboard-command-actions">
+        <div class="dashboard-rizz-welcome__actions">
+            <span class="dashboard-rizz-date"><i class="fa fa-calendar"></i> <?= date('D, d M') ?></span>
             <a class="dashboard-primary-action" href="<?= admin_url('/movies/new') ?>">
                 <i class="fa fa-plus"></i> Add Video
             </a>
-            <a class="dashboard-secondary-action" href="<?= admin_url('/movies') ?>">
-                View Library <i class="fa fa-arrow-right"></i>
-            </a>
         </div>
+    </div>
+
+    <div class="dashboard-rizz-spotlight">
+        <span class="dashboard-rizz-spotlight__icon"><i class="fa fa-play"></i></span>
+        <div>
+            <span>VIDEO LIBRARY</span>
+            <strong>Manage your streaming catalog from one clear workspace.</strong>
+        </div>
+        <a href="<?= admin_url('/movies') ?>">Open library <i class="fa fa-arrow-right"></i></a>
     </div>
 
     <div class="dashboard-metrics-grid">

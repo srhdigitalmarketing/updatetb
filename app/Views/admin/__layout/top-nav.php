@@ -3,6 +3,10 @@
         <div class="nav toggle">
             <a id="menu_toggle"><i class="fa fa-bars"></i></a>
         </div>
+        <div class="admin-workspace-heading">
+            <span>STREAMAPI CONTROL</span>
+            <strong>Video operations workspace</strong>
+        </div>
         <div class="admin-top-search" role="search">
             <i class="fa fa-search" aria-hidden="true"></i>
             <input type="search" placeholder="Search" aria-label="Search" readonly tabindex="-1">
