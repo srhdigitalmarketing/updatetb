@@ -14,10 +14,13 @@ class Servers extends BaseSettings
         $title = 'Servers Settings';
 
         $linksModel = new LinkModel();
-        $links = $linksModel->select('link')->findAll();
+        $streamHealthAvailable = $linksModel->supportsStreamHealthFields();
+        $links = $linksModel->select($streamHealthAvailable ? 'link, type, host_priority' : 'link, type')->findAll();
 
         $servers = (array) get_config('renamed_servers');
         $serverLinkCounts = [];
+        $serverStreamLinkCounts = [];
+        $serverPriorities = [];
 
         if(! empty($links)){
 
@@ -28,6 +31,18 @@ class Servers extends BaseSettings
                         $servers[$host] = '';
                     }
                     $serverLinkCounts[$host] = ($serverLinkCounts[$host] ?? 0) + 1;
+
+                    if ($link->type === 'stream') {
+                        $serverStreamLinkCounts[$host] = ($serverStreamLinkCounts[$host] ?? 0) + 1;
+
+                        // Existing installations can contain different values for
+                        // one host. Showing the highest value is the safest default
+                        // until this screen applies one global host preference.
+                        $priority = $streamHealthAvailable ? (int) ($link->host_priority ?? 100) : 100;
+                        $serverPriorities[$host] = isset($serverPriorities[$host])
+                            ? max($serverPriorities[$host], $priority)
+                            : $priority;
+                    }
                 }
             }
 
@@ -45,7 +60,15 @@ class Servers extends BaseSettings
         }
 
 
-        return view('admin/settings/servers', compact('title', 'servers', 'serverOptions', 'serverLinkCounts'));
+        return view('admin/settings/servers', compact(
+            'title',
+            'servers',
+            'serverOptions',
+            'serverLinkCounts',
+            'serverStreamLinkCounts',
+            'serverPriorities',
+            'streamHealthAvailable'
+        ));
     }
 
     /**
@@ -105,6 +128,7 @@ class Servers extends BaseSettings
             ])){
 
                 $submittedServers = $this->request->getPost('renamed_servers');
+                $submittedPriorities = $this->request->getPost('host_priorities');
                 $servers = [];
 
                 if (is_array($submittedServers)) {
@@ -118,6 +142,31 @@ class Servers extends BaseSettings
                         // deliberately keep the original host visible to visitors.
                         $servers[$host] = mb_substr(trim(strip_tags((string) $label)), 0, 80);
                     }
+                }
+
+                $hostPriorities = [];
+                if (is_array($submittedPriorities)) {
+                    foreach ($submittedPriorities as $host => $priority) {
+                        $host = trim((string) $host);
+                        if ($host === '') {
+                            continue;
+                        }
+
+                        $priority = filter_var(trim((string) $priority), FILTER_VALIDATE_INT);
+                        if ($priority === false || $priority < 0 || $priority > 65535) {
+                            return redirect()->back()
+                                ->with('errors', 'Host priority must be a whole number from 0 to 65535.')
+                                ->withInput();
+                        }
+
+                        $hostPriorities[$host] = $priority;
+                    }
+                }
+
+                if ($hostPriorities !== [] && ! (new LinkModel())->supportsStreamHealthFields()) {
+                    return redirect()->back()
+                        ->with('errors', 'Run php spark migrate before applying host priorities.')
+                        ->withInput();
                 }
 
                 $default_server = trim((string) $this->request->getPost('default_server'));
@@ -148,6 +197,10 @@ class Servers extends BaseSettings
                     'default_server' => $default_server
                 ];
 
+                if ($hostPriorities !== []) {
+                    $this->applyHostPriorities($hostPriorities);
+                }
+
                 return $this->save( $data );
 
             }
@@ -157,6 +210,30 @@ class Servers extends BaseSettings
 
         return redirect()->back();
 
+    }
+
+    /** Apply one priority to every stream link belonging to a configured host. */
+    private function applyHostPriorities(array $hostPriorities): void
+    {
+        $linksModel = new LinkModel();
+        $links = $linksModel->select('id, link')
+            ->where('type', 'stream')
+            ->findAll();
+        $updates = [];
+
+        foreach ($links as $link) {
+            $host = $link->getHost();
+            if (array_key_exists($host, $hostPriorities)) {
+                $updates[] = [
+                    'id' => (int) $link->id,
+                    'host_priority' => $hostPriorities[$host],
+                ];
+            }
+        }
+
+        if ($updates !== []) {
+            db_connect()->table('links')->updateBatch($updates, 'id');
+        }
     }
 
 }

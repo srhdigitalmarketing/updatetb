@@ -2402,6 +2402,10 @@ body,
 .server-link-count { color: #98a2b3; display: block; font-size: 10px; margin-top: 2px; }
 .server-alias-input { background: #f8fafc; border-color: #e1e7ef; box-shadow: none !important; color: #475467; font-size: 12px; height: 35px; }
 .server-alias-input[readonly] { cursor: default; }
+.server-priority-cell { min-width: 174px; }
+.server-priority-input { background: #fff; border-color: #e1e7ef; box-shadow: none !important; font-size: 12px; height: 35px; max-width: 112px; }
+.server-priority-input:disabled { background: #f8fafc; color: #98a2b3; cursor: not-allowed; }
+.server-priority-help { color: #98a2b3; display: block; font-size: 10px; line-height: 1.3; margin-top: 4px; }
 .server-settings-table tr.is-editing .server-alias-input { background: #fff; border-color: #7ea1f6; }
 .server-settings-table tr.is-cleared .server-alias-input { background: #fff8f8; border-color: #f4b6b6; }
 .server-default-badge { background: #ecfdf3; border-radius: 99px; color: #027a48; display: inline-block; font-size: 9px; font-weight: 800; margin-left: 7px; padding: 3px 6px; text-transform: uppercase; }

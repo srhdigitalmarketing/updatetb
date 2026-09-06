@@ -20,7 +20,7 @@
 
                 <?php if(! empty($servers)): ?>
 
-                <p class="server-settings-intro">Manage the display name used for each video host. Deleting a host permanently removes its associated links.</p>
+                <p class="server-settings-intro">Manage the display name and playback priority for each video host. Saving a priority updates every stream link on that host at once. Deleting a host permanently removes its associated links.</p>
 
                 <div class="server-settings-default">
                     <div>
@@ -46,6 +46,7 @@
                             <tr>
                                 <th>Host</th>
                                 <th>Display name</th>
+                                <th>Host priority</th>
                                 <th class="text-right">Actions</th>
                             </tr>
                         </thead>
@@ -69,6 +70,27 @@
                                     'readonly' => 'readonly',
                                     'value' => $val
                                 ]) ?>
+                            </td>
+                            <td class="server-priority-cell">
+                                <?= form_input([
+                                    'name' => "host_priorities[$key]",
+                                    'type' => 'number',
+                                    'min' => '0',
+                                    'max' => '65535',
+                                    'step' => '1',
+                                    'class' => 'form-control server-priority-input',
+                                    'value' => $serverPriorities[$key] ?? 100,
+                                    'disabled' => ! $streamHealthAvailable || empty($serverStreamLinkCounts[$key])
+                                ]) ?>
+                                <span class="server-priority-help">
+                                    <?php if (! $streamHealthAvailable): ?>
+                                        Run migration to enable
+                                    <?php elseif (! empty($serverStreamLinkCounts[$key])): ?>
+                                        Applies to <?= number_format($serverStreamLinkCounts[$key]) ?> stream link<?= $serverStreamLinkCounts[$key] === 1 ? '' : 's' ?>
+                                    <?php else: ?>
+                                        No stream links
+                                    <?php endif; ?>
+                                </span>
                             </td>
                             <td class="text-right server-row-actions">
                                 <button class="btn btn-sm btn-outline-primary" type="button" data-server-edit><i class="fa fa-pencil"></i> Edit</button>
