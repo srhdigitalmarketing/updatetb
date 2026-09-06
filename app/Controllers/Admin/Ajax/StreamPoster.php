@@ -4,6 +4,7 @@ namespace App\Controllers\Admin\Ajax;
 
 use App\Controllers\BaseAjax;
 use App\Entities\Link;
+use App\Libraries\StreamResolver;
 use App\Models\LinkModel;
 use App\Models\ThirdPartyApi;
 use CodeIgniter\HTTP\CURLRequest;
@@ -26,9 +27,17 @@ class StreamPoster extends BaseAjax
             return $this->jsonResponse();
         }
 
-        $links = (new LinkModel())->findByMovieId($movieId, 'stream', false) ?: [];
+        // Check every configured stream candidate first. This lets a recovered
+        // host return to service and prevents an unavailable host from being
+        // used merely because it appears first in the database.
+        $links = (new LinkModel())->findByMovieId($movieId, 'stream', true) ?: [];
+        $resolver = new StreamResolver();
         foreach ($links as $link) {
             try {
+                if (! $resolver->check($link)) {
+                    continue;
+                }
+
                 $result = $this->posterFromProvider($link) ?: $this->posterFromStreamPage($link);
                 if ($result !== null) {
                     $this->addData($result);

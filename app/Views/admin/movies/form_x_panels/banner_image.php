@@ -31,7 +31,7 @@
                 <button type="button" class="btn btn-outline-primary btn-sm stream-poster-fetch" data-movie-id="<?= (int) $movie->id ?>">
                     <i class="fa fa-image"></i> Use image from stream host
                 </button>
-                <small class="form-text text-muted">Retrieves a thumbnail supplied by the host API or stream-page metadata.</small>
+                <small class="form-text text-muted">Checks available stream hosts first, then retrieves a thumbnail from its API or page metadata.</small>
                 <div class="stream-poster-result" aria-live="polite"></div>
             </div>
         <?php endif; ?>

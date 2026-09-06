@@ -135,16 +135,16 @@ class StreamResolver
      */
     private function providerAvailability(Link $link): ?bool
     {
-        $videoId = trim((string) $link->upnshare_video_id);
+        $videoId = trim((string) $link->upnshare_video_id) ?: $this->videoIdFromUrl((string) $link->link);
         if ($videoId === '') {
             return null;
         }
 
-        if (! empty($link->api_id)) {
-            $api = (new ThirdPartyApi())->find((int) $link->api_id);
-            if ($api !== null && $api->status === 'active' && trim((string) $api->api_token) !== '') {
-                return $this->checkConfiguredProvider($api, $videoId);
-            }
+        $api = ! empty($link->api_id)
+            ? (new ThirdPartyApi())->find((int) $link->api_id)
+            : $this->configuredApiForLink($link);
+        if ($api !== null && $api->status === 'active' && trim((string) $api->api_token) !== '') {
+            return $this->checkConfiguredProvider($api, $videoId);
         }
 
         if ($this->upnShare->isConfigured()) {
@@ -152,6 +152,52 @@ class StreamResolver
         }
 
         return null;
+    }
+
+    private function configuredApiForLink(Link $link): ?object
+    {
+        $linkHost = $this->normalisedHost((string) $link->link);
+        if ($linkHost === '') {
+            return null;
+        }
+
+        foreach ((new ThirdPartyApi())->where('status', 'active')->findAll() as $api) {
+            if ($this->normalisedHost((string) $api->api_base_url) === $linkHost) {
+                return $api;
+            }
+        }
+
+        return null;
+    }
+
+    private function videoIdFromUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        if (! is_array($parts)) {
+            return '';
+        }
+
+        $fragment = trim((string) ($parts['fragment'] ?? ''));
+        if ($fragment !== '') {
+            return $fragment;
+        }
+
+        $path = trim((string) ($parts['path'] ?? ''), '/');
+        if ($path === '') {
+            return '';
+        }
+
+        $segments = explode('/', $path);
+        $candidate = trim((string) end($segments));
+
+        return preg_match('/^[A-Za-z0-9_-]{3,128}$/', $candidate) ? $candidate : '';
+    }
+
+    private function normalisedHost(string $url): string
+    {
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+
+        return preg_replace('/^www\./', '', $host) ?: '';
     }
 
     private function checkConfiguredProvider(object $api, string $videoId): ?bool
