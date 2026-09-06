@@ -35,7 +35,7 @@ if (! $isExisting) {
                     'name' => 'name',
                     'class' => 'form-control',
                     'value' => old('name', $tpAPI->name),
-                    'placeholder' => 'Example: Primary Vidhide',
+                    'placeholder' => 'Example: EarnVids Primary',
                     'maxlength' => 128,
                     'required' => 'required',
                 ]) ?>
@@ -60,11 +60,42 @@ if (! $isExisting) {
         ]) ?>
         <div class="host-api-fixed-endpoint">
             <strong>EarnVids data scope</strong>
-            <span>File list and direct playback use the official EarnVids API automatically. Only the API key is required.</span>
+            <span>Endpoint mengikuti dokumentasi EarnVids secara otomatis. Hanya API key yang perlu disimpan.</span>
         </div>
 
+        <section class="provider-api-structure" aria-labelledby="earnvids-api-structure-title">
+            <div class="provider-api-structure__header">
+                <span>EARNVIDS · DOCUMENTED DATA FLOW</span>
+                <h3 id="earnvids-api-structure-title">File List → Direct Link → Artwork</h3>
+                <p>Endpoint disimpan di aplikasi, bukan di form. API key selalu dikirim dari penyimpanan aman server.</p>
+            </div>
+            <div class="provider-api-structure__grid">
+                <article>
+                    <span class="provider-api-structure__step">01</span>
+                    <h4>File List</h4>
+                    <code>GET /api/file/list</code>
+                    <p><b>Input:</b> key, title, per_page, page, fld_id, public, adult, created.</p>
+                    <p><b>Data dibaca:</b> title, file_code, link, thumbnail, canplay, length, views, uploaded.</p>
+                </article>
+                <article>
+                    <span class="provider-api-structure__step">02</span>
+                    <h4>Direct Link</h4>
+                    <code>GET /api/file/direct_link</code>
+                    <p><b>Input:</b> key, file_code, IP penonton.</p>
+                    <p><b>Output:</b> URL putar sementara yang diminta saat video mulai diputar.</p>
+                </article>
+                <article>
+                    <span class="provider-api-structure__step">03</span>
+                    <h4>Gambar</h4>
+                    <code>GET /api/file/info</code>
+                    <p><b>Input:</b> key dan file_code dari File List.</p>
+                    <p><b>Data dibaca:</b> thumbnail atau player_img untuk banner video.</p>
+                </article>
+            </div>
+        </section>
+
         <div class="form-group">
-            <label class="control-label" for="host-api-token">API token</label>
+            <label class="control-label" for="host-api-token">EarnVids API key</label>
             <?= form_input($tokenAttributes) ?>
             <small>The token is never displayed after it has been saved.</small>
         </div>
@@ -79,10 +110,11 @@ if (! $isExisting) {
         <div id="host-api-test-result" aria-live="polite"></div>
 
         <div class="host-api-permissions">
-            <span class="host-api-permissions__label">Enabled data scopes</span>
-            <span><i class="fa fa-check-circle"></i> Video direct link</span>
-            <span><i class="fa fa-check-circle"></i> Poster image</span>
-            <small>No movie metadata, series metadata, or automatic link templates are used.</small>
+            <span class="host-api-permissions__label">Enabled EarnVids scopes</span>
+            <span><i class="fa fa-check-circle"></i> File List</span>
+            <span><i class="fa fa-check-circle"></i> Direct Link</span>
+            <span><i class="fa fa-check-circle"></i> Thumbnail / player image</span>
+            <small>Movie metadata, series metadata, and URL-template automation remain disabled.</small>
         </div>
 
         <div class="form-group host-api-status">
