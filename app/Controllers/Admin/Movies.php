@@ -123,8 +123,6 @@ class Movies extends BaseController
             return redirect()->to("/admin/episodes/edit/{$id}");
         }
 
-        $nextMovie = $this->model->getNextMovie( $id );
-
         $linkModel = new LinkModel();
         $streamLinks = $linkModel->findByMovieId( $id, 'stream' );
 
@@ -141,7 +139,7 @@ class Movies extends BaseController
             'admin/movies' => 'Back to Videos'
         ]);
 
-        $data = compact('title', 'movie', 'nextMovie', 'streamLinks', 'translations', 'topBtnGroup');
+        $data = compact('title', 'movie', 'streamLinks', 'translations', 'topBtnGroup');
 
         return view('admin/movies/edit', $data);
     }

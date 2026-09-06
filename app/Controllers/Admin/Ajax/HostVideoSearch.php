@@ -160,7 +160,9 @@ class HostVideoSearch extends BaseAjax
     private function searchUpnShareFiles(object $api, string $title): ?array
     {
         $cache = cache();
-        $cacheKey = 'upnshare-title-' . sha1((string) $api->id . '|' . $this->normaliseTitle($title));
+        // Version the key so empty responses saved by the former summary
+        // endpoint never hide a result after this catalogue-search update.
+        $cacheKey = 'upnshare-title-v2-' . sha1((string) $api->id . '|' . $this->normaliseTitle($title));
         $cached = $cache->get($cacheKey);
         if (is_array($cached) && isset($cached['files'], $cached['api_root'])) {
             return $cached;
@@ -168,12 +170,9 @@ class HostVideoSearch extends BaseAjax
 
         foreach ($this->upnShareApiRoots($api) as $apiRoot) {
             $firstPage = $this->upnShareVideoPage($api, $apiRoot, [
-                'title' => $title,
                 'search' => $title,
-                'q' => $title,
                 'page' => 1,
-                'per_page' => 50,
-                'limit' => 50,
+                'perPage' => 50,
             ]);
 
             if ($firstPage === null) {
@@ -188,8 +187,7 @@ class HostVideoSearch extends BaseAjax
             if (empty($matches)) {
                 $localPage = $this->upnShareVideoPage($api, $apiRoot, [
                     'page' => 1,
-                    'per_page' => 50,
-                    'limit' => 50,
+                    'perPage' => 50,
                 ]);
 
                 if ($localPage !== null) {
@@ -202,8 +200,7 @@ class HostVideoSearch extends BaseAjax
                     for ($page = 2; $page <= $lastPage && count($matches) < self::RESULTS_PER_HOST; $page++) {
                         $nextPage = $this->upnShareVideoPage($api, $apiRoot, [
                             'page' => $page,
-                            'per_page' => 50,
-                            'limit' => 50,
+                            'perPage' => 50,
                         ]);
 
                         if ($nextPage === null || empty($nextPage['videos'])) {
@@ -221,7 +218,11 @@ class HostVideoSearch extends BaseAjax
                 $details = $videoId === '' ? [] : $this->upnShareVideoDetails($api, $apiRoot, $videoId);
                 $file = $this->normaliseUpnShareVideo($video, $details, $videoId);
 
-                if ($file['link'] !== '') {
+                // The management list always contains a title and poster, but
+                // an installation can restrict playback URLs to its detail
+                // endpoint. Keep that result visible so the admin can still
+                // choose the matching file instead of seeing a false miss.
+                if ($file['link'] !== '' || (string) $file['title'] !== '') {
                     $files[] = $file;
                 }
             }
@@ -260,7 +261,10 @@ class HostVideoSearch extends BaseAjax
             return null;
         }
 
-        $response = $this->httpClient($host)->get($apiRoot . '/video', [
+        // /video is only UPNShare's account summary. /video/manage is the
+        // documented paginated catalogue and is the only endpoint that
+        // accepts a title search.
+        $response = $this->httpClient($host)->get($apiRoot . '/video/manage', [
             'query' => $query,
             'headers' => [
                 'Accept' => 'application/json',
@@ -302,7 +306,9 @@ class HostVideoSearch extends BaseAjax
         }
 
         $lastPage = (int) (
-            $container['last_page']
+            $payload['metadata']['maxPage']
+            ?? $container['metadata']['maxPage']
+            ?? $container['last_page']
             ?? $container['meta']['last_page']
             ?? $payload['last_page']
             ?? $payload['meta']['last_page']

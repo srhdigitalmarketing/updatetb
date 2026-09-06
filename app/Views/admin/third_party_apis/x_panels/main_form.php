@@ -63,7 +63,7 @@ if (! $isExisting) {
                 'maxlength' => 255,
                 'required' => 'required',
             ]) ?>
-            <small>Enter either the host URL or its API root. The system automatically checks the standard <code>/api/file/list</code> title-search endpoint.</small>
+            <small>Enter either the host URL or its API root. UPNShare searches <code>/api/v1/video/manage</code>; Vidhide and XVideoSharing hosts use <code>/api/file/list</code>.</small>
         </div>
 
         <div class="form-group">
