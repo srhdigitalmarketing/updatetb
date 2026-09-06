@@ -10,10 +10,6 @@ use CodeIgniter\Model;
 
 class ThirdPartyApis extends BaseController
 {
-    private const EARNVIDS_API_ROOT = 'https://earnvidsapi.com/api';
-    private const UPNSHARE_API_ROOT = 'https://upnshare.com/api/v1';
-    private const CLOUDFLARE_R2_ROOT = 'https://r2.cloudflarestorage.com';
-
     protected $model;
 
     public function __construct()
@@ -23,12 +19,12 @@ class ThirdPartyApis extends BaseController
 
     public function index()
     {
-        $title = 'API Access';
+        $title = 'R2 Storage';
 
-        $apis = $this->model->findAll();
+        $apis = $this->model->where('provider', 'cloudflare_r2')->findAll();
 
         $topBtnGroup = create_top_btn_group([
-            'admin/third-party-apis/new' => 'Add API Access'
+            'admin/third-party-apis/new' => 'Add R2 Storage'
         ]);
 
         return view('admin/third_party_apis/list', compact('title', 'apis', 'topBtnGroup'));
@@ -39,11 +35,11 @@ class ThirdPartyApis extends BaseController
     public function new()
     {
 
-        $title = 'Add API Access';
+        $title = 'Add R2 Storage';
         $tpAPI = new \App\Entities\ThirdPartyApi();
 
         $topBtnGroup = create_top_btn_group([
-            'admin/third-party-apis' => 'Back to API Access'
+            'admin/third-party-apis' => 'Back to R2 Storage'
         ]);
 
         return view('admin/third_party_apis/new', compact('title', 'tpAPI', 'topBtnGroup'));
@@ -52,10 +48,10 @@ class ThirdPartyApis extends BaseController
 
     public function edit()
     {
-        $title = 'Edit API Access';
+        $title = 'Edit R2 Storage';
         $tpAPI = $this->getApi( $this->request->getGet('id') );
         $topBtnGroup = create_top_btn_group([
-            'admin/third-party-apis' => 'Back to API Access'
+            'admin/third-party-apis' => 'Back to R2 Storage'
         ]);
         return view('admin/third_party_apis/edit', compact('title', 'tpAPI', 'topBtnGroup'));
 
@@ -64,17 +60,10 @@ class ThirdPartyApis extends BaseController
     public function create(): \CodeIgniter\HTTP\RedirectResponse
     {
         $data = $this->request->getPost();
-        $data['api_base_url'] = $this->normaliseApiBaseUrl($data['api_base_url'] ?? '', $data['provider'] ?? '');
-
-        if (($data['provider'] ?? '') === 'cloudflare_r2') {
-            $errors = $this->r2Errors($data);
-            if (! empty($errors)) {
-                return redirect()->back()->with('errors', $errors)->withInput();
-            }
-        } elseif (empty($data['api_token'])) {
-            return redirect()->back()
-                ->with('errors', ['An API token is required to add a video host.'])
-                ->withInput();
+        $data['provider'] = 'cloudflare_r2';
+        $errors = $this->r2Errors($data);
+        if (! empty($errors)) {
+            return redirect()->back()->with('errors', $errors)->withInput();
         }
 
         $tpAPI = new \App\Entities\ThirdPartyApi($data);
@@ -82,7 +71,7 @@ class ThirdPartyApis extends BaseController
         if($this->model->insert( $tpAPI )){
 
             return redirect()->to(admin_url( '/third-party-apis' ))
-                            ->with('success', 'Video host API access added successfully');
+                            ->with('success', 'Cloudflare R2 storage access added successfully');
 
         }
 
@@ -95,22 +84,15 @@ class ThirdPartyApis extends BaseController
     {
         $tpAPI = $this->getApi( $this->request->getGet('id') );
         $data = $this->request->getPost();
-        $data['api_base_url'] = $this->normaliseApiBaseUrl($data['api_base_url'] ?? '', $data['provider'] ?? '');
-
-        // Never erase a saved token merely because the masked token field is blank.
-        if (empty($data['api_token'])) {
-            unset($data['api_token']);
+        $data['provider'] = 'cloudflare_r2';
+        foreach (['r2_access_key_id', 'r2_secret_access_key'] as $field) {
+            if (empty($data[$field])) {
+                unset($data[$field]);
+            }
         }
-        if (($data['provider'] ?? '') === 'cloudflare_r2') {
-            foreach (['r2_access_key_id', 'r2_secret_access_key'] as $field) {
-                if (empty($data[$field])) {
-                    unset($data[$field]);
-                }
-            }
-            $errors = $this->r2Errors(array_merge($tpAPI->toRawArray(), $data));
-            if (! empty($errors)) {
-                return redirect()->back()->with('errors', $errors)->withInput();
-            }
+        $errors = $this->r2Errors(array_merge($tpAPI->toRawArray(), $data));
+        if (! empty($errors)) {
+            return redirect()->back()->with('errors', $errors)->withInput();
         }
 
         $tpAPI->fill($data);
@@ -119,7 +101,7 @@ class ThirdPartyApis extends BaseController
             if($this->model->save( $tpAPI )){
 
                 return redirect()->to(admin_url( '/third-party-apis' ))
-                                  ->with('success', $tpAPI->name . ' API access updated successfully');
+                                  ->with('success', $tpAPI->name . ' R2 storage access updated successfully');
             }else{
                 return redirect()->back()
                                  ->with('errors', $this->model->errors())
@@ -135,12 +117,6 @@ class ThirdPartyApis extends BaseController
     {
         $tpAPI = $this->getApi( $this->request->getGet('id') );
 
-        // Old template-based APIs may still be attached to links. Detach them
-        // before deletion so changing API Access never deletes those links.
-        db_connect()->table('links')
-            ->where('api_id', $tpAPI->id)
-            ->update(['api_id' => null]);
-
         if($this->model->delete( $tpAPI->id )){
             return redirect()->back()
                              ->with('success', $tpAPI->name . ' deleted successfully');
@@ -154,36 +130,13 @@ class ThirdPartyApis extends BaseController
 
     protected function getApi($id)
     {
-        $api = $this->model->where('id', $id)->first();
+        $api = $this->model->where('id', $id)->where('provider', 'cloudflare_r2')->first();
 
         if($api === null){
             throw new PageNotFoundException('Third party API not found');
         }
 
         return $api;
-    }
-
-    /**
-     * EarnVids has a fixed API root; only its credential is configurable.
-     * Other existing providers retain their stored root for compatibility.
-     */
-    private function normaliseApiBaseUrl($url, $provider): string
-    {
-        $url = rtrim(trim((string) $url), '/');
-
-        if ($provider === 'earnvids') {
-            return self::EARNVIDS_API_ROOT;
-        }
-
-        if ($provider === 'upnshare') {
-            return self::UPNSHARE_API_ROOT;
-        }
-
-        if ($provider === 'cloudflare_r2') {
-            return self::CLOUDFLARE_R2_ROOT;
-        }
-
-        return preg_replace('#/file/(?:info|list)$#i', '', $url) ?: $url;
     }
 
     /** @return array<int, string> */

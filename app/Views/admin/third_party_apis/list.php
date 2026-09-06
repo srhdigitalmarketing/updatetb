@@ -5,15 +5,14 @@
 
 <div class="host-api-overview">
     <section>
-        <span class="host-api-guide__eyebrow">API ACCESS</span>
-        <h4>Video host access</h4>
-        <p>Manage credentials for video delivery, artwork metadata, and Cloudflare R2 banner storage.</p>
-        <a href="<?= admin_url('/third-party-apis/new') ?>" class="btn btn-primary"><i class="fa fa-plus"></i> Add API access</a>
+        <span class="host-api-guide__eyebrow">R2 STORAGE</span>
+        <h4>Cloudflare R2 storage</h4>
+        <p>Manage the credentials used exclusively for banner image uploads.</p>
+        <a href="<?= admin_url('/third-party-apis/new') ?>" class="btn btn-primary"><i class="fa fa-plus"></i> Add R2 storage</a>
     </section>
     <section class="host-api-overview__docs">
-        <h5>Supported platform</h5>
-        <p>UPNShare, Vidhide, EarnVids, XVideoSharing hosts, and Cloudflare R2 storage.</p>
-        <a href="https://vidhide.com/api.html" target="_blank" rel="noopener noreferrer">Read provider documentation <i class="fa fa-external-link"></i></a>
+        <h5>Storage provider</h5>
+        <p>Cloudflare R2 via the S3-compatible API.</p>
     </section>
 </div>
 
@@ -35,10 +34,10 @@
             <tr>
                 <td>
                     <strong><?= esc($api->name) ?></strong>
-                    <small><?= $api->provider === 'earnvids' ? 'File list and direct playback enabled' : ($api->provider === 'cloudflare_r2' ? 'Banner uploads are stored in R2' : 'Provider connection configured') ?></small>
+                    <small>Banner uploads are stored in R2</small>
                 </td>
-                <td><span class="host-api-provider-badge"><?= esc(ucfirst(str_replace('xvideosharing', 'XVideoSharing', $api->provider ?: 'custom'))) ?></span></td>
-                <td><?php if ($api->provider === 'cloudflare_r2'): ?><span class="host-api-scope"><i class="fa fa-cloud-upload"></i> Banner storage</span><?php else: ?><span class="host-api-scope"><i class="fa fa-play-circle"></i> Video</span><span class="host-api-scope"><i class="fa fa-image"></i> Poster</span><?php endif; ?></td>
+                <td><span class="host-api-provider-badge">Cloudflare R2</span></td>
+                <td><span class="host-api-scope"><i class="fa fa-cloud-upload"></i> Banner storage</span></td>
                 <td><?= format_date_time($api->created_at) ?></td>
                 <td>
                     <span class="host-api-status-badge <?= $api->status == 'active' ? 'is-active' : 'is-paused' ?>">
@@ -56,7 +55,7 @@
             </tbody>
         </table>
         <?php if (empty($apis)): ?>
-            <div class="host-api-empty"><i class="fa fa-plug"></i><strong>No API access configured</strong><span>Add a host token to prepare video and poster synchronization.</span></div>
+            <div class="host-api-empty"><i class="fa fa-cloud-upload"></i><strong>No R2 storage configured</strong><span>Add Cloudflare R2 credentials to store banner uploads in the cloud.</span></div>
         <?php endif; ?>
     </div>
 </div>

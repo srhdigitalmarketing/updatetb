@@ -35,10 +35,10 @@
                         </ul>
                     </li>
 
-                    <li><a><i class="fa fa-magic"></i><span class="sidebar-item-label">API Access</span><span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-cloud-upload"></i><span class="sidebar-item-label">R2 Storage</span><span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="<?= admin_url('/third-party-apis') ?>">All API Access</a></li>
-                            <li><a href="<?= admin_url('/third-party-apis/new') ?>">Add API Access</a></li>
+                            <li><a href="<?= admin_url('/third-party-apis') ?>">All R2 Storage</a></li>
+                            <li><a href="<?= admin_url('/third-party-apis/new') ?>">Add R2 Storage</a></li>
                         </ul>
                     </li>
 
