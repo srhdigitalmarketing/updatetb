@@ -8,6 +8,7 @@
 .text-center { text-align: center !important; }
 
 .form-group { margin-bottom: 1rem; }
+.form-control-static { color: var(--bs-body-color); min-height: 1.5em; padding: .375rem 0; }
 .form-horizontal .control-label { padding-top: 7px; }
 .input-group-addon {
   align-items: center;
@@ -25,6 +26,7 @@
 .panel-heading { padding: .75rem 1rem; }
 .panel-body { padding: 1rem; }
 .panel-footer { padding: .75rem 1rem; }
+.btn-block { display: block; width: 100%; }
 .close { background: transparent; border: 0; color: currentColor; font-size: 1.5rem; line-height: 1; opacity: .6; }
 .close:hover { opacity: 1; }
 
