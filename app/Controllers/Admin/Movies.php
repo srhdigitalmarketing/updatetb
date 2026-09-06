@@ -204,6 +204,10 @@ class Movies extends BaseController
     {
         if($this->request->getMethod() == 'post') {
             $movie = $this->getMovie($id);
+            $previousBanner = $this->request->getPost('remove_banner') === '1' ? $movie->banner : null;
+            if ($previousBanner !== null) {
+                $movie->banner = null;
+            }
             $updatedData = $this->request->getPost([
                 'title',
                 'description',
@@ -233,6 +237,12 @@ class Movies extends BaseController
                 return redirect()->back()
                     ->with('errors', $this->model->errors())
                     ->withInput();
+            }
+
+            // Remove a local upload only after the database no longer points
+            // to it. Remote URLs are never deleted from their source host.
+            if ($previousBanner !== null && $previousBanner !== '' && filter_var($previousBanner, FILTER_VALIDATE_URL) === false) {
+                delete_banner($previousBanner);
             }
 
             // save translations

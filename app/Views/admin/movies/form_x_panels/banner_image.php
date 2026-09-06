@@ -19,27 +19,13 @@
 
         <div class="form-group">
             <?= form_label('Select from remote URL:') ?>
-            <div class="input-group banner-remote-url-group">
-                <?= form_input([
-                    'type' => 'url',
-                    'name' => 'banner_url',
-                    'class' => 'form-control',
-                    'value' => old('banner_url')
-                ]) ?>
-                <span class="input-group-btn banner-remote-url-delete" hidden>
-                    <button type="button" class="btn btn-danger" data-clear-banner-url><i class="fa fa-trash"></i> Delete</button>
-                </span>
-            </div>
+            <?= form_input([
+                'type' => 'url',
+                'name' => 'banner_url',
+                'class' => 'form-control',
+                'value' => old('banner_url')
+            ]) ?>
         </div>
-        <?php if (! empty($movie->id)): ?>
-            <div class="form-group banner-host-poster">
-                <button type="button" class="btn btn-outline-primary btn-sm stream-poster-fetch" data-movie-id="<?= (int) $movie->id ?>">
-                    <i class="fa fa-image"></i> Use image from stream host
-                </button>
-                <small class="form-text text-muted">Checks available stream hosts first, then retrieves a thumbnail from its API or page metadata.</small>
-                <div class="stream-poster-result" aria-live="polite"></div>
-            </div>
-        <?php endif; ?>
         <div class="separator"> or </div>
         <div class="form-group">
             <?= form_label('Select from PC:') ?>
@@ -48,6 +34,11 @@
                 'name' => 'banner_file',
                 'accept' => 'image/*'
             ]) ?>
+        </div>
+        <?= form_hidden('remove_banner', old('remove_banner', '0')) ?>
+        <div class="banner-image-delete" hidden>
+            <button type="button" class="btn btn-danger" data-clear-banner-image><i class="fa fa-trash"></i> Delete image</button>
+            <small>Clears the remote URL or PC upload. Save changes to remove the current banner permanently.</small>
         </div>
 
     </div>

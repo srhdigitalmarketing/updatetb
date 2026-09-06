@@ -11,7 +11,7 @@
         init_data_list_datatable();
         init_discover();
         init_suggestion();
-        init_banner_remote_url();
+        init_banner_image_controls();
         init_host_api_provider_structure();
         init_host_api_connection_test();
         init_stream_poster();
@@ -946,26 +946,29 @@
         }
     }
 
-    function init_banner_remote_url()
+    function init_banner_image_controls()
     {
-        let bannerInput = $('input[name="banner_url"]');
-        if(bannerInput.length === 0){
+        let bannerInputs = $('input[name="banner_url"], input[name="banner_file"]');
+        if(bannerInputs.length === 0){
             return;
         }
 
-        function toggleDeleteButton(input)
+        function toggleDeleteButton(scope)
         {
-            input.closest('.banner-remote-url-group').find('.banner-remote-url-delete').prop('hidden', $.trim(input.val()) === '');
+            let hasInput = $.trim(scope.find('input[name="banner_url"]').val() || '') !== '' || $.trim(scope.find('input[name="banner_file"]').val() || '') !== '';
+            let hasCurrentBanner = scope.find('.banner-wrap img').length > 0;
+            scope.find('.banner-image-delete').prop('hidden', ! hasInput && ! hasCurrentBanner);
         }
 
-        bannerInput.each(function(){ toggleDeleteButton($(this)); });
-        bannerInput.on('input change', function(){ toggleDeleteButton($(this)); });
+        bannerInputs.each(function(){ toggleDeleteButton($(this).closest('.x_content')); });
+        bannerInputs.on('input change', function(){ toggleDeleteButton($(this).closest('.x_content')); });
 
-        $(document).on('click', '[data-clear-banner-url]', function(){
-            let group = $(this).closest('.banner-remote-url-group');
-            let input = group.find('input[name="banner_url"]');
-            input.val('').trigger('input').trigger('change');
-            group.closest('.x_content').find('.banner-wrap').empty();
+        $(document).on('click', '[data-clear-banner-image]', function(){
+            let scope = $(this).closest('.x_content');
+            scope.find('input[name="banner_url"], input[name="banner_file"]').val('').trigger('input').trigger('change');
+            scope.find('input[name="remove_banner"]').val('1');
+            scope.find('.banner-wrap').empty();
+            toggleDeleteButton(scope);
         });
     }
 

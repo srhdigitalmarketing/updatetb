@@ -171,6 +171,10 @@ class Series extends BaseController
         if($this->request->getMethod() == 'post') {
 
             $series = $this->getSeries( $id );
+            $previousBanner = $this->request->getPost('remove_banner') === '1' ? $series->banner : null;
+            if ($previousBanner !== null) {
+                $series->banner = null;
+            }
             $updatedData = $this->request->getPost([
                 'title',
                 'imdb_id',
@@ -205,6 +209,12 @@ class Series extends BaseController
 
                 }
 
+            }
+
+            // Clear only this application's local upload after its database
+            // reference has been removed. A remote URL is never deleted.
+            if ($previousBanner !== null && $previousBanner !== '' && filter_var($previousBanner, FILTER_VALIDATE_URL) === false) {
+                delete_banner($previousBanner);
             }
 
             $this->model->addGenres(
