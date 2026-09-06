@@ -1031,6 +1031,10 @@
                 ['Title', sample.title],
                 ['File name', sample.file_name],
                 ['Video ID', sample.video_id],
+                ['Playback status', sample.can_play],
+                ['Duration', sample.duration],
+                ['Uploaded', sample.uploaded_at],
+                ['Views', sample.views],
                 ['Player link', sample.player_url],
                 ['Poster', sample.poster_url]
             ];

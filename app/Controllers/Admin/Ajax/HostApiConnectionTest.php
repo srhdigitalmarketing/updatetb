@@ -74,7 +74,7 @@ class HostApiConnectionTest extends BaseAjax
             log_message('warning', 'Video-host API connection test failed: {message}', [
                 'message' => $exception->getMessage(),
             ]);
-            $this->addError('The connection test could not reach the host. Check the API base URL and server network access.');
+            $this->addError('The connection test could not reach EarnVids. Check the API key and this server\'s outbound network access.');
         }
 
         return $this->jsonResponse();
@@ -170,7 +170,32 @@ class HostApiConnectionTest extends BaseAjax
                 ?? [];
             $sample = is_array($files) && ! empty($files) && is_array($files[0]) ? $files[0] : [];
 
-            return $this->testResponse($provider, $apiRoot . '/file/list', $list['status'], $sample);
+            // A File List record confirms the key works. For EarnVids, fetch
+            // the matching File Info record as well so the connection screen
+            // can show its authoritative playback state and host artwork.
+            $endpoint = $apiRoot . '/file/list';
+            if ($provider === 'earnvids' && $sample !== []) {
+                $fileCode = $this->firstString($sample, ['file_code', 'filecode', 'id']);
+                if ($fileCode !== '') {
+                    $info = $this->requestJson($apiRoot . '/file/info', [
+                        'key' => $token,
+                        'file_code' => $fileCode,
+                    ], $token, true);
+
+                    if ($info !== null && $info['status'] >= 200 && $info['status'] < 300 && is_array($info['payload'])) {
+                        $record = $info['payload']['result'] ?? $info['payload']['data'] ?? [];
+                        if (is_array($record) && $record !== [] && array_keys($record) === range(0, count($record) - 1)) {
+                            $record = $record[0] ?? [];
+                        }
+                        if (is_array($record)) {
+                            $sample = array_merge($sample, $record);
+                            $endpoint .= ' + /file/info';
+                        }
+                    }
+                }
+            }
+
+            return $this->testResponse($provider, $endpoint, $list['status'], $sample);
         }
 
         return null;
@@ -200,6 +225,10 @@ class HostApiConnectionTest extends BaseAjax
                 'title' => $this->firstString($record, ['title', 'video_title', 'videoTitle', 'file_title', 'fileTitle', 'name', 'original_name', 'originalName']),
                 'file_name' => $this->firstString($record, ['file_name', 'fileName', 'filename', 'original_name', 'originalName', 'name', 'title']),
                 'video_id' => $this->firstString($record, ['id', 'video_id', 'videoId', 'uuid', 'file_code', 'filecode', 'code']),
+                'can_play' => array_key_exists('canplay', $record) ? ((int) (bool) $record['canplay'] === 1 ? 'Ready to play' : 'Not ready to play') : '',
+                'duration' => $this->firstString($record, ['length', 'duration', 'duration_seconds']),
+                'uploaded_at' => $this->firstString($record, ['uploaded', 'uploaded_at', 'created_at', 'file_last_download']),
+                'views' => $this->firstString($record, ['views', 'view_count', 'views_count']),
                 'player_url' => $playerUrl ?: '',
                 'poster_url' => $posterUrl ?: '',
             ],
